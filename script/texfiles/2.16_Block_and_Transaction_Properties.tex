@@ -1,0 +1,92 @@
+\section{Block \& Transaction
+Properties}\label{block-transaction-properties}
+
+\texttt{Solidity} allows accessing various block and transaction
+properties within smart contracts. These allow developers to perform
+interesting logic that are dependent on different aspects of the current
+block or the transaction.
+
+\subsection{Block}\label{block}
+
+In the case of \texttt{block}, we have the following members:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\texttt{blockhash}}: gives the hash of the specified block,
+  but only works for the most recent 256 ones, otherwise it returns
+  zero.
+\item
+  \textbf{\texttt{chain\ id}}: gives the current id of the chain that
+  this is executing on.
+\item
+  \textbf{\texttt{number}}: gives the sequence number of the block
+  within the blockchain.
+\item
+  \textbf{\texttt{timestamp}}: gives the number of seconds since the
+  unix epoch.
+\item
+  \textbf{\texttt{coinbase}}: it is controlled by the miner and gives
+  the beneficiary address where the block rewards and transaction fees
+  go to.
+\item
+  \textbf{\texttt{difficulty}}: block's difficulty related to the proof
+  of work.
+\item
+  \textbf{\texttt{gaslimit}}: Gas limit for the block.
+\end{itemize}
+
+\subsubsection{Randomness Source}\label{randomness-source}
+
+\textbf{The block timestamp and block hash that we just discussed are
+not good sources of randomness}, that's because both these values can be
+influenced by the miners mining the blocks to some degree. The only
+aspects of timestamps that are guaranteed, is that the \textbf{current
+blocks timestamp must be strictly larger than the timestamp of the last
+block} and the other guarantee is that \textbf{it will be somewhere
+between the timestamps of two consecutive blocks in the canonical
+blockchain}. Therefore smart contract developers should not rely on
+either the block timestamp or the block hash as a source of good
+randomness.
+
+\subsubsection{Message and Transaction}\label{message-and-transaction}
+
+There are also fields related to the message (\texttt{msg}):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\texttt{value}}: represents the amount of Ether that was sent
+  as part of the transaction.
+\item
+  \textbf{\texttt{data}}: gives access to the complete call data sent in
+  this transaction.
+\item
+  \textbf{\texttt{sender}}: gives the sender of the current call or
+  message.
+\item
+  \textbf{\texttt{signature}}: gives the function identifier or the
+  first four bytes of the call data representing the function selector
+  that we talked about earlier.
+\end{itemize}
+
+The thing to be kept in mind is that every external call made, changes
+the \texttt{sender}. Every external call made can also change the
+\texttt{value}.
+
+So if we have three contracts \texttt{A}, \texttt{B} and \texttt{C}
+where \texttt{A} calls \texttt{B} and \texttt{B} calls \texttt{C}, in
+the context of the contract \texttt{B} the \texttt{msg.sender} is
+\texttt{A}, but in the context of the contract \texttt{C} the
+\texttt{msg.sender} is contract \texttt{b} and not \texttt{a}.
+
+These aspects should be kept in mind when analyzing the security of
+smart contract because the developers could have made incorrect
+assumptions about some of these that could result in security issues.
+
+Then there are transaction (\texttt{tx}) components: -
+\textbf{\texttt{gasprice}}: the Gas price used in the transaction. There
+is an interesting \texttt{Solidity} native function called
+\textbf{\texttt{gasleft()}} which returns the amount of Gas left in the
+transaction after all the computation so far.- \textbf{\texttt{origin}}:
+gives the sender of the transaction, representing the EOA.

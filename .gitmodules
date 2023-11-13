@@ -1,0 +1,15 @@
+[submodule "src/care/CARE"]
+	path = src/care/CARE
+	url = git@github.com:secureum/CARE.git
+[submodule "script/solidity-latex-highlighting"]
+	path = script/solidity-latex-highlighting
+	url = git@github.com:s-tikhomirov/solidity-latex-highlighting.git
+[submodule "src/ctfs/AMAZEX-DSS-PARIS"]
+	path = src/ctfs/AMAZEX-DSS-PARIS
+	url = git@github.com:secureum/AMAZEX-DSS-PARIS.git
+[submodule "src/ctfs/DeFi-Security-Summit-Stanford"]
+	path = src/ctfs/DeFi-Security-Summit-Stanford
+	url = https://github.com/secureum/DeFi-Security-Summit-Stanford
+[submodule "src/ctfs/secureum-a-maze-x-challenges"]
+	path = src/ctfs/secureum-a-maze-x-challenges
+	url = https://github.com/secureum/secureum-a-maze-x-challenges

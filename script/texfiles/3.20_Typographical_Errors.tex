@@ -1,0 +1,45 @@
+\section{Typographical Errors}\label{typographical-errors}
+
+\subsection{Unary Expressions}\label{unary-expressions}
+
+Unary expressions are where an operator is used on a single operand as
+opposed to two operands, in which case it would be a binary expression.
+Such unary expressions are susceptible to typographical errors by
+developers.
+
+For example let's take a look at the scenario where there's a variable
+\texttt{x}. The developer wants to increment it by one, so the way to do
+that is to say \texttt{x\ +=\ 1} which effectively is
+\texttt{x\ =\ x\ \ +\ 1}. But if the developer interchanges the order of
+\texttt{+} and \texttt{=} and instead uses \texttt{x\ =\ +1}, then this
+would result in re-initializing the value of \texttt{x} to \texttt{+1}.
+The reason for this is that \texttt{+\ 1} is a unary expression whose
+value is \texttt{1} and \texttt{x} would get initialized to that value.
+
+As you can imagine such typographical errors are likely to be made by
+developers it's very easy to make these switching the order and, if they
+are considered as valid by the compiler, then it's very hard to notice
+such errors both by the developer as well as by the security auditor.
+
+So in order to prevent some of the most common usages that result in
+such typographical errors the unary \texttt{+} was deprecated as of
+compiler \texttt{Solidity} version \texttt{0.5.0}.
+
+\subsection{Long Number Literals}\label{long-number-literals}
+
+There is a security risk in the use of long number literals within
+\texttt{Solidity} contracts. These number literals may require many
+digits to represent their high values (as constants) or many decimal
+digits of precision, which as you can imagine is error prone.
+
+For example, if one were to define a variable representing Ether, then
+it would need to be assigned a number literal that has 18 zeros to
+represent the 18 decimals of precision.
+
+So the developer may accidentally use an extra zero or miss a zero in
+which case the Ether precision is different, thus the logic using this
+variable will be broken.
+
+The best practice here is to use the Ether or time suffixes supported by
+\texttt{Solidity} as applicable or to use the Scientific Notation which
+is also supported by \texttt{Solidity}.

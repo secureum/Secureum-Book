@@ -1,0 +1,162 @@
+\section{Security in web3}\label{security-in-web3}
+
+\subsection{Architectures, Languages \& Tools: from web1 to
+web3}\label{architectures-languages-tools-from-web1-to-web3}
+
+Going all the way back to the advent of internet 40 or 50 years ago, the
+various protocols that were developed as part of the TCP stack, some of
+the competing ones, the way they were standardized, then the advent of
+the world wide web that really launched the web1 to the world, the
+concept of browsers, the concept of web applications, the client-server
+paradigm\ldots{}
+
+Then came the web2: this is where the enterprises (be it IBM, Microsoft
+entered the picture), the introduction of Linux to the world, various
+hardware architectures, various operating systems, the dominance of
+Microsoft, Apple and more lately Facebook, Amazon and the likes\ldots{}
+All these have contributed immensely to the development and the maturity
+of the web2 ecosystem over the last 40 years.
+
+This has huge implications to the security in that ecosystem as well,
+which has been developed in tandem with all those technologies over all
+those years: the firewalls, anti-viruses, intrusion detection systems,
+intrusion prevention systems, various kinds of security systems for
+email, for the world wide web, for your personal laptops\ldots{}
+
+They've evolved with the technology stack, with the various languages,
+with the various systems, the new use cases and so on\ldots{} More
+lately, if you think about the entire ecosystem of smartphones, the apps
+around it, the advent of the iPhone, Android\ldots{} They didn't exist
+15 years ago and they entirely changed the way applications were built,
+deployed, distributed, the containerization withing those mobile devices
+and the security of those apps\ldots.
+
+Now contrast that with Ethereum; with web3 in general. Ethereum itself
+is not more than 6 to 8 years old protocol that got inspired from
+Bitcoin. Bitcoin itself is not more than 12 or 13 years old. This entire
+ecosystem, and specifically the technical stack of Ethereum (starting
+from the protocol and going to the EVM) has again taken a lot of
+inspiration from some simple architectures from the web2 space, but has
+some very unique properties: like that of 256 bit words or more uniquely
+or the associated Gas semantics (which has no parallel in the qeb2
+world).
+
+The same happens if you look at the languages that are used to write
+smart contracts, the developer tool chain that is critical to building
+deploying monitoring applications on Ethereum (Foundry, Hardhat,
+Truffle, Ape, Brownie, OpenZeppelin libraries\ldots), they are barely 3
+to 4 years old. There's an order of magnitude of difference with the
+web2 world.
+
+If you look at the security tools like \texttt{Slither} from Trail of
+Bits, \texttt{MythX} from ConsenSys Diligence and some of the others
+from OpenZppelin and other companies in the space; although they're
+fantastic tools, they've been around for not more than 4 or 5 years. The
+test of time, evolution and adaptation of these tools to differing use
+cases, protocols and needs is very critical when you start thinking
+about implications to security, and all these are not happening in a
+very coordinated manner. They're all happening in different timelines by
+different teams around the world, often not very coordinated.
+
+\subsubsection{The Byzantine Threat
+Model}\label{the-byzantine-threat-model}
+
+This is central to how security is thought about and critical to how
+security is designed. \textbf{web3} is all about what is known as the
+\textbf{Byzantine Threat Model}, which is based around the byzantine
+generals problem.
+
+\textbf{web2} has very defined concepts of \textbf{trusted insiders} and
+\textbf{untrusted outsiders}. Some of this has changed over the years
+because there is obviously a huge aspect of insider threat that has been
+recognized in the web2 system as well. But if you look at the products
+and their evolution of in the web2 security space, be it anti-viruses,
+firewalls or any of the network security (perimeter security devices and
+applications), there is still an aspect of insiders and outsiders.
+
+This goes away to a great extent (if not completely) with \textbf{web3}
+because in this case the threat model is really all about byzantine
+fault tolerance. This means that \textbf{anyone} (including the users)
+could become the \textbf{abusers of that system}. This is can be done in
+a very arbitrary malicious way, which is governed by the crypto
+economics (or what is known as mechanism design).
+
+It has obviously big implications to how security is designed and
+deployed because you have arbitrarily malicious adversaries that are
+motivated by mechanism design, and these adversaries could be users,
+intermediaries or people who are thought of as being critical to the
+ecosystem. They could include anyone: developers, miners, validators,
+infrastructure providers and users.
+
+This is the main reason why in web3, security aspects are challenging
+and it's the underpinning of web3 being untrusted by default, where the
+users could become the abusers. web3 is the ultimate zero trust
+scenario.
+
+\subsection{Keys vs.~Passwords}\label{keys-vs.-passwords}
+
+Keys and tokens are very commonly used in terminology as well as the
+implementations of various protocols in the web3.
+
+For example we have the private keys that control the EOAs in Ethereum,
+which is all about the public key cryptography that is used in web3.
+More specifically, in Ethereum, cryptographic keys are first class
+members of the web3 world, and as much as we unknowingly use
+cryptography in the web2 world, web3 is taking this to everyone because
+the whole point is for the end users to take control of their assets
+(their tokens) with keys that are in their control, as there is no
+centralized entity that is responsible for them.
+
+At least aspirationally, the goal is for there to be no centralized
+intermediaries that can sit between you and your access credentials
+(your keys) or your assets (your tokens).
+
+Let's contrast keys with passwords (that have become synonymous with the
+security) or what is wrong with security in the web2 world. For several
+decades now, all of us have tens or hundreds of passwords. Most of them
+very simple and reused, and very few of the users really use password
+managers. But they rely on passwords being reset or changing them when
+they are lost by the entity that actually controls access to the website
+or to any service that is using these passwords.
+
+That ideology of passwords is intentionally by design absent in the web3
+world, at least aspirationally. The goal is that in the future web3
+applications are headed towards this. The pathway to enable this is by
+the use of keys that are expected to be always under the control of the
+end user. So, loss of keys (or loss of the seed/secret phrases that
+generate those keys) is irreversible and there is no recourse or entity
+that you can go to and have them restored.
+
+This is a significant shift in the security mindset coming from the web2
+world, where passwords again are ubiquitous and we see the problems with
+passwords being reused despite the use of QFAs, password databases being
+dumped and the various password replacing technologies such as
+biometrics still very slowly picking up adoption.
+
+\subsection{web3 Tokens vs.~web2 Financial
+Data}\label{web3-tokens-vs.-web2-financial-data}
+
+A similar situation exists with tokens and their data equivalent in the
+web2 world: the data that we have on the various services, websites or
+even the financial assets (the financial data), if something happens to
+them (i.e.~if they're stolen in some fashion; the worst thing that can
+happen is that the private personal data is maybe sold in the dark web
+and used to create accounts on your behalf or take loans for some
+monetary gain, which takes a certain bit of effort on the attacker's
+side because of the various checks and measures) there are technical and
+regulatory measures put in place for security.
+
+In web2 the implications of any data loss is indirect, takes time and
+effort from the attacker's perspective and in some cases, because of
+regulations or because of centralized entities, it can also be reversed.
+With tokens that used in the web3 space used by protocols (let's say the
+example of Ether or any of the cryptocurrencies), if they are taken away
+from the account that you control with your private key, then there's
+really no recourse unless these tokens happen to be in a centralized
+crypto exchange, or in the control of some other centralized parties
+that take the responsibility for any loss of such tokens.
+
+The end user typically ends up losing those tokens irreversibly. These
+are again interrelated to the immutability aspects and trust
+minimization aspects of this whole space, which again contrasts between
+the fines, regulations and the possible reversals on the web2 world.

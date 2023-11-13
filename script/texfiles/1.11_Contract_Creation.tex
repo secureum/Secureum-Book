@@ -1,0 +1,14 @@
+\section{Contract Creation}\label{contract-creation}
+
+We mentioned that a transaction can result in contract creation.
+
+The creation transaction is a special one because it's sent to a special
+destination address called ``\emph{the zero address}'' (\texttt{0x0}
+address), which is an address that has zero in all its bits. This zero
+address is treated in a special maner within Ethereum, and it becomes
+critical to some of the smart contract security properties.
+
+It contains a data payload which represents the byte code of the
+contract that is being created, and it may also contain an optional
+Ether amount in the value field, in which case the new contract that is
+being created, will have a starting balance equal to this Ether value.

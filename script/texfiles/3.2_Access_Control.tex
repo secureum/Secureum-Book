@@ -1,0 +1,77 @@
+\section{Access Control}\label{access-control}
+
+Access control is perhaps the most significant and fundamental aspect of
+security. When it comes to smart contracts, what it means is access to
+functions. Incorrect or insufficient access control or authorization
+related to system actors, rules, assets and permissions, may certainly
+lead to security issues. Indeed, the notion of assets, actors and
+actions in the context of trust and threat models should be reviewed
+with the utmost care to avoid such security issues.
+
+Remember that functions can have different visibility. \texttt{public}
+and \texttt{external} functions are those that can be called by any user
+interacting with the smart contract.
+
+So from an access control perspective, we need to make sure that the
+right set of addresses can call these functions. We need to ask know if
+it might be okay for anyone to access these functions, any address to
+access this function, or it might be required only for the Owner to
+access this or there could be an extensive role based access control
+that is desirable as well.
+
+This means that when we are reviewing smart contracts for security, we
+need to make sure that the right access control is enforced by the use
+of the correct modifiers. That make sure that the correct checks are
+enforced on the different sets of addresses used with the smart
+contract. Any of these missing checks either missing modifiers or the
+use of incorrect addresses or even the access control specification
+might allow attackers to control critical logic that is executed within
+some of these critical functions.
+
+\subsection{Withdrawal of Funds}\label{withdrawal-of-funds}
+
+Smart contracts typically manage a significant amount of funds related
+to the amount of Ether or the \texttt{ERC20} tokens that they hold and
+manage it in different ways for different users. So they have different
+functionality for users to deposit these funds and similarly they have
+different mechanisms for users to withdraw their funds.
+
+These withdrawal functions need to be protected, from an access control
+perspective. What this means is that, if these withdrawal functions are
+unprotected, that's if they are public and external and they do not have
+the right access control enforced on the different addresses via checks
+implemented within the modifiers applied on these functions, then it may
+let attackers call these unprotected withdrawal functions and withdraw
+Ether or \texttt{ERC20} tokens that belong to other users. This
+unauthorized withdrawal leads to loss of funds for the users and loss of
+funds for the protocol itself.
+
+So in this context of withdrawal of funds access control again becomes
+important, the security checks have to make sure that the right access
+control is applied with respect to the different addresses or different
+modifiers on these withdrawal.
+
+\subsection{\texorpdfstring{\texttt{selfdestruct}}{selfdestruct}}\label{selfdestruct}
+
+The use of the \texttt{selfdestruct} primitive is critical and dangerous
+from a security perspective. Remember that \texttt{SELFDESTRUCT} is an
+EVM instruction that is further supported by a \texttt{Solidity}
+primitive, which when used within the smart contract, destroys or kills
+that contract and transfers all its Ether balance to the specified
+recipient address.
+
+So from a security perspective, any smart contract that uses
+\texttt{selfdestruct} within a particular function, needs to protect
+access to that function because, if not, an user can mistakenly call
+that function or an attacker can intentionally call that function to
+kill that contract and remove its existence thereafter.
+
+This means that from a security perspective, unauthorized calls to
+functions within smart contracts that may use the self-destruct
+primitive should be prevented, so that the contract does not get killed
+intentionally or mistakenly.
+
+Access control to such functions again becomes critical to make sure
+that only authorized users may call such functions. At a high level,
+even the use of self-destruct is considered as being very risky and
+dangerous from a security perspective.

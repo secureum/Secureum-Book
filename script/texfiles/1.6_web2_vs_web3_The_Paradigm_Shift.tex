@@ -1,0 +1,360 @@
+\section{web2 vs.~web3: The Paradigm
+Shift}\label{web2-vs.-web3-the-paradigm-shift}
+
+In this section, we are going to assume that you are familiar to some
+extent with web2 and most of the content will be focused on web3 and the
+differences with web2.
+
+\subsection{Objectives of web3}\label{objectives-of-web3}
+
+The idea of web3 is for it to be a permissionless, trust minimized and
+censorship resistant network for transfer of not only information but
+also value.
+
+Privacy and anonymity are again very big motivating factors in web3 and
+have a huge implication on how we think about security in this space and
+how we can actually conceive implementing various security measures.
+However it isn't a completely fresh start: there are a lot of web2
+security principles, best practices and software engineering best
+practices that have been researched, experimented, developed and refined
+over the last 3 or 4 decades that still apply very much to web3.
+
+In the web3 world the aspirational goal is that of borderless,
+permissionless innovation and censorship resistance. This inspires all
+the applications, smart contracts or any other off-chain components to
+be open and composable by design.
+
+Composability means designing components and applications in a modular
+way, so that other modules (or other applications) can interface with
+them to increase the utility that is got from either of the two
+components. This has to be done in a way that is very easy,
+permissionless and effortless. Again, going back to the web2 space, a
+lot of the work that has happened, a lot of the applications that are
+built by the various enterprises, for various reasons such as protecting
+their business interests, are designed in such a way that they work well
+within their ecosystem or their suite of products, and they're not
+really meant to be very composable or very interactive with other
+applications or other components from other entities or other vendors
+(potentially their competitors).
+
+In the web3 world the aspirational goal is that of borderless,
+permissionless innovation and censorship resistance. This inspires all
+the applications, smart contracts or any other off-chain components to
+be open and composable by design. This means that anybody (any user, any
+part of the world) can deploy applications and interact with it (be it
+contracts, be it any other component). This drives innovation in the
+web3 space, which is great and has resulted in a very accelerated
+innovation and compressed time. Again this has implications to to how
+security is thought of and what is practically possible with security in
+this space. When you have this unconstrained composability, where any
+smart contract, any application that is deployed can be acted upon and
+be combined or connected with any other smart contract on the chain,
+then it leads to sort of an explosion of the dependencies and
+configurations that are possible. This makes characterizing web3
+vulnerabilities and exploit scenarios very challenging, because it
+requires really a very deep knowledge of all these interacting
+composable components along with their very different constraints that
+could change because of composability itself, and their configurations
+could be affected by interactions with other components.
+
+Having said that, there are still many aspects of web3 security which
+are really a paradigm shift.
+
+\subsection{Open-source \& Transparency}\label{open-source-transparency}
+
+Due to web3's ethos (or the design approach) towards everything here
+being open source and transparent, the way it is thought about the
+security of the ecosystem has to be changed.
+
+We have known open source in the web2 world for several decades, so
+that's not very new. But from an approach perspective, in the web2 space
+we do see most of the products, or many of the products, being
+proprietary from a licensing and from a source code availability
+perspective. The web3 ethos stems from the permissionless aspect, the
+trust minimization aspect and the censorship resistance aspect.
+
+In the context of smart contracts, they're again expected to be open
+sourced and also expected to be verified contracts. In this case it
+means that the bytecode (machine instructions) of the contracts deployed
+on the blockchain are expected to be source code verified using one of
+the services available (such as
+\href{https://etherscan.io/}{Etherscan}). This means that the source
+code of the contract is the same one that was compiled, deployed and
+that users interact with. That verification is something critical and
+expected by default in this space.
+
+Remember that everything that happens in the blockchain is transparent;
+anyone can actually run an Ethereum node so that you don't even have to
+rely on a block explorer or any service like that (more on that in
+upcoming secitons). You can look at transactions as they happen in real
+time on the blockchain, you can also look at transactions that are
+waiting to get into the blockchain (through mempool explorers). One can
+even do that by running an Ethereum node themselves. \textbf{There is no
+security by obscurity}.
+
+\subsection{Code Immutability}\label{code-immutability}
+
+In the context of a blockchain being immutable (because of all the
+blocks being linked with hashes), PoW and what it requires for somebody
+to go back in time and change one of the blocks or any of its contents,
+which contributes to the economic security and the immutability aspect
+of the blockchain.
+
+When it comes to code, the contracts that are deployed on the Ethereum
+blockchain are designed in a way to be immutable as well. This means
+that once a contract code is deployed, it is technically considered
+immutable: it cannot be changed (at least in theory). There are some
+exceptions, so theoretically it can done, but from a design perspective
+(from an ethos perspective) this is not desirable. This code
+immutability affects the way in which security is handled.
+
+As it is already widely known, software will have bugs: one cannot prove
+the absence of bugs, or the absence of vulnerabilities or errors in a
+piece of software. Immutability affects this to a great extent: we know
+that bugs will exist and, if you cannot change the contracts, then how
+do we fix the code and redeploy the fixed code as we've been used to in
+the web2 world (where we keep getting updates to the operating system or
+to the different apps continuously to fix bugs, optimizations and so
+on)?
+
+This is something very fundamental to Ethereum or the web3 space that we
+have to keep in mind.
+
+There are practical exceptions: the deployed contract can be modified:
+the functionality can be modified. This can be done in three ways:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  The contract can be modified and redeployed at a new address, but then
+  you would have to carry over all the state. And all the users
+  interacting would have to migrate to interacting with the new
+  address.\\
+
+  This is typically considered impractical but it can theoretically be
+  done.
+\item
+  The modified contract (after bugfix or a version 2) can also be
+  redeployed as a new implementation of what is known as a proxy
+  pattern: the proxy contract points to an implementation contract, and
+  that implementation can be modified.\\
+
+  This is the most commonly used approach to contract upgrading, and
+  again this has huge security applications if it is not done right, if
+  it is not done in a trustworthy manner or if there are certain best
+  practices that are not followed.
+\item
+  Using the \texttt{CREATE2} opcode, it allows updating a contract in
+  place at the same address using the same unit code that was used to
+  initialize the contract.
+\end{enumerate}
+
+We are going to further elaborate on the concepts briefly mentioned here
+on upcoming sections.
+
+\subsection{Client-Server
+vs.~Peer-to-Peer}\label{client-server-vs.-peer-to-peer}
+
+The pivotal difference between web2 and web3 is their underlying
+paradigm.
+
+\textbf{web2} relies on the \textbf{client-server paradigm}: we are used
+to employ cloud services that have servers running, which we interact
+with using our clients (laptops, phones, smart watches\dots) that are
+\textbf{centrally managed}, i.e.~you have all these corporate entities
+that determine what the infrastructure is, what the products are and
+what the next versions of the products will be.
+
+Applications are centrally rolled out and the consumers use them, but
+they do not have a say in how the infrastructure is managed or how the
+applications evolve. Sometimes, users don't even have a say as to what
+kinds of applications can be deployed on the infrastructure: there is a
+latent \textbf{censorship on web2}.
+
+The former scenario is something that web3 is trying to get away from:
+it's trying to go back to the original vision of the web which was for
+it to be completely peer-to-peer without centralized entities that can
+dictate what can be done on the platform, what can be deployed or who
+can use it.
+
+The idea is employing peer-to-peer communication not only for computing
+power but also for storage and network, which are the building blocks of
+web3. In the case of Ethereum, the peer-to-peer infrastructure that
+supports these components is known as the \textbf{Ethereum triad}:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Coputing power}: Ethereum itself; Ethereum as a blockchain is
+  used for decentralized compute.
+\item
+  \textbf{Storage}: Swarm.
+\item
+  \textbf{Network}: Whisper (now known as Waku).
+\end{itemize}
+
+\subsection{Business models}\label{business-models}
+
+web2 business models are built around \textbf{freemium models} where the
+basic application is free but if you want to upgrade, you have to pay
+up. A lot of the business models (Google, Facebook especially) are built
+around advertising, where the product is free.
+
+In some sense, the user becomes the product and the interactions (the
+data that the user shares with those platforms) is monetized in the form
+of advertisements that are being delivered to the user. This is
+something that we've just got used to and we don't even pay attention to
+anymore.
+
+In web3, since everything is decentralized, there has to be some
+incentive for users to deploy the nodes and to contribute to the
+development of the code, clients, smart contracts and applications. This
+is driven by what is known as ``\emph{incentivized participation}'',
+which goes back to the concept of crypto economics. This has big
+implications to how security works because there is no real centralized
+entity that can deal, manage and do instant response.
+
+\subsection{Programming languages}\label{programming-languages}
+
+Programming languages are critical because they are the means of how
+projects implement their ideas, deploy them and let users interface with
+them.
+
+Again, programming languages are fundamental to the security of any
+product, any architecture if you will. In the case of web2 there have
+been numerous programming languages, being some of them way more popular
+than the rest: it started with \texttt{C} and \texttt{C++} during the
+Unix days 30 or 40 years ago, and since then we have seen different
+declarative languages, subject-oriented languages and scripting
+languages. Some of the most popular ones have been \texttt{Javascript}
+and more recently \texttt{Go}, \texttt{Rust} and even some unique
+languages such as \texttt{Nim}, that have been used to implement
+Ethereum 2.0 clients recently.
+
+All those languages are still applicable to the web3 space, because web3
+is a combination of smart contracts that run on the blockchain and web
+interface component (which is how users interact with the contracts on
+the blockchain).
+
+When it comes to the web component, all the web2 languages are relevant.
+A lot of them are popular even here in terms of the interface, but also
+in terms of the tooling that is used for the development of smart
+contracts themselves.
+
+Smart contracts themselves have a special language. In the case of
+Ethereum, that's \texttt{Solidity}: it is the most widely used language
+for writing smart contracts on Ethereum. There are others, like
+\texttt{Vyper}, that are gaining traction, but for the majority of the
+smart contracts that we see deployed, \texttt{Solidity} is that
+language.
+
+The smart contract languages were created specifically for web3, and
+specifically for Ethereum in this case. So the security features of
+those languages have obviously huge implications to the security of the
+smart contracts themselves and the applications that are built on top of
+them.
+
+\subsection{Applications in web3:
+ÐApps}\label{applications-in-web3-uxf0apps}
+
+Building applications on a decentralized infrastructure (i.e.~a
+blockchain) will cause such applications to be fundamentally different
+from the mobile applications or the desktop applications that we are
+used to today (as we can already guess by looking at the programming
+languages and code immutability in web3). These applications are
+referred to popularly as decentralized application or ÐApp.
+
+These applications rely on a concept that is very unique to web3:
+\textbf{on-chain} and \textbf{off-chain}.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{On-chain} means something that is running or executing on the
+  blockchain or within the blockchain's execution environment.
+\item
+  \textbf{Off-chain} is something that is running outside the
+  blockchain.
+\end{itemize}
+
+In the web2 space everything is off-chain because, obviously, there is
+no concept of blockchain. However, in order to function, the web3 space
+makes use of an off-chain component combined with an on-chain component.
+
+The off-chain component is all the web2 or ``\emph{the glue}'' that
+binds the web interface to the smart contracts that are running
+on-chain. This distinction is critical when thinking about security.
+
+To put it simple, a ÐApp combines a web app/web front-end or a mobile
+app (the off-chain component) that interacts with a smart contract on
+the blockchain (the peer-to-peer infrastructure which is a combination
+of compute, storage and network; the on-chain component). In many cases
+we have one or more of any of the mentioned.
+
+In the case of Ethereum, what is peer-to-peer is the compute part and
+the peer-to-peer storage aspects (such as IPFs and some of the other
+protocols that we won't talk about).
+
+The security of web3 has to think about the security implications of
+anything running or interacting off-chain with that running on-chain as
+well. It's not just smart contract security but also the security of the
+off-chain web or mobile app components that interface with the on-chain
+components (the smart contracts).
+
+The main difference however between web2 and web3 security is the
+on-chain component of course. We will need to think about at the
+pitfalls that are unique to smart contracts and look at the best
+practices.
+
+\subsection{Unstoppability \&
+Immutability}\label{unstoppability-immutability}
+
+Another difference between web2 and web3 is that the web3 applications
+and infrastructure are unstoppable and immutable.
+
+We talked about ÐApps and how they run on a decentralized
+infrastructure. The goal is even for the governance of these protocols
+and infrastructure to be decentralized, this means that there is no
+single entity that can unilaterally decide to make changes, to start
+something, to stop the application (be it adapt be the protocol, be the
+surrounding infrastructure or the governance itself). Specifically, in
+the case of smart contracts, there shouldn't be a single entity.
+
+This could be the the project team itself that has built out this
+application or the contracts: they shouldn't be unilaterally allowed to
+change, stop and withdraw funds. This stems from the trust minimization
+motivation and the censorship resistance aspect.
+
+They are all very interconnected aspects and as you can imagine they
+have huge implications to when it comes to upgrading the contracts,
+fixing the bugs or doing anything with the smart contracts once they're
+deployed; because they are expected in theory, by motivation and by
+design (codewise; remember the code immutability we talked about
+earlier) to be unstoppable and immutable.
+
+From a security perspective, this makes it hard to deploy the software
+because once you do it, if there are any vulnerabilities found, it's
+very hard to do an instant response (just what we talked about on code
+immutability). The latter is something we take for granted in the web2
+world, where we get software updates even without our knowledge.
+
+In the case of web3, and particularly Ethereum smart contracts, this has
+huge implications to how we think about design and operationalize
+security. This is the ultimate goal, in practice, as we go through
+different stages of progressive decentralization.
+
+These things are evolving, so the best practice right now is to do
+something known as a ``\emph{guarded launch}'' (basically initially
+limiting the functionality of the ÐApp for monitorization purposes). For
+now the best practice is to have the ability to make changes, to upgrade
+the contracts, to have an emergency withdrawal function, to remove the
+tokens in case there is an emergency. It's sort of the stop cap measure
+as we progress towards complete decentralization.
+
+Once we have enough confidence that the contracts are running and there
+are no bugs, vulnerabilities or exploits, then a lot of these things are
+disabled in the code: the kill switches or the credibility aspects the
+governance\ldots{}
+
+All these things are in a progressive manner made more decentralized
+over time.

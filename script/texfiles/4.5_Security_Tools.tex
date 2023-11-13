@@ -1,0 +1,826 @@
+\section{Security Tools}\label{security-tools}
+
+Having discussed audit techniques at a high level, let's now talk a bit
+about the tooling that is used in this space. Smart contract security
+tools are critical in assisting both smart contract developers as well
+as auditors with detecting potentially exploitable vulnerabilities,
+highlighting dangerous programming styles or surfacing common patterns
+of misuse.
+
+None of these however replace the need for manual review today to
+evaluate contract specific business logic and other complex control
+flow, data flow and value flow aspects, so these tools at best
+complement manual analysis today.
+
+We can think of tools in the space under different categories such as
+tools for testing, test coverage linting, static analysis, symbolic
+checking, Fuzzing, formal verification and visualization disassemblers.
+Finally, there are also monitoring and incident response tools.
+
+Let's now discuss some of the widely used tools in these categories. We
+will only dive into a few of them in some detail and only touch upon the
+others.
+
+It is encouraged to explore these tools; installing them (most of them
+are open source and freely available), playing around with their options
+to understand how they work, how effective they are and how they would
+fit within the smart contract auditor toolbox.
+
+\subsection{Slither}\label{slither}
+
+So let's start with Slither which is a static analysis tool from Trail
+of Bits and one of the most widely used tools in this space. Slither is
+a static analysis framework written in \texttt{python3} for analyzing
+smart contracts written in \texttt{Solidity}. It runs a suite of
+vulnerability detectors prints visual information about contact details.
+
+Also provides an API to easily write custom analyses. This helps
+developers and auditors find vulnerabilities, enhance their code
+comprehension and also quickly prototype any custom analysis that they
+would like. It implements 75+ detectors in the publicly available free
+version
+
+\subsubsection{Features}\label{features}
+
+At a high level, Slither implements vulnerability detectors and contact
+information printers. It claims to have a low rate of false positives,
+the runtime is typically less than one second per contract and it is
+designed to integrate into CI/CD frameworks.
+
+It implements built-in printers that quickly report crucial smart
+contract information and also supports a detector API to write custom
+analysis in \texttt{python3}. It uses an intermediate representation
+known as SlithIR which enables simple and high precision analysis.
+
+\subsubsection{Detectors}\label{detectors}
+
+As mentioned, Slither implements 75+ detectors, each of which detects a
+particular type of vulnerability. Slither can run on Truffle, Embark,
+Dapp, Etherlime or Hardhat applications, or on a single
+\texttt{Solidity} file. By default, Slither runs all its detectors.
+
+To run only selected detectors from within its suite, there is a
+\texttt{detect} option to specify the names of detectors to run.
+Similarly, to exclude certain detectors, one can use the
+\texttt{exclude} option to specify the names of detectors to exclude.
+Two specific examples of detectors are \texttt{reentrancy-eth} and
+\texttt{unprotected-upgrade}. One can also exclude detectors based on
+the severity level associated with them.
+
+So for example, to exclude all those detectors that are classified as
+informational or low severity one can use the
+\texttt{exclude\ informational} or \texttt{exclude\ low} options. On
+this tool, one can list all available detectors using the
+\texttt{list\ detectors} option, so it is encouraged to take a look at
+this tool, the various options and configurations that it supports.
+
+\subsubsection{Printers}\label{printers}
+
+Besides the detectors, Slither has a concept of printers that allow
+printing different types of contract information using the print
+options. This helps in contract comprehension and gives us visibility
+into a lot of different aspects of the contract that's being analyzed.
+The various print options include things like the control flow graph.
+the call graph, the contract summary data, dependencies of variables,
+summary of the functions, inheritance relationships between contracts,
+modifiers, require and assert calls, and storage order of the state
+variables.
+
+There are also many other details even from the Slither intermediate
+representation. At the EVM level, all these could be very helpful in
+quickly understanding the contract structure, getting a snapshot and
+zooming in on key aspects that are relevant from a security perspective.
+
+\subsubsection{Upgradability}\label{upgradability}
+
+We've discussed in the security modules about how there are many
+security challenges with Proxy-based upgradability and a lot of them
+were inspired by checks implemented by Slither along with documentation
+from OpenZeppelin on this topic.
+
+Slither has a specific tool called the Slither check upgradeability,
+which reviews contracts that use the delegateCall Proxy pattern to
+detect potential security issues with upgradability.
+
+These include initialized state variables missing or extra state
+variables, different state variable ordering between the Proxy and
+implementation contracts or different versions of the implementation
+contracts itself. This also includes missing initialize function and
+initialize function that is present but that can be called multiple
+times because of the missing initializer modifier. Finally, function id
+collision and shadowing.
+
+All these upgradeability aspects are conveniently packaged into a
+smaller tool which makes it very handy for checking that aspect.
+
+\subsubsection{Code Similarity}\label{code-similarity}
+
+Slither has a code similarity detector which can be used to detect
+similar \texttt{Solidity} functions, based on machine learning. It uses
+a pre-trained model using Etherscan verified contracts that is generated
+from more than 60000 smart contracts and more than 850000 functions.
+This can be a useful tool to detect vulnerabilities from code clones
+forks or copies.
+
+\subsubsection{Flat}\label{flat}
+
+Slither also has a contract flattening tool which produces a flattened
+version of the codebase. It supports three strategies:
+
+\begin{itemize}
+\tightlist
+\item
+  Most derived: for exporting all the most derived contracts.
+\item
+  One file: helps us export all the contracts in one standalone file.
+\item
+  Local import: exports every contract in one separate file.
+\end{itemize}
+
+This tool handles circular dependency and also supports many compilation
+platforms such as Truffle, Hardhat, Etherlime and others.
+
+\subsubsection{Format}\label{format}
+
+Slither also has a formatting tool which automatically generates patches
+or fixes for a few of its detectors. Patches are compatible with
+\texttt{git}. The detectors supported with this tool are a
+\texttt{unused-state}, \texttt{solc-version}, \texttt{pragma},
+\texttt{naming-convention}, \texttt{external-function},
+\texttt{constable-states} and \texttt{constant-function}.
+
+The patches generated by this tool should be carefully reviewed before
+applying them just so that you're comfortable with what those patches
+look like and there are no bugs in it.
+
+\subsubsection{ERC Conformance}\label{erc-conformance}
+
+Slither has an ERC conformance tool called Slither check ERC which takes
+conformance for various ERC standards such as \texttt{ERC20},
+\texttt{ERC721}, \texttt{ERC777}, \texttt{ERC165}, \texttt{ERC223} and
+\texttt{ERC1820}, some of which we have discussed in earlier chapters.
+
+Examples of these checks are to see if functions are present, return the
+correct type, have \texttt{view} mutability if events are present
+emitted and parameters of such events are indexed as per the ERC
+specification. This is again handy for consolidating all ERC specific
+checks into one single tool.
+
+\subsubsection{Prop}\label{prop}
+
+Finally, Slither also has a property generation tool called the Slither
+prop which generates code properties or invariants that can then be used
+for testing with unit tests or Echidna. The \texttt{ERC20} scenarios
+that can be tested with this tool are things like checking for correct
+transfer, the possible functionality or that no one can incorrectly mint
+or burn tokens.
+
+\subsubsection{New Detectors}\label{new-detectors}
+
+Besides the various detectors, printers and tools of Slither that we
+just discussed, Slither also supports an extensible architecture that
+allows one to integrate new detectors into the tool.
+
+The skeleton for such a detector implementation has things like
+arguments, help, impact, confidence, link to the wiki for that detector
+and a placeholder for the most important part of the detector logic
+itself. This extensible architecture can help with creating application
+specific detectors and also enables the community to contribute new
+detectors to the Slither codebase.
+
+Those are all the Slither features that we're going to cover here and as
+we see it is an extensive tool with support for 75+ detectors and
+multiple other helpful features as well. For those reasons, it is a
+widely referenced and used tool across projects in the space.
+
+\subsection{Manticore}\label{manticore}
+
+Let's now move on to another tool from Trail of Bits called Manticore
+which is a symbolic execution tool. This again helps with analysis of
+Ethereum smart contracts. Manticore can execute a program with symbolic
+inputs and explore all possible states it can reach. It can
+automatically produce concrete inputs that result in any desirable
+program state, it can detect crashes and other failures in smart
+contracts and provide instrumentation capabilities.
+
+Finally, a programmatic interface to its analysis engine via
+\texttt{python} API similar to Slyther.
+
+\subsection{Echidna}\label{echidna}
+
+Another tool from Trail of Bits is Echidna, which is a Fuzzing tool and
+complements Slither and Manticore. This tool is written in haskell and
+it performs grammar based Fuzzing campaigns based on a contracts' ABI to
+falsify user defined predicates or even \texttt{Solidity} assertions in
+the smart contract code.
+
+\subsubsection{Features}\label{features-1}
+
+Echidna has many notable features:
+
+\begin{itemize}
+\tightlist
+\item
+  it generates inputs tailored to the actual code.
+\item
+  has an optional corpus collection of predefined campaigns.
+\item
+  it supports mutations and coverage guidance for deeper bugs.
+\item
+  it can be powered by the Slither prop tool to extract useful
+  information before the Fuzzing campaign.
+\item
+  it has source code integration to help identify which lines are
+  covered after the Fuzzing campaign.
+\item
+  it has support for multiple user interfaces.
+\item
+  it has automatic test case minimization for quick triage.
+\item
+  it has seamless integration into the development workflow.
+\end{itemize}
+
+\subsubsection{Usage}\label{usage}
+
+As for Echidna's usage, it is recommended looking up Echidna's
+documentation and available tutorials on Trail of Bits' website for such
+details.
+
+At a high level, the usage involves three aspects:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Executing the test runner where the core Echidna functionality is part
+  of an executable called echidnatest that takes a contract and a list
+  of invariants as inputs.\\
+
+  For each invariant, it generates random call sequences to the contract
+  and checks if the invariant holds, if it can find some way to falsify
+  the invariant and it prints the call sequence that does so. These are
+  typically referred to as counter examples in this terminology.\\
+
+  If it can't find counter examples, then we have some assurance that
+  the contract is safe with respect to that invariant.
+\item
+  Writing invariants, which are expressed as \texttt{Solidity} functions
+  with names that begin with ``\texttt{echidna\_}''. They have no
+  arguments and return a boolean.
+\item
+  Collecting and visualizing coverage after finishing the Fuzzing
+  campaign, as Echidna can save the coverage maximizing corpus in a
+  special directory which will contain two entries: a directory with
+  JSON files that can be replayed by Echidna later, and a plain text
+  file that contains a copy of the source code with coverage
+  annotations.
+\end{enumerate}
+
+\subsection{Eth Security Toolbox}\label{eth-security-toolbox}
+
+Trail of Bits has combined the three tools we just discussed into a
+tools package which is a Docker container called Eth Security Toolbox
+where they are pre-installed and pre-configured. This makes it very
+handy and very easy to start off with using these tools. Besides these
+three, it also has Rattle and Ethno tools which we will touch upon
+later.
+
+\subsection{Ethersplay}\label{ethersplay}
+
+Ethersplay is a Binary Ninja plugin from Trail of Bits that enables an
+EVM disassembler and related analysis tools. For those who aren't aware,
+Binary Ninja is a widely used extensible reverse engineering platform
+which can disassemble a binary and display it in various ways, so
+Ethersplay effectively extends that to work with EVM bytecode: this
+takes EVM byte code in raw library format as input and generates a
+control flow graph of all functions. It can also be used to display
+Manticore's coverage.
+
+\subsection{Pyevmasm}\label{pyevmasm}
+
+Pyevmasm is another security tool from Trail of Bits which provides an
+assembler and disassembler library for the EVM. This includes a command
+line utility for doing the assembling and disassembling and also
+includes a python API for extensibility.
+
+\subsection{Rattle}\label{rattle}
+
+Rattle is another security tool from Trail of Bits. It is an EVM binary
+static analysis framework that is designed to work with deployed smart
+contracts. It takes EVM byte strings as inputs and uses a flow sensitive
+analysis to recover the control flow graph.
+
+In static analysis terminology, flow sensitive refers to an analysis
+that considers the control flow of statements. Similarly, there is
+context sensitive and path sensitive analysis as well. Rattle further
+converts the control flow graph into a single static assignment (SSA)
+form with infinite registers and optimizes this SSA by removing stacked
+instructions of dups, swaps, pushes and pops (remember that EVM is a
+stack based machine and there are typically many such stacked
+instructions in the bytecode as operands are pushed onto the stack and
+results are popped).
+
+Rattle, by converting the byte code instructions from a stack machine to
+SSA form removes more than 60\% of all EVM instructions. Because of
+that, it presents a user-friendly interface for analyzing smart contract
+bytecode.
+
+For anyone interested in programming language analysis, it is encouraged
+to look up these concepts of (SSA and sensitivity analysis).
+
+\subsection{EVM CFG Builder}\label{evm-cfg-builder}
+
+EVM CFG builder is another tool from Trail of Bits that is used to
+extract the control flow graph (CFG) from EVM bytecode. It also recovers
+function names and their attributes such as \texttt{payable},
+\texttt{view}, \texttt{pure}, etc\ldots{} It outputs the CFG to a DOT
+file. This EVM CFG builder tool is used by Ethersplay, Manticore and
+some other tools from Trail of Bits.
+
+\subsection{Crytic Compile}\label{crytic-compile}
+
+Crytic compile is another tool from Trail of Bits. It is a smart
+contract compilation library that is used in the security tools from
+Trail of Bits. It supports Truffle, Embark, Etherscan, Brownie, Waffle,
+Hardhat and other development environments.
+
+\subsection{Solc-Select}\label{solc-select}
+
+Solc-select is a security helper tool from Trail of Bits. It is a script
+that is used to quickly switch between different \texttt{Solidity}
+compiler versions. It manages installing and setting different salc
+compiler versions using a wrapper around salc which picks the right
+version according to what was said via solc-select. The solc binaries
+are downloaded from the official \texttt{Solidity} language repository.
+
+This tool is very helpful while analyzing different smart contact
+projects because there is often a need to switch between different
+\texttt{Solidity} compiler versions depending on which version is being
+used by the project that is being analyzed. So this tool is very handy
+in such situations and helps us work with other security tools that
+depend on the \texttt{Solidity} compiler version.
+
+\subsection{Etheno}\label{etheno}
+
+Etheno is a testing tool referred to as the Ethereum testing Swiss Army
+knife, again from Trail of Bits. It's a JSON RPC multiplexer analysis
+tool wrapper and test integration tool, all bundled into one for
+multiplexing.
+
+It runs a JSON RPC server that can multiplex calls to one or more
+Ethereum clients with an API for modifying such JSON RPC calls. It
+enables differential testing by sending JSON RPC sequences to multiple
+Ethereum clients and further helps with the deployment and interaction
+with multiple networks at the same time.
+
+For the analysis tool wrapping part, it provides a JSON RPC client for
+advanced analysis tools such as Maticore, which makes it much easier to
+work with such tools because there is now no need for custom scripts for
+them.
+
+For what it concerns integration with test frameworks such as Ganache
+and Truffle, it helps run a local test network with a single command and
+enables the use of Truffle migrations to bootstrap Manticore analysis.
+So for all these reasons, it is referred to as the Swiss Army knife for
+Ethereum testing.
+
+\subsection{MythX}\label{mythx}
+
+Now moving on to tools from ConsenSys Diligence, MythX may be considered
+as their flagship tool. MythX is a powerful security analysis service
+that finds vulnerabilities in Ethereum smart contact code during the
+development lifecycle. It is a paid API based service that uses several
+tools in the backend, these include Maru (a static analyzer), Mythril (a
+symbolic analyzer) and Harvey (a gray box fuzzer). In combination among
+these three tools, MythX implements a total of 46+ detectors. While Maru
+and Harvey are closed source as of now, Mythril is open source. We'll
+talk more about different aspects of MythX in the forthcoming sections.
+
+\subsubsection{Process}\label{process}
+
+So how does the MythX process work? Remember that MythX is an API based
+service, so it does not run locally on the user's machines, but it runs
+in the cloud.
+
+So the first step is for the project to submit the code to the MythX
+service.The analysis requests are encrypted with TLS, the code one
+submits can only be accessed by them and one is expected to submit both
+the source code and the compiled byte code of the smart contract for
+best results
+
+The second step is to activate the full suite of analysis techniques
+behind MythX. The longer it runs, the more security weaknesses it can
+detect. This is because the precision of the symbolic checker: the
+Fuzzing components of MythX can get better with more iterations.
+
+The third and final step is to receive a detailed analysis report from
+the MythX service. This report lists all the weaknesses found in the
+submitted code, including the exact location of those issues. The
+reports that are generated can only be accessed by the submitter. MythX
+here offers three scan modes: quick standard and deep, for differing
+levels of analysis depth and provides a user-friendly dashboard for
+analyzing the results returned.
+
+\subsubsection{Tools}\label{tools}
+
+Now let's talk about the tools used by the MythX service. When a project
+submits their code to the MythX API, it gets analyzed by multiple
+microservices in parallel where three tools cooperate to return a more
+comprehensive set of results in the execution time decided by the type
+of scan chosen.
+
+The first of the three tools is a static analyzer called Maru that
+parses the \texttt{Solidity} AST (Abstract Syntax Tree) for the project.
+
+The second tool is a symbolic analyzer called Mythril that detects all
+the possible vulnerable states in the contract.
+
+Finally, the third tool is Harvey which is a grey box fuzzer that
+detects vulnerable execution paths in the smart contract. Compared to
+traditional black box Fuzzing, gray box Fuzzing is guided by coverage
+information which is made possible by using program instrumentation to
+trace the code coverage reached by each input during Fuzzing.
+
+So these three tools are used in combination by the MythX service to
+provide a comprehensive analysis of the vulnerabilities within the smart
+contract being analyzed.
+
+\subsubsection{Coverage}\label{coverage}
+
+The coverage that is provided by MythX extends to most of the smart
+contract weaknesses found in the smart contract weakness registry (SWC
+registry) which we will talk more about in one of the forthcoming
+sections. This comprehensive coverage addresses 46+ detectors as of
+today.
+
+\subsubsection{Security-as-a-Service}\label{security-as-a-service}
+
+MythX is based on a security-as-a-service (SaaS) platform with the
+premise that this approach is better because of three main reasons:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  With this approach, one can expect higher performance compared to
+  running the security tools locally because the compute power in the
+  cloud is typically much much higher than what may typically be
+  expected at the user's end on a laptop or a desktop.
+\item
+  We can expect a higher vulnerability coverage with three tools than
+  running any single standalone.
+\item
+  Continuous improvements to security analysis technology with new or
+  improved security tests methodologies and tools can be adopted as the
+  smart contract security landscape evolves with different types of
+  vulnerabilities and exploit vectors emerging as the compiler revisions
+  change, new coding patterns emerge, new dependencies start getting
+  used, new protocols start getting used and even the Ethereum protocol
+  upgrades over time.
+\end{enumerate}
+
+For these three reasons the SaaS or API based approach of MythX is
+considered as being better than running any one of those tools locally
+on the user's end.
+
+\subsubsection{Privacy}\label{privacy}
+
+It's understandable that project teams may have concerns uploading their
+smart contract code to a SaaS like MythX, so MythX provides a privacy
+guarantee the smart contract code submitted using their sas APIs.
+
+The first one is that the code analysis requests are encrypted with TLS,
+and to provide comprehensive reports and improve performance, the MythX
+service stores some of the contract data in its database, including
+parts of the source code and bytecode, but that data never leaves their
+secure server and is not shared with any outside parties. It keeps the
+results of the analysis so that it can be retrieved later, but the
+reports can be accessed only by the project team: the service enforces
+authorized access to such results.
+
+\subsubsection{Performance}\label{performance}
+
+Performance is usually a concern with security tools that perform deep
+analysis such as with symbolic checking or Fuzzing because they may
+require a lot of compute resources and proportionately longer amounts of
+time for running through their analysis to get good coverage and
+position.
+
+In this case, MythX can be configured for three types of scans depending
+on the time expectation. Quick scans run for five minutes, standard
+scans run for 30 minutes while deep scans run for 90 minutes. As you can
+imagine, standard scans gives better results than quick scans and deep
+scans better than standard ones, so one can customize this the type of
+scans according to the development phase and time available.
+
+For example, quick scans can be perhaps run by developers during their
+code comments and standard scans can be run at certain project
+milestones while deep scans, that take a much longer time, can be run on
+the nightly builds.
+
+\subsection{Versions}\label{versions}
+
+MythX comes in different versions, so that it can be accessed via
+multiple ways. There is a command line interface version that provides a
+unified tool access to MythX, there is MythXjs which is a library to
+integrate detects in javascript or typescript projects, there is a
+python library called pythex to integrate methods in python projects and
+finally, there is a visual studio code extension for MythX that allows a
+project to scan smart contracts and view the results directly from the
+code editor.
+
+\subsubsection{Pricing}\label{pricing}
+
+As for pricing, MythX has four pricing plans.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  On-demand pricing plan that costs \$9.99 for three scans and all three
+  scan modes are available as part of this plan.
+\item
+  Development plan that costs \$49 a month. This gives access to quick
+  and standard scan modes only and it allows 500 scans a month.
+\item
+  Professional plan which costs \$249 a month and gives access to all
+  scan modes and 10000 scans a month.
+\item
+  Enterprise pricing plan that allows for custom pricing, where custom
+  plans can be decided between a project team and ConsenSys Diligence
+  that meets the team's specific needs.
+\end{enumerate}
+
+\subsection{Scribble}\label{scribble}
+
+Let's now move on to another tool from ConsenSys Diligence called
+Scribble. Scribble is a verification language and a runtime verification
+tool that translates high level specifications into \texttt{Solidity}
+code. It allows one to annotate a \texttt{Solidity} smart contract with
+specific properties. There are four goals with Scribble:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Specifications should be easy to understand by developers and smart
+  contract security auditors.
+\item
+  Specifications should be simple to reason about.
+\item
+  specifications should be efficiently checked using off-the-shelf
+  analysis tools.
+\item
+  A small number of core specification constructs should be sufficient
+  to express and reason about more advanced constructs.
+\end{enumerate}
+
+So Scribble transforms annotations made within smart contract code using
+its specification language into concrete assertions, then with those
+instrumented contracts (that are equivalent to the original ones) one
+can use other tools from ConsenSys Diligence such as Mythril, Harvey or
+MythX to leverage these assertions for performing deeper checks. So
+Scribble is a relatively newer tool from ConsenSys Diligence and sounds
+very powerful in its capabilities, so it is strongly encouraged to take
+a look at the documentation of Scribble to get more insights on the
+motivations, the underlying concepts driving the tool and to test it out
+and exploring all its capabilities.
+
+\subsection{Fuzzing-as-a-Service}\label{fuzzing-as-a-service}
+
+Fuzzing as a service is a service that has been recently launched by
+ConsenSys Diligence where projects can submit their smart contracts
+along with embedded inline specifications or properties written using
+the Scribble language that we just talked about. These contracts are run
+through the Harvey fuzzer which uses the specified properties to
+optimize Fuzzing campaigns and any violations from such Fuzzing are
+reported back from the servers for the project to fix.
+
+\subsection{Karl}\label{karl}
+
+Karl is another security tool from ConsenSys Diligence, which is used to
+monitor the Ethereum blockchain for newly deployed smart contracts that
+may be vulnerable in real time. Karl checks for security vulnerabilities
+using the Mythril detection engine. This can be an interesting
+monitoring tool for detecting vulnerable deployed smart contracts, but
+not during security auditing or reviews for projects that have yet to be
+launched.
+
+\subsection{Theo}\label{theo}
+
+Another security tool from ConsenSys Diligence that is not specifically
+meant for auditing, but interesting nevertheless is Theo. Theo is an
+exploitation tool with a Metasploit like interface and provides a python
+REPL console from where one can access a long list of interesting
+features such as automatic smart contact scanning (which generates a
+list of possible exploits), sending transactions to exploit a smart
+contract, transaction pool monitoring, Front-running, backlining
+transactions and many others.
+
+\subsection{Visual Auditor}\label{visual-auditor}
+
+A tool that could be very handy in the manual analysis phase of smart
+contact auditing is the visual auditor. This is a visual studio
+extension again from ConsenSys Diligence that provides security aware
+syntax and semantic highlighting for \texttt{Solidity} and
+\texttt{Vyper} languages.
+
+Examples of things that are highlighted include modifiers, visibility
+specifiers, security relevant built-ins (such as a global,
+\texttt{tx.origin}, \texttt{msg.data} and so on\ldots), storage access
+modifiers (indicating if a variable lives in memory or storage),
+developer notes in comments (such as to do's, fix me, hack, etc\ldots),
+invocations, operations, constructor, fallback functions, state
+variables\ldots{}
+
+It has support for review specific features such as audit annotations
+and bookmarks, exploring dependencies and inheritance function signature
+hashes. It also supports graph and reporting features such as
+interactive call graphs with call flow highlighting diagrams and access
+to Surya features, which we'll talk about in the next section.
+
+It also supports code augmentation features where additional information
+is displayed when hovering over Ethereum account addresses that allow
+one to download the bytecode or open it in the browser, hovering over
+assembly instructions to show the signatures and hovering over the state
+variables to show their declaration information. So overall the visual
+auditor is almost a must have tool while manually reviewing
+\texttt{Solidity} or \texttt{Vyper} code during audits.
+
+\subsection{Surya}\label{surya}
+
+Surya is a visualization tool from ConsenSys Diligence that helps
+auditors in understanding and visualizing \texttt{Solidity} smart
+contracts by providing information about their structure and generating
+call graphs and inheritance graphs that can be very useful.
+
+It also supports querying the function call graph in many ways to help
+during the manual inspection of contracts. his is integrated with the
+visual auditor tool that we discussed in the previous section. Surya
+supports several commands such as graph function trace, flatten,
+inheritance, dependencies, parts, generating a report in the markdown
+format, etc\ldots{}
+
+\subsection{SWC Registry}\label{swc-registry}
+
+It is always helpful to have a registry of unique vulnerabilities, so
+that everyone can refer to a single source, keep it updated and use them
+in interesting ways. One such effort is the smart contract weakness
+classification registry (SWC registry).
+
+This is an implementation of the weakness classification scheme proposed
+in EIP1470. It is loosely aligned to the terminologies and structure
+used in the common weakness enumeration (CWE) from web2 while being
+specific to smart contracts. the goals of this project are three fold:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  To provide a way to classify security issues in smart contract
+  systems.
+\item
+  To define a common language for describing security issues in smart
+  contract systems, architecture design and code.
+\item
+  To serve as a way to train and improve smart contact security analysis
+  tools.
+\end{enumerate}
+
+This repository is currently maintained by ConsenSys Diligence and
+contains 36 entries as of now.
+
+\subsection{CTFs}\label{ctfs}
+
+Let's now talk about a related concept called capture the flag (or CTF
+as it is popularly known as). CTFs are fun and educational challenges
+where participants have to hack different dummy smart contracts that
+have vulnerabilities in them. They help understand the complexities
+around how such vulnerabilities may be exploited in the white.
+
+The popular CTFs in the space of Ethereum smart contracts include
+\href{https://capturetheether.com/}{Capture the Ether} which is a set of
+20 challenges created by Steve Marks which tests knowledge of Ethereum
+concepts of contracts, accounts and math among other things.
+
+Then there is \href{https://ethernaut.openzeppelin.com/}{Ethernaut}
+which is a web3 or \texttt{Solidity} based war game from OpenZeppelin
+that is played in the Ethereum virtual machine, and each level is a
+smart contract that needs to be hacked. The game is completely open
+source and all levels are contributions made by players themselves.
+
+Then we have \href{https://www.damnvulnerabledefi.xyz/}{Damn vulnerable
+DeFi} which is a set of 15 DeFi related challenges created by
+\href{https://twitter.com/tinchoabbate}{Tincho Abbate} security
+researcher. Depending on the challenge one should either stop the system
+from working, steal as much funds as they can or do some other
+unexpected things.
+
+Finally, we have
+\href{https://twitter.com/paradigm_ctf?lang=es}{Paradigm CTF} which is
+an annual CTF challenge created by Paradigm.
+
+So CTFs can be a fun way to practically test out some of the things that
+you've learned in these chapters, so it is encouraged to take a look at
+some of these and see how well you do with them.
+
+\subsection{Securify}\label{securify}
+
+Securify is a security scanner developed by ChainSecurity. It's a static
+analysis tool for Ethereum smart contracts written in Datalog and
+supports 38+ vulnerabilities. We won't go into the details of this tool.
+
+\subsection{VerX}\label{verx}
+
+VerX is a formal verification tool, again from the ChainSecurity, that
+can automatically prove temporal safety properties of Ethereum smart
+contracts. The verifier is based on a combination of three ideas:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Reduction of temporal safety verification to reachability checking.
+\item
+  A symbolic execution engine used to compute precise symbolic states
+  within a transaction.
+\item
+  the concept of delayed abstraction, which approximates symbolic states
+  at the end of transactions into abstract states.
+\end{enumerate}
+
+The details of this tool are out of scope over here. For more
+information, it is encouraged to look at their website for documentation
+and their academic paper for greater details behind the theory of this
+tool.
+
+\subsection{Smart Check}\label{smart-check}
+
+Smart check is a security tool from SmartDec. It is another static
+analysis tool for discovering vulnerabilities and other code issues in
+Ethereum smart contracts written in \texttt{Solidity}. An interesting
+implementation aspect here is that it translates \texttt{Solidity}
+source code into an \texttt{xml} based intermediate representation, then
+checks it against XPath patterns. For context, XPath stands for
+\texttt{xml} path language, which uses a path notation for navigating
+through the hierarchical structure of an \texttt{xml} document.
+
+\subsection{K-framework}\label{k-framework}
+
+K-framework is a verification framework from RuntimeVerification. It
+includes kEVM which is a model of EVM in the K-framework. It is the
+first executable specification of the EVM that completely passes the
+official EVM test suites and so, could serve as a platform for building
+a wide range of verbal analysis tools for EVM. Again we won't go into
+any level of details for this framework, but it is encouraged to look at
+the documentation to get a better understanding of its capabilities.
+
+\subsection{Certora Prover}\label{certora-prover}
+
+Certora Prover is a formal verification tool from Certora. It checks
+that a smart contract satisfies a set of rules written in a language
+called CVL (Certora Verification Language). Each rule is checked on all
+possible transactions not by explicitly enumerating them of course, but
+rather through symbolic techniques.
+
+The prover provides complete path coverage for a set of safety rules
+provided by the user. For example, a rule might want to check that a
+bounded number of tokens can be minted in an \texttt{ERC20} contract.
+The prover either guarantees that such a rule holds on all paths and all
+inputs or produces a test input known as a counter example that
+demonstrates a violation of this rule.
+
+This problem addressed by Certora prover is going to be undecidable,
+which means that there will always be some pathological programs or
+rules for which the prover will time out without a definitive answer.
+
+This prover takes as input the smart contract (either the bytecode or
+the \texttt{Solidity} source code) along with a set of rules written in
+CVL, and then automatically determines whether or not the contract
+satisfies all the rules provided using a combination of two fundamental
+computer science techniques known as abstract interpretation and
+constraint solving.
+
+\subsection{HEVM}\label{hevm}
+
+DappHub's HEVM is an implementation of the EVM made specifically for
+unit testing and debugging smart contracts. It can help run unit tests,
+property tests and also help interactively debug contracts while showing
+the \texttt{Solidity} source code, or also run arbitrary EVM code.
+
+With this we have touched upon the various security tools that you may
+come across in this space. There are likely others that we haven't
+covered here purely for constraints of time and scope and some like SMT
+checker which we have covered in the \texttt{Solidity} chapter earlier.
+
+For all these tools, the best way to understand their capabilities and
+specific use cases is to install and experiment with them.
+
+In summary smart content security tools are useful in assisting auditors
+while reviewing smart contracts they automate many of the tasks that can
+be codified into rules with different levels of coverage correctness and
+precision these tools are fast cheap scalable and deterministic compared
+to manual analysis however they are also susceptible to false positives
+they are therefore especially well suited correctly to detect common
+security pitfalls and best practices at disability and EVM levels and
+with varying degrees of manual assistance they can also be programmed to
+check for application level business logic constraints.

@@ -1,0 +1,95 @@
+\section{Dead Code \& Redundant
+Statements}\label{dead-code-redundant-statements}
+
+\subsection{Dead Code}\label{dead-code}
+
+Dead Code is any contract code that is unused from the contract's
+perspective or even unreachable from a control flow perspective.
+
+This could be indicative of programmer error or missing logic that leads
+to the developer adding this code to the contract, but not adding the
+logic that actually makes use of this code. This is certainly an
+opportunity for optimization because dead code increases the code size
+of the contract which, during deployment, leads to increased Gas costs.
+
+However, this also impacts readability, maintainability and auditability
+of the code, all of which affect security indirectly. Let's consider
+three scenarios in which dead code affects the security of smart
+contracts:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  There is code in the contract that is in fact dead, but the developer
+  or the smart contract auditor does not realize that this is dead code.
+
+  \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+  If such code implements security checks, then we may assume that those
+  checks are being enforced and improving the security, but in fact they
+  are not effective because they are in dead code, so they reduce their
+  security of the smart contracts again.
+
+  \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+\item
+  There is dead code in the smart contract and the developers are aware
+  that this code is dead, but decide to leave it (without removing it).
+
+  \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+  In such cases, such code may not be tested because the developers know
+  that this is dead code and, because of this, they may end up with
+  security vulnerabilities contained in them or they may contribute to
+  such vulnerabilities.
+
+  \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+  Later on, if someone else decides to use this dead code, the
+  vulnerabilities contained by it (or affected by it) get manifested in
+  the contract and affects the security negatively.
+
+  \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+\item
+  There is code that is actually used within the smart contracts, but
+  the developers incorrectly determine that this is dead code (mistaken
+  identity) and remove it.
+
+  \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+  In such scenarios, if that code implemented security checks are
+  actually improved security because of their logic, then removing it
+  reduces the security of the code
+\end{enumerate}
+
+Effectively, dead code contributes to the security of smart contracts
+indirectly in potentially significant ways. The best practice is for the
+developers to determine if a particular piece of code is used or dead
+and, if it is dead, determine if it actually needs to be used. If it is
+not, then remove it from the contracts. If it needs to be used, then add
+logic that uses that code in the correct manner.
+
+\subsection{Redundant Statements}\label{redundant-statements}
+
+Redundant statements are statements that either have no side effects or
+that do have side effects, but are made redundant because there are
+other statements that have the same side effect.
+
+In either scenario these are indicative of programmer error or missing
+logic that needs to exist to make these statements not redundant, or
+they may just present an opportunity for optimization where these
+redundant statements need to be removed.
+
+Removal reduces the size of the contract and therefore makes it more Gas
+efficient at deploy or execution time.
+
+The best practice here is to evaluate if statements are redundant and,
+if so, determine if they should indeed be having any side effects. If
+that's the case, add such side effects. If contrarily they are indeed
+redundant and do not affect the security in any way, then remove them.
+
+The impact of such redundant statements could be indirect to security
+because of the errors (the logic that we talked about) or they could be
+direct, where such redundant statements are actually meant to enforce
+certain security checks. Because they are redundant those checks never
+get executed and directly impact the security of the contract in a
+negative way.

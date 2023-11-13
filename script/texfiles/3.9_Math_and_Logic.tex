@@ -1,0 +1,123 @@
+\section{Math and Logic}\label{math-and-logic}
+
+\subsection{Overflow/Underflow}\label{overflowunderflow}
+
+This security pitfall is related to the notion of overflows and
+underflows in \texttt{Solidity} smart contracts. This is applicable to
+any integer arithmetic that is used within the contracts which is very
+often encountered.
+
+When such arithmetic is used in a way where the increments or decrements
+to those integer variables are done without checking for the bounds,
+then they could result in wrapped values where the value exceeds the
+maximum storage for that integer type and hence overflows or wraps to
+the lower end of that type or, If it's being decremented it could be
+decremented below zero in which case it results in wrapping to the
+maximum value of that integer type.
+
+If those extremely high or extremely low data values resulting because
+of wrapping are invalid in the applications logic, then it is okay. But
+if it is not, if it's valid in the applications logic, then this could
+result in unexpected behavior in the best case or in the worst case it
+could result in some very serious vulnerabilities that can be exploited.
+We have seen multiple vulnerabilities and exploits led to overflow and
+underflow historically.
+
+So the recommended best practice is to use the SafeMath libraries from
+OpenZeppelin that enforce the overflow and underflow checks during
+integer arithmetic or to use the latest \texttt{Solidity} versions
+greater than or equal to \texttt{0.8.0} that introduce check arithmetic
+by default.
+
+\subsection{Dividing before
+Multiplying}\label{dividing-before-multiplying}
+
+Another security pitfall or best practice related to integer arithmetic
+is dividing before multiplying. \texttt{Solidity} integer division might
+truncate the value of results therefore, if division is done before
+multiplication, then this may result in the loss of precision of the
+values being computed.
+
+So the recommended best practice is to always do the multiplication
+operations first followed by any division that is required.
+
+\subsection{Strict Equalities}\label{strict-equalities}
+
+From a security perspective strict equalities are considered as
+dangerous in specific contexts of the smart content applications.
+
+Strict equality is referred to the ``\texttt{==}'' operator or the
+``\texttt{!=}'' operator as compared to the less stricter
+``\texttt{\textless{}=}'' or ``\texttt{\textgreater{}=}'' operators.
+
+When these strict equalities are applied to Ether or token values, then
+such checks could fail because the transferred Ether or tokens could be
+slightly less or greater than what the strict equalities expect or the
+balances computed could be different because of the different number of
+decimals expected or the precision of the operations being slightly
+different from the assumptions being made. Hence the use of strict
+equalities with such operands and operations is considered dangerous
+because they could lead to failed checks.
+
+\textbf{So the security best practice is to default to less stricter
+equalities and make sure that those constraints are satisfied as per the
+assumptions.}
+
+\subsection{Tautologies \&
+Contradictions}\label{tautologies-contradictions}
+
+An interesting security consideration is that of tautologies and
+contradictions. A tautology is something that is always true whereas a
+contradiction is something that is always false.
+
+Within smart contracts this can be found in certain primitives used,
+such as an unsigned integer variable \texttt{x} and then there is a
+predicate that checks, if \texttt{x} is greater than or equal to 0. This
+predicate because of \texttt{x} being an unsigned integer is a tautology
+it's always going to be true because \texttt{x} can't take a negative
+value.
+
+The presence of such tautologies or contradictions in smart contracts
+indicates either flawed logic or mistaken assumptions made by the
+developer or these may just be redundant checks.
+
+In either scenario these may be interesting from a security perspective,
+so it is something to be paid attention to and flagged as potential
+concerns.
+
+\subsection{Boolean Constant}\label{boolean-constant}
+
+The use of boolean constants \texttt{true} or \texttt{false}, directly
+in conditionals is unnecessary.
+
+The reason for this is that if there's a conditional whose predicate is
+true, then that can be removed because that code block would get
+executed nevertheless and similarly, if the predicate is the boolean
+constant \texttt{false}, then that could be removed as well and along
+with the code in that associated block because that code would never
+execute because the conditional is always going to be \texttt{false}.
+
+So these usages of boolean constants specifically within conditionals is
+indicative of flawed logic or assumptions or they could just be used in
+a redundant manner. The recommendation upon identifying such usage, it
+is removing those constants and any code blocks associated with them, so
+that it becomes simpler to read and to maintain.
+
+\subsection{Boolean Equality}\label{boolean-equality}
+
+An aspect related to boolean constants is that of boolean equality, this
+is where the boolean constants \texttt{true} or \texttt{false} are used
+within conditionals for an equality check, so the \texttt{x} variable is
+checked against the \texttt{true} constant.
+
+This usage is redundant because the variable \texttt{x} can be used
+directly within the conditionals predicate without actually comparing it
+to \texttt{true} and both of them are equivalent.
+
+So the use of the boolean constant \texttt{true} within the predicate is
+actually unnecessary, so while this may not be a big security
+consideration and perhaps indicative of the developer not fully
+understanding how \texttt{Solidity} booleans work.
+
+It is interesting from an optimization perspective and certainly
+improves the readability aspect of the code.

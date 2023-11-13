@@ -1,0 +1,947 @@
+\section{Lows}\label{lows}
+
+\subsection{ConsenSys Diligence}\label{consensys-diligence}
+
+\subsubsection{Umbra}\label{umbra}
+
+\begin{itemize}
+\item
+  This finding was a ConsenSys Diligence audit of Umbra where it was a
+  low severity finding related to access control and input validation in
+  which potential edge cases for hook receiver contracts were not
+  documented or validated.\\
+
+  For context, there were very few constraints on arguments to certain
+  external calls in the \texttt{Emperor} contract. Anyone could force a
+  call to a hook contract by transferring a small amount of tokens to an
+  address that they controlled and withdrawing those tokens by passing
+  the target address as the hook receiver.\\
+
+  The recommendation was for the developers to document and validate
+  such external function calls and untrusted parameters for potential
+  edge cases. This is related to validation of function parameter
+  arguments in 138 and 139 and broad aspects of access control
+  specification in 148 and tests in 155 that we discussed in security
+  pitfalls and best practices 201 module.
+\item
+  Another low severity finding from ConsenSys Diligence audit of Umbra
+  was related to access control and logging, where there was missing
+  access control for \texttt{DeFiSaverLogger.log}, which was used as a
+  logging aggregator within the system, but anyone could create logs.
+  The recommendation was to add access control to all functions
+  appropriately.\\
+
+  This is related to broad aspects of access control implementation in
+  149 and auditing and logging in 173 that we discussed in security
+  pitfalls and best practices to one module.
+\end{itemize}
+
+\subsubsection{DeFi Saver}\label{defi-saver}
+
+This finding was a ConsenSys Diligence audit of DeFi Saver where it was
+a low severity finding related to error checking, where \texttt{return}
+value was not used for token utils' \texttt{withdraw()}' tokens.
+
+For context the \texttt{return} value of \texttt{withdraw()}' tokens,
+which represented the actual amount of tokens that were transferred, was
+never used in the entire repository. This could cause discrepancy in the
+case where the requested transfer amount was \texttt{type(uint256).max}'
+for some reason, in which case the amount actually transferred would be
+less than that requested and returned back, but never checked.
+
+The recommendation therefore was to check the \texttt{return} value to
+validate the withdrawal and use that in the event committed.
+
+This is related to function \texttt{return} values in 142 and accounting
+issues in 171 that we discussed in security pitfalls and best practices
+to one module.
+
+\subsubsection{Fei Protocol}\label{fei-protocol}
+
+This finding was a ConsenSys Diligence audit of the Fei Protocol where
+it was an low severity finding related to application logic, where
+\texttt{governorAlpha} proposals could be cancelled by the proposer,
+even after they had been accepted and queued.
+
+For context, \texttt{governorAlpha} allows proposals to be cancelled via
+\texttt{cancel}, but a proposal could cancel proposals in any of
+\texttt{pending}, \texttt{active}, \texttt{cancelled},
+\texttt{defeated}, \texttt{succeeded}, \texttt{queued} or
+\texttt{expired} states.
+
+The recommendation was to prevent proposals from being cancelled unless
+they were in \texttt{pending} or \texttt{active} states.
+
+This is related to function invocation timeliness and order in 143 and
+145, the broad aspects of ordering in 178 and business logic in 191 that
+we discussed in security pitfalls and best practices to one module.
+
+\subsubsection{eRLC}\label{erlc}
+
+This finding was a ConsenSys Diligence audit of eRLC where it was a low
+severity finding related to access control and timing. For context, the
+\texttt{KYCadmin} had the ability to freeze the funds of any user at any
+time by revoking the \texttt{KYCmember} role, the trust requirements
+from users could be slightly decreased by implementing a delay on
+granting this ability to new addresses. Such a delay could also help
+protect the development team and the system itself in the event of a
+private key compromise of the \texttt{KYCadmin}.
+
+The recommendation therefore was to use a \texttt{TimelockController} as
+the KYC default admin of the eRLC contract.
+
+This is related to OpenZeppelin's \texttt{Timelock} controller library
+we discussed in 182 of \texttt{Solidity} 201 module and time delay
+change of critical parameters in 163, along with broader aspects of
+access control changes in 153, timing in 177 and trust issues in 181,
+that we discussed in security pitfalls and best practices 201 module.
+
+\subsubsection{1inch}\label{inch}
+
+This finding was a ConsenSys Diligence audit of 1inch where it was a low
+severity finding related to denial of service (DoS), where hard-coded
+Gas assumptions were pointed out as being problematic because Gas
+economics and Ethereum have changed in the past, and made a change again
+(with the recent EIP1559), potentially rendering the contract system
+unusable in the future.
+
+The recommendation was to be aware of this potential limitation and be
+prepared by documenting and validating for situations where Gas prices
+might change in a way that negatively affected the contracts.
+
+This is related to Gas impact on denial of service in 42, 43 and 44 of
+security pitfalls and best practices 101 module and broader aspects of
+Gas issues in 182 of security pitfalls and best practices to a one
+module.
+
+\subsubsection{Growth DeFi}\label{growth-defi}
+
+\begin{itemize}
+\item
+  This finding was a ConsenSys Diligence audit of Growth DeFi where it
+  was a low severity finding related to access control and least
+  privilege mechanism, where system states, roles and permissions were
+  not sufficiently restricted.\\
+
+  Smart contract code should strive to be strict, where it behaves
+  predictably, is easier to maintain and increases the system's ability
+  to handle non-ideal conditions. Whereas many of Growth DeFi states
+  roles and permissions were loosely defined.\\
+
+  The recommendation was to document and monitor the use of
+  administrative permissions and also specify strict operational
+  requirements for each contract as it pertains to roles and
+  permissions.\\
+
+  This is related to access control specification implementation and
+  changes in 148, 149 and 153 and broader aspects of access control
+  issues in 172 and principle of least privilege in 192 that we
+  discussed in security pitfalls and best practices to one module.
+\item
+  Another low severity finding from ConsenSys Diligence audit of Growth
+  DeFi was related to specification and access control, where the
+  concern was about tokens with non-standard behavior, such as
+  \texttt{ERC777} callbacks which would enable an attacker to execute
+  potentially arbitrary code during the transaction or inflationary
+  deflationary and rebasing tokens. The recommendation was to evaluate
+  all tokens prior to inclusion in the system.\\
+
+  This is related to token deflation via fees in 107 token inflation we
+  are interest in 108 garden launch we asset types in 129 and broader
+  aspects of token handling in 159 system specification and
+  documentation in 136 and 137 and accounting issues in 171 that we
+  discussed in security pitfalls and best practices 201.
+\item
+  Another low severity finding from ConsenSys Diligence audit of Growth
+  DeFi was related to initialization and timing, in which many contracts
+  allowed users to deposit or withdraw assets before the contracts were
+  completely initialized, or while they were in a semi-configured
+  state.\\
+
+  Because these contracts allowed interaction on semi-configured states
+  the number of configurations possible when interacting with the system
+  made it very difficult to determine whether the contracts behaved as
+  expected in every scenario or even what behavior was expected from
+  them the first place. The recommendation was to prevent contract from
+  being used before they were entirely initialized.\\
+
+  This is related to broad aspects of initialization issues in 166 and
+  also the timing and ordering issues in 177 and 178 that we discussed
+  in security pitfalls and best practices to one module.
+\item
+  Another low severity finding from ConsenSys Diligence audit of Growth
+  DeFi was related to denial of service (DoS) in which there was a
+  potential for resource exhaustion by external calls performed within
+  an unbounded loop.\\
+
+  For context, \texttt{requestFlashLoan} performed external calls in a
+  potentially unbounded loop, and in the worst case, changes to system
+  state could make it impossible to execute that code due to the block
+  Gas limit. The recommendation was to reconsider that logic or bound
+  the loop.\\
+
+  This is related to the Gas impact on denial of service in 42, 43 and
+  44 of security pitfalls and best practices 101 module and broader
+  aspects of denial of service in 176 and Gas issues in 182 of security
+  pitfalls and best practices to one module.
+\end{itemize}
+
+\subsubsection{Paxos}\label{paxos}
+
+This finding was a ConsenSys Diligence audit of Paxos where it was a low
+severity finding related to stale privileges and access control in which
+old owners could never be removed. For context, the intention of
+\texttt{setOwners} was to replace the current set of owners with a new
+set of owners. However the \texttt{isOwner} mapping was never updated,
+which meant that any address that was ever considered an owner was
+permanently considered as an owner for purposes of signing
+transactions.The recommendation was to change \texttt{setOwners} in such
+a way that, before adding new owners, it would loop through the current
+\texttt{setOwners} and clear the \texttt{isOwner} booleans.
+
+This is related to aspects of access control implementation and changes
+in 149 and 153 and broad aspects of access control issues in 172 that we
+discussed in security pitfalls and best practices 201 module.
+
+\subsubsection{Aave V2}\label{aave-v2}
+
+This finding was a ConsenSys Diligence audit of Aave V2 where it was a
+low severity finding related to potential manipulation of interest rates
+using flash loans. Remember that flash loans allow users to borrow large
+amounts of liquidity from the protocol. Because of that, it was possible
+in Aave to adjust the stable interest rate up or down momentarily by
+removing or adding large amounts of liquidity to reserves. Given that,
+this type of manipulation is difficult to prevent especially when flash
+loans are available. The recommendation was for Aave to monitor the
+protocol at all times to make sure that interest rates were being
+rebalanced to same values.
+
+This is related to aspects of flash loans in 120 and Scarcity in 186 and
+auditing and logging issues in 173 of security pitfalls and best
+practices 201 module.
+
+\subsubsection{Aave Governance DAO}\label{aave-governance-dao}
+
+This finding was a ConsenSys Diligence audit of Aave governance DAO
+where it was a low severity finding related to validation, in which the
+concern was that because some protocol functionality relied on correct
+token behavior problems could arise. If a malicious token (one in which
+the balance could be manipulated) were to be whitelisted, it could block
+people from voting with that specific token or gain unfair advantage.
+The recommendation was to make sure to audit any new whitelisted asset.
+
+This is related to aspects of carded launch via composability limit in
+132 token handling in 159 external interactions in 180 and dependency
+issues in 183 of security pitfalls and best practices 201.
+
+\subsubsection{Aave CPM}\label{aave-cpm}
+
+This finding was a ConsenSys Diligence audit of Aave CPM where it was a
+low severity finding related to a risk of integer underflow, if token
+decimals were to be greater than 18 because in the \texttt{latestAnswer}
+function, an assumption was made that token decimals was less than 18.
+The recommendation was to add a simple check to the constructor to
+ensure that the added token had 18 decimals or less.
+
+This is related to dangers of integer overflow underflow we discussed in
+number 19 of security pitfalls and best practices 101 module and system
+specification and documentation in 136, 137 and broader aspects of data
+validation in 169 and numerical issues in 170 of security pitfalls and
+best practices 201 body.
+
+\subsection{Trail of Bits}\label{trail-of-bits}
+
+\subsubsection{DFX Protocol}\label{dfx-protocol}
+
+This finding was a Trail of Bits audit of DFX protocol where it was an
+undetermined severity finding related to patching, in which the system
+used a deprecated old version of the Chainlink price feed API aggregator
+interface throughout the contracts and the test. For example, the
+duplicated function \texttt{latestAnswer} was used, which is not present
+in the latest API reference aggregator interface V3. In the worst case
+scenario, the deprecated API could cease to report the latest values
+which would very likely cause protocol liquidity providers to incur
+losses.
+
+The recommendation was to use the latest stable versions of any external
+libraries or contracts used by the code panes as external dependencies.
+This is related to the broad aspects of configuration issues of number
+165, external interaction issues of number 180 and dependency issues of
+183. We discussed in security pitfalls and best practices 201 module.
+
+\subsubsection{Liquidity Protocol}\label{liquidity-protocol}
+
+This finding was a Trail of Bits audit of Liquidity Protocol where it
+was a low severity finding related to reentrancy. There was a concern
+that reentrancy could lead to incorrect order of emitted events because
+there were events emitted after external calls in some functions.
+
+In the case of a reentrant call, such events would be emitted in the
+incorrect order (i.e the event for the second operation would be emitted
+first, followed by the event for the first operation causing any
+off-chain monitoring tools to have an inconsistent view of on-chain
+state).
+
+The recommendation was to apply the checks-effects-interactions pattern
+and move the event emissions before the external calls to avoid any
+effects of a potential reentrancy.
+
+This is related to reentrancy vulnerabilities in number 13 of security
+pitfalls and best practices 101 module along with broader aspects of
+timing issues in 177 and auditing logging in 173 that we discussed in
+security pitfalls and best practices 201 modules.
+
+\subsubsection{Origin Dollar}\label{origin-dollar}
+
+This finding was a Trail of Bits audit of Origin Dollar where it was a
+low severity finding related to variable shadowing. There was a concern
+that a variable shadowing in OUSD from ERC20 could result in undefined
+behavior.
+
+For context, OUSD inherited from ERC20, but redefined the
+\texttt{allowances} and \texttt{totalSupply} private state variables.
+Because of which accessing those variables could lead to returning
+different values from what was expected. Note that these were private
+state variables and so, the one in ERC20 was not visible in OUSD. The
+concern was more of developer clarity than the variable scope and
+visibility. The recommendation was to remove the shadowed variables in
+OUSD.
+
+This is related to state variable Shadowing in 106 and 136 of
+\texttt{Solidity} 201 where we saw that \texttt{Solidity} version 0.6.0
+made state variable Shadowing an error where the same named state
+variables were visible or accessible in both base and derived classes.
+This is also related to the broad aspect of clarity in 188 of security
+pitfalls and best practices 201 modules.
+
+\subsubsection{Yield Protocol}\label{yield-protocol}
+
+\begin{itemize}
+\item
+  This finding was a Trail of Bits audit of Yield Protocol where it was
+  a low severity finding related to access control, where the concern
+  was that permission granting was too simplistic and not flexible
+  enough. For context, Yield protocol implemented several contracts that
+  needed to call privileged functions from each other. However, there
+  was no way to specify which operation could be called for every
+  privileged user. All the authorized addresses could call any
+  restricted function: the owner could add any number of them. Also, the
+  privileged addresses were supposed to be smart contracts, but there
+  was no check for that and moreover, once an address was added, it
+  could not be deleted.\\
+
+  The recommendation was to rewrite the authorization system to allow
+  only certain addresses to access certain functions.\\
+
+  This is related to access control and trust issues we discussed in
+  148, 149, 160 and 172 and principles of least privilege in 192 and
+  principle of separation of privilege in 193 of security pitfalls and
+  best practices 201 modules.
+\item
+  Another low severity finding from Trail of Bits audit of Yield
+  Protocol was related to lack of input validation. For context when
+  fyDAI contract was deployed one of the deployment parameters was a
+  maturity date passed as a unix timestamp. This was the date at which
+  point fyDAI tokens could be redeemed for the underlying time.\\
+
+  The contract constructor however performed no validation of that
+  timestamp to ensure that it was within an acceptable range. As a
+  result it was possible to mistakenly deploy a wide-eyed contract that
+  had a maturity date in the past or many years into the future which
+  may not be immediately noticed.\\
+
+  The recommendation therefore was to add sanity and threshold checks to
+  the wide eye contract constructor, to ensure that maturity timestamps
+  were within an acceptable range, to prevent maturity dates from being
+  mistakenly set in the past or too far into the future.\\
+
+  This is related to system documentation in 137 function parameter
+  validation in 138 and broader aspect of data validation issues in 169
+  we discussed in security pitfalls and best practices 201 modules.
+\item
+  Another low severity finding from Trail of Bits audit of Yield
+  Protocol was related to auditing and logging. For context, when a user
+  added or removed a delegate, a corresponding event was emitted to log
+  this operation. However there was no check to prevent the user from
+  repeatedly adding or removing a delegation which could allow redundant
+  events to be emitted repeatedly.\\
+
+  The recommendation was to add a \texttt{require} statement to check
+  that the delegate address was not already enabled or disabled for the
+  user to ensure that log messages are only emitted when a delegate is
+  activated or deactivated to prevent bloated logs.\\
+
+  This is generally related to redundant constructs in 157 and broad
+  aspects of auditing and logging in 173 that we discussed in security
+  pitfalls and best practices to one module.
+\end{itemize}
+
+\subsubsection{0x Protocol}\label{x-protocol}
+
+This finding was a Trail of Bits audit of Yield Protocol where it was a
+low severity finding related to auditing and logging. For context,
+several critical operations did not trigger events which would make it
+difficult to review the correct behavior of the contracts once deployed.
+Users and blockchain monitoring systems would not be able to easily
+detect suspicious behaviors without events.
+
+The recommendation was to add events where appropriate for all critical
+operations and in the long term to consider using a blockchain
+monitoring system to track any suspicious behavior in the contract.
+
+This is related to the missing events aspect discussed in 45 of security
+pitfalls and best practices 101 module and broader auditing logging
+issues of 173 along with principle of compromise recording of 201 we
+discussed in security pitfalls and best practices to one module.
+
+\begin{itemize}
+\item
+  Another low severity finding from Trail of Bits audit of Yield
+  Protocol was related to error handling, in that the function asserts
+  taking pool exists should have returned a boolean to determine if the
+  staking pool existed or not, but it did not use a return statement and
+  therefore would always return false or revert.\\
+
+  The recommendation was to add a return statement or remove the return
+  type and change the documentation accordingly.\\
+
+  This is related to function \texttt{return} values in 142 and error
+  reporting issues in 175 of security pitfalls and best practices to a
+  one module.
+\end{itemize}
+
+\subsubsection{DFX Finance}\label{dfx-finance}
+
+\begin{itemize}
+\item
+  This finding was a Trail of Bits audit of DFX Finance where it was a
+  low severity finding related to undefined behavior. For context, if an
+  operator attempted to create a new curve in the context of the
+  protocol for a base and quote currency pair that already existed,
+  curve factory would return the existing curve instance without any
+  indication of that, causing a naive operator to maybe overlook this
+  issue.\\
+
+  The recommendation was to consider rewriting that logic such that it
+  reverted, if a base and code currency pair already existed and provide
+  a \texttt{view} function to check for and retrieve existing curves
+  prior to an attempt at curve creation.\\
+
+  This is related to the broad aspect of undefined behavior in 179 and
+  clarity in 188 of security pitfalls and best practices to one module.
+\item
+  Another low severity finding from Trail of Bits audit of DFX Finance
+  was related to data validation, in that few functions were missing
+  zero-address checks. For example, a zero-address check should have
+  been added to the router constructor to prevent the deployment of an
+  invalid router which would revert upon a call to the zero-address.\\
+
+  The recommendation was to review address type state variables to
+  ensure that the code that sets the state variables performs
+  Zero-address checks when necessary as a best practice.\\
+
+  This is related to missing Zero-address validation in 49 or security
+  pitfalls and best practices 101 module and broader aspects of function
+  parameters in 138 function invocation arguments and 146 two-step
+  change of privileged roles in 162 and data validation issues in 169 of
+  security pitfalls and best practices to one.
+\item
+  Another low severity finding from Trail of Bits audit of DFX Finance
+  was related to error handling, in that the custom \texttt{safeApprove}
+  function did not check return values for \texttt{approve} call. For
+  context, the router contract used OpenZeppelin's SafeERC20 library to
+  perform safe calls to ERC20's \texttt{approve} function, but the
+  orchestrator library defined its own safe \texttt{approve} function.\\
+
+  This function check that a call to \texttt{approve} was successful,
+  but did not check the return data to verify whether the call indeed
+  returned \texttt{true}. In contrast OpenZeppelin's,
+  \texttt{safeApprove} function checks return values appropriately this
+  issue could have resulted in uncaught \texttt{approve} errors in
+  successful curve deployments causing undefined behavior.\\
+
+  The recommendation was to leverage OpenZeppelin's \texttt{safeApprove}
+  function wherever possible and also ensure that all low level calls
+  have accompanying contract existence checks and return value checks
+  where appropriate.\\
+
+  This is related to function return values in 142 error reporting
+  issues and 175 and cloning issues in 190 of security pitfalls and best
+  practices 201.
+\item
+  Another low severity finding from Trail of Bits audit of DFX Finance
+  was related to data validation, in that although \texttt{SafeMath} was
+  used throughout the codebase to prevent underflows and overflows, it
+  was not used in a few calculations.\\
+
+  Although the audit could not prove that the lack of \texttt{SafeMath}
+  would cause arithmetic issues in practice, all calculations would
+  benefit from the use of this library.\\
+
+  The recommendation was to review all critical arithmetic to ensure
+  that it accounted for underflows, overflows and loss of precision by
+  considering the use of \texttt{SafeMath} and safe functions of
+  \texttt{ABDKMath} where possible to prevent any underflows and
+  overflows.\\
+
+  This is related to dangers of integer overflow underflow we discussed
+  in 19 of security pitfalls and best practices 101 module and broader
+  aspects of data validation in 169 and numerical issues in 170 of
+  security pitfalls and best practices 201.
+\item
+  Another low severity finding from Trail of Bits audit of DFX Finance
+  was related to timing and denial of service (DoS), in that the
+  function \texttt{setFrozen} could be used by the contract owner to
+  front run to deny deposits or swaps. The contract owner could then
+  unfreeze them at a later time.\\
+
+  The recommendation was to consider rewriting the \texttt{setFrozen}
+  function, such that any contract freeze would not last long enough for
+  a malicious owner to easily execute an attack or alternatively
+  consider implementing permanent freezes.\\
+
+  This is related to the transaction order dependence aspect discussed
+  in 21 of security pitfalls and best practices 101 module denial of
+  service in 176 and trust issues in 181 of security pitfalls and best
+  practices 201.
+\end{itemize}
+
+\subsubsection{Hermez}\label{hermez}
+
+\begin{itemize}
+\item
+  This finding was a Trail of Bits audit of Hermez Network where it was
+  a low severity finding related to denial of service (DoS) by
+  \texttt{accountCreationSpan}. Hermez had no fees on
+  \texttt{accountCreation} and so, an attacker could spam the network by
+  creating the maximum number of accounts. Remember that Ethereum miners
+  do not have to pay for Gas and, so they themselves could spam the
+  network with account creation.\\
+
+  The recommendation was to add a fee for account creation and to also
+  monitor account creation and alert users, if a malicious coordinator
+  spam the system.\\
+
+  This is related to broad aspects of audit and logging in 173 denial of
+  service in 176 and trust issues in 181 of security pitfalls and best
+  practices 201.
+\item
+  Another low severity finding from Trail of Bits audit of Hermez
+  Network was related to undefined behavior from using empty functions
+  instead of interfaces, because that leaves contracts errored. For
+  context, \texttt{withdrawalDelayerInterface} was a contract meant to
+  be an interface because it contained functions with empty bodies
+  instead of function signatures, which might lead to unexpected
+  behavior. Contracts inheriting from
+  \texttt{withdrawalDelayerInterface} would not require an override of
+  those functions and so, would not benefit from the compiler checks on
+  its correct interface.\\
+
+  The recommendation was to use an interface instead of a contract in
+  \texttt{withdrawalDelayerInterface}, which would make derived
+  contracts follow the interface properly and to also document the
+  inheritance schema of the contracts.\\
+
+  This is related to unused constructs in 156, the undefined behavior
+  issues in 179 or security pitfalls and best practices 201.
+\item
+  Another low severity finding from Trail of Bits audit of Hermez
+  Network was related to data validation in that
+  \texttt{canceledTransaction} could be called on a non queued
+  transaction. Without a transaction existence check in
+  \texttt{cancelTransaction} an attacker could confuse monitoring
+  systems because that emitted an event without checking that the
+  transaction to be cancelled existed.\\
+
+  The recommendation was to check that the transaction to be cancelled
+  existed in cancel transaction function to ensure that monitoring tools
+  could rely on limited events.\\
+
+  This is related to data validation in 169 and auditing and logging in
+  173 that we discussed in security pitfalls and best practices 201
+  module.
+\end{itemize}
+
+\subsubsection{Advanced Blockchain}\label{advanced-blockchain}
+
+\begin{itemize}
+\item
+  This finding was a Trail of Bits audit of Advanced Blockchain where it
+  was a low severity finding related to configuration, in that the
+  borrow rate formula used an approximation of the number of blocks
+  mined annually.\\
+
+  This number could change across different blockchains and years. The
+  value assumed that a new block was mined every 15 seconds, but on
+  Ethereum min net a new block is mined every 13 seconds
+  approximately.\\
+
+  The recommendation was to analyze the effects of a deviation from the
+  actual number of blocks mined annually in borrow rate calculations and
+  document associated risks.\\
+
+  This is related to block values as time proxies in 18 of security
+  pitfalls and best practices 101 module and configuration and
+  initialization in 165 and 166 and \texttt{constant} issues at 184 that
+  we discussed in security pitfalls and best practices 201 model.
+\item
+  Another low severity finding from Trail of Bits audit of Advanced
+  Blockchain was related to data validation, in that there were no
+  lower/upper bounds on the flash load rate implemented in the contract.
+  This would therefore allow setting it to an arbitrarily high rate to
+  secure higher fees.\\
+
+  The recommendation was to introduce lower and upper bound checks for
+  all configurable parameters in the system to limit privileged users
+  abilities.\\
+
+  This is related to function parameter validation in 138 function
+  invocation arguments in 146 and broader aspect of data validation
+  issues in 169 that we discussed in security pitfalls and best
+  practices 201 modules.
+\item
+  Another low severity finding from Trail of Bits audit of Advanced
+  Blockchain was related to ABI encoder V2 not being production ready.
+  At the time of this audit, given that more than three percent of all
+  GitHub issues for the \texttt{Solidity} compiler were related to
+  experimental features, primarily ABI encoder V2, it had been
+  associated with more than 20 high severity bugs at that point in
+  time.\\
+
+  The recommendation was to not use ABI encoder V2 by refactoring the
+  code such that structs do not need to be passed to, or returned from
+  functions, which is a feature enabled by it. This is related to
+  compiler bugs in 77 to 94 of \texttt{Solidity} 101 module and
+  dependency issues in 183 of security pitfalls and best practices 201
+  modules.
+\end{itemize}
+
+\subsubsection{dForce}\label{dforce}
+
+This finding was a Trail of Bits audit of Advanced Blockchain where it
+was a low severity finding related to rpivileged roles, in which the
+contract owner having too many privileges compared to standard users of
+the protocol. Users could lose all of their assets if a contract owner's
+private keys were to be compromised. The contract owner could, for
+example, do the following:
+
+\begin{itemize}
+\tightlist
+\item
+  Upgrade the system's implementation to steal funds.
+\item
+  Upgrade the tokens implementation to act maliciously.
+\item
+  Increase the amount of high tokens for remote distribution to such an
+  extent that rewards could not be dispersed.
+\item
+  Arbitrarily update the interest model contracts.
+\end{itemize}
+
+Such concentration of privileges created a single point of failure and
+increased the likelihood that the owner would be targeted by an
+attacker, especially given the insufficient protection on sensitive
+owner private keys. Additionally it incentivized the owner to act
+maliciously.
+
+The recommendations were:
+
+\begin{itemize}
+\tightlist
+\item
+  Clearly document the functions and implementations the Owner could
+  change.
+\item
+  Split privileges to ensure that no one address had excessive ownership
+  of the system.
+\item
+  Document the risks associated with privileged users and single points
+  of failure.
+\item
+  Ensure that users were aware of all the risks associated with the
+  system.
+\end{itemize}
+
+This is related to access control and trust issues we discussed in 148,
+149, 160 and 172 and principle of least privilege in 192 and principle
+of separation of privilege in 193 of security pitfalls at best practices
+201.
+
+\subsection{Sigma Prime}\label{sigma-prime}
+
+\subsubsection{Synthetix Ether Collateral
+Protocol}\label{synthetix-ether-collateral-protocol}
+
+\begin{itemize}
+\item
+  This finding was a Sigma Prime audit of Synthetix Ether Collateral
+  Protocol where it was a low severity finding related to data
+  validation, in which the concern was that a single account could
+  capture all the supply in the protocol. For context, the protocol did
+  not rely on a \texttt{MAX\_LOAN\_SIZE} to limit the amount of ETH that
+  can be locked for a loan. As a result, a single account could issue a
+  loan that could reach the total minting supply.\\
+
+  The recommendation was to make sure that this behavior was understood
+  and documented, and also considered introducing and enforcing a cap on
+  the size of the loans allowed to be open. This is related to ETH
+  handling in 158 data validation in 169 and numerical and accounting
+  issues in 170 and 171 of security pitfalls and best practices to one
+  module.
+\item
+  Another low severity finding from Trail of Bits audit of Synthetix
+  Ether Collateral Protocol was related to insufficient input
+  validation, specifically in that the \texttt{EtherCollateral}
+  constructor did not check the validity of the addresses and other
+  types provided as input parameters. This, for example, made it
+  possible to deploy an instance of the contract with critical addresses
+  set to zero.\\
+
+  The recommendation was to consider introducing required statements to
+  perform adequate input validation. This is related to missing
+  zero-address validation in 49 of security pitfalls and best practices
+  101 module and broader aspects of function parameters in 138 function
+  invocation arguments in 149 and data validation issues in 169 or
+  security pitfalls and best practices 201.
+\end{itemize}
+
+\subsubsection{InfiniGold}\label{infinigold}
+
+\begin{itemize}
+\item
+  This finding was a Sigma Prime audit of InfiniGold where it was a low
+  severity finding related to unintentional token burning in
+  \texttt{transferFrom}. For context, InfiniGold allowed users to
+  convert their PMGT tokens to gold certificates, which were digital
+  artifacts effectively redeemable for actual gold. To do so, users were
+  supposed to send their PMGT tokens to a specific burn address.
+  However, the \texttt{transferFrom} function did not check its
+  \texttt{to} address parameter against this burn address, which would
+  allow users to accidentally send their tokens to the special burn
+  address using the \texttt{transferFrom} function without triggering
+  the emission of the burn event, which dictated how the gold
+  certificates were created and distributed, so effectively users would
+  lose their tokens without redeeming them for gold certificates.\\
+
+  The recommendation was to prevent sending tokens to the burn address
+  in the \texttt{transferFrom} function by adding a \texttt{require}
+  within \texttt{transferFrom}, which disallow the two address to be the
+  burn address. This is generally related to missing zero-address
+  validation in 49 of security pinfalls and best practices 101 module
+  and broader aspects of function parameters in 138 function invocation
+  arguments in 146 data validation in 169 accounting issues in 171 and
+  error reporting issues in 175 of security pitfalls and best practices
+  201.
+\item
+  Another low severity finding from Trail of Bits audit of Advanced
+  Blockchain was related to denial of service from unbounded lists. For
+  context, the \texttt{reset} function reset the role linked list by
+  deleting all its elements. Calling the \texttt{reset} function would
+  exceed the block Gas Limit, 8 million, at the time of the audit for
+  more than 371 total elements in the role linked list. Similarly, other
+  functions also looped through linked lists which meant that certain
+  protocol actors could perform denial of service attacks on the lists
+  they administered.\\
+
+  The recommendation was:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Either check that the linked list size is strictly less than 371
+    elements before adding a new element or
+  \item
+    use the \texttt{gasLeft} \texttt{Solidity} primitive to make sure
+    that traversing the linked list did not exceed the block Gas Limit
+    at any point or
+  \item
+    Change reset to take a specific number of elements as a function
+    parameter
+  \end{itemize}
+
+  This is related to the Gas impact on DoS in 42, 43 and 44 of security
+  pitfalls and best practices 101 module and broader aspects of denial
+  of service in 176 and Gas issues in 182 of security pitfalls and best
+  practices 201.
+\item
+  Another low severity finding from Trail of Bits audit of Advanced
+  Blockchain was related to front running. For context, the ERC20
+  \texttt{approve} function was vulnerable to front running.\\
+
+  The recommendation was to be aware of Front-running issues and
+  approved and potentially use OpenZeppelin's library with
+  \texttt{increaseAllowance()} and \texttt{decreaseAllowance()}
+  functions with the caveat that deviating from the \texttt{ERC20}
+  standard to address this issue could lead to backward
+  incompatibilities with external third-party software. This is related
+  to transaction order dependence in 21 and \texttt{ERC20} approved
+  Race-condition in 22 of security pitfalls and best practices 101
+  module along with \texttt{ERC20} approved Race-condition in 105 and
+  broader aspects of timing issues in 177 of security pitfalls and best
+  practices 201 module.
+\item
+  Another low severity finding from Trail of Bits audit of Advanced
+  Blockchain was related to rounding issues. The concern was about the
+  \texttt{rewardRate} rounding to zero if \texttt{duration} was greater
+  than \texttt{reward}. The \texttt{rewardRate} value was calculated as
+  \texttt{reward} divided by \texttt{duration}, and due to the integer
+  representation of these variables, if \texttt{duration} were to be
+  larger than \texttt{reward}, the value of \texttt{rewardRate} would
+  round down to zero. Thus, stakers would not receive any reward for
+  their stakes and there would be other implications as well such as
+  collection of dust tokens.\\
+
+  The recommendation was to be aware of the rounding issue and also
+  consider providing a way to claim the dust SNX rewards from rounding.
+  This is generally related to divide before multiply in number 20 of
+  security pitfalls and best practices 101 module and broadly related to
+  data validation and numerical issues in 169 and 170 of security
+  pitfalls and best practices 201 module.
+\item
+  Another low severity finding from Trail of Bits audit of Advanced
+  Blockchain was related to event log poisoning. For context, calling
+  the withdrawal function would emit the withdrawal event where no UNI
+  tokens were required because this function could be called with 0. As
+  a result, a user could continuously call this function creating a
+  potentially infinite number of events which could lead to an event log
+  poisoning situation where malicious external users could spam the
+  \texttt{Unipool} contract to generate arbitrary withdrawal events.\\
+
+  The recommendation was to consider adding a \texttt{require} or
+  \texttt{if} statement to prevent the withdrawal function from emitting
+  the withdrawal event when the amount variable was zero This is related
+  to validation of function parameters in 138 and auditing and logging
+  in 173 of security pitfalls and best practices 201 module.
+\end{itemize}
+
+\subsection{OpenZeppelin}\label{openzeppelin}
+
+\subsubsection{HoldeFi}\label{holdefi}
+
+\begin{itemize}
+\item
+  This finding was a OpenZeppelin audit of HoldeFi where it was a low
+  severity finding related to insolvency. For context, when the value of
+  all collateral is worth less than the value of all borrowed assets, a
+  market is considered insolvent. The HoldeFi codebase could do many
+  things to reduce the risk of market insolvency, such as selection of
+  collateral ratios, incentivizing third-party collateral liquidation,
+  careful selection of tokens listed on the platform, etc\ldots{}\\
+
+  However, the risk of insolvency would not be entirely eliminated and
+  there are numerous ways a market could still become insolvent. This
+  risk is not unique to the HoldeFi project and all collateralized
+  loans. Even non-blockchain ones have a risk of insolvency. However it
+  was important to recognize that this risk does exist, that it could be
+  difficult to recover from it.\\
+
+  The recommendation was therefore to consider adding more targeted
+  tests for insolvency scenarios to better understand the behavior of
+  the protocol and designing relevant mechanics to make sure the
+  platform operated properly under such conditions, and also consider
+  communicating the potential risk to the users if needed. This is
+  related to garden launch via asset types and 129 and broader aspects
+  of token handling in 159 system specification and documentation in 136
+  137 and accounting issues in 171 of security pitfalls and best
+  practices 201.
+\item
+  Another low severity finding from OpenZeppelin audit of Advanced
+  Blockchain was related to time checks. The concern was that as part of
+  some calculations and time checks used \texttt{block.timestamp}, which
+  is unreliable because these timestamps can be slightly altered by
+  miners to favor them in contracts that have logic depending strongly
+  on them.\\
+
+  The recommendation was to consider taking into account this issue and
+  warning users that such a scenario was possible and, if the alteration
+  of time stamps couldn't affect the protocol in any way. to consider
+  documenting that reasoning and writing tests to enforce that those
+  guarantees would be preserved even if the code changed in future. This
+  is related to weak PRNG and block values is type proxies in 17 and 18
+  or security pitfalls and best practices 201 module and broader aspects
+  of trusted actors in 160 and timing issues in 177 of security pitfalls
+  and best practices 201 module.
+\end{itemize}
+
+\subsubsection{GEB Protocol}\label{geb-protocol}
+
+This finding was a OpenZeppelin audit of GEB Protocol where it was a low
+severity finding related to unsafe casting. For example, one of the
+contracts used an unsigned integer which was cast to a signed integer
+and then negated. However since \texttt{uint} could store higher values
+than \texttt{int}, it was possible that casting from \texttt{uint} to
+\texttt{int} may have created an overflow.
+
+The recommendation was to consider verifying that values of such
+unsigned integers were within the acceptable range for signed integer
+type before casting, indicating and to consider using OpenZeppelin's
+SafeCast library which provides functions for safely casting between
+types. This is related to OpenZeppelin's SafeCast in 177 of solarity 201
+module integer overflow underflow in 19 or security pitfalls and best
+practices 101 module and broader aspects of data validation and
+numerical issues in 169 and 170 of security pitfalls and best practices
+201.
+
+\subsubsection{Opyn Gamma}\label{opyn-gamma}
+
+\begin{itemize}
+\item
+  This finding was a OpenZeppelin audit of Opyn Gamma Protocol where it
+  was a low severity finding related to whitelisting. The concern was
+  that the protocol's \texttt{O} token could be created with a
+  non-whitelisted collateral asset. A product consisted of a set of
+  assets and an auction time, and each product had to be whitelisted by
+  the admin using the whitelist product function from the whitelist
+  contract.\\
+
+  The recommendation was to consider validating if the assets involved
+  in a product had already been whitelisted before allowing creation of
+  \texttt{O} tokens. This is related to aspects of carded launch via
+  composability limit in 132 token handling in 159 external interactions
+  at 180 and dependency issues in 183 of security pitfalls and best
+  practices 201.
+\item
+  Another low severity finding from OpenZeppelin audit of Opyn Gamma
+  Protocol was related to inconsistent state resulting from actions not
+  executed. For context, the \texttt{setAssetPricing},
+  \texttt{setLockingPeriod} and \texttt{setDisputePeriod} functions of
+  the Oracle contract executed actions that were always expected to be
+  performed atomically. Failing to do so, could lead to inconsistent
+  states in the system.\\
+
+  The recommendation was therefore to consider implementing an
+  additional function that calls all three \texttt{setAssetPricing},
+  \texttt{setLockingPeriod} and \texttt{setDisputePeriod} functions, so
+  that all these actions could be executed atomically in a single
+  transaction. This is related to function invocation timeliness in 143
+  configuration and initialization in 165 and 166 timing in 177 and
+  undefined behavior issues in 179 of security pitfalls and best
+  practices 201.
+\item
+  Another low severity finding from OpenZeppelin audit of Opyn Gamma
+  Protocol was related to using a deprecated Chainlink API. The
+  Chainlink pricer was using multiple functions from the deprecated
+  Chainlink V2 API, such as \texttt{latestAnswer} and
+  \texttt{getTimestamp}. Such functions might certainly stop working if
+  Chainlink stops supporting deprecated APIs.\\
+
+  The recommendation was to consider using the latest Chainlink V3 API.
+  This is related to external interaction in 180 and dependency issues
+  in 183 of security pitfalls and best practices to one body.
+\end{itemize}
+
+\subsubsection{PoolTogether V3}\label{pooltogether-v3}
+
+This finding was a OpenZeppelin audit of PoolTogether V3 Protocol where
+it was a low severity finding related to data validation. The concern
+was that funds could be lost, for context the
+\texttt{sweepTimelockBalances} function accepted a list of users with
+unlocked balances to distribute. However, if there were duplicate users
+in the list, their balances would be counted multiple times while
+calculating the total amount of withdrawal from the yield service, which
+could lead to loss of their funds.
+
+The recommendation was to consider checking for duplicate users when
+calculating the amount to withdraw. Rhis is related to token handling in
+159 and numerical and accounting issues in 170 and 171 of security
+pitfalls and best practices 201 module.

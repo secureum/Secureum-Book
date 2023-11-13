@@ -1,0 +1,1074 @@
+\section{OpenZeppelin Libraries}\label{openzeppelin-libraries}
+
+Most libaries that you'll encounter inside smart contracts are written
+and maintained by \texttt{OpenZeppelin}, which is one of the leaders in
+the space in not only developing these libraries, but in Ethereum smart
+contracts security.
+
+They provide multiple services and multiple tools in this context, so
+these \texttt{OpenZeppelin} libraries are widely used and have been time
+tested for several years now. Furthermore, they've also been optimized
+over time with respect to the Gas consumed by them and also with respect
+to the various \texttt{Solidity} versions that have been released over
+time.
+
+One of the most common \texttt{OpenZeppelin} libraries is the
+\texttt{SafeMath} library that we discussed in the context of arithmetic
+checks. There numerous other \texttt{OpenZeppelin} libraries related to
+the implementation of token standards, various security functionalities,
+proxy contracts and utilities. You'll encounter one or more of these
+\texttt{OpenZeppelin} libraries when you're developing smart contracts
+as a developer or when you're auditing smart contracts for the security.
+
+\subsection{Token Libraries}\label{token-libraries}
+
+OpenZeppelin Token Libraries
+
+\textbf{ERC20}
+
+Let's start with the \texttt{OpenZeppelin} library that implements ERC20
+token standard. This is perhaps the most popular, widely used and
+commonly seen token standard that you would encounter as a developer or
+as a smart contact security auditor.
+
+This library implements all the required functions specified by the
+token standard. It implements:
+
+\begin{itemize}
+\tightlist
+\item
+  Name.
+\item
+  Symbol.
+\item
+  Decimals.
+\item
+  Total supply (that returns the amount of tokens in existence so far).
+\item
+  The \texttt{balanceOf()} function (that returns the amount of tokens
+  owned by specific accounts).
+\item
+  The \texttt{transfer()} and \texttt{transferFrom()} functions (that
+  help moving tokens from one address to another).
+\item
+  The notion of allowance (which specifies a spender in addition to the
+  owner of the tokens where the owner grants a certain allowance to the
+  spender after which the spender can spend those tokens and send them
+  to different other addresses).
+\item
+  The notion of increasing or decreasing allowance (that the owner
+  implements for a specific spender).
+\end{itemize}
+
+There are various extensions and presets and utilities related to these
+standards.
+
+\begin{itemize}
+\item
+  \textbf{\texttt{safeERC20}}\strut \\
+
+  One such utility related to the \texttt{ERC20} token standard is what
+  is referred to as \texttt{safeERC20}. The \texttt{transfer},
+  \texttt{transferFrom}, \texttt{approve}, \texttt{increase} and
+  \texttt{decrease\ allowance} functions of \texttt{ERC20} tokens are
+  expected by the specification to return a \texttt{bool} value.
+  Contracts implementing the standard which might choose not to return a
+  \texttt{bool} effectively deviate from the specification. They may
+  revert for these tokens on these functions under certain conditions or
+  they may return no value.\\
+
+  These differing return values, or exception handling in the case of
+  \texttt{ERC20} tokens, have resulted in security vulnerabilities,
+  therefore this \texttt{safeERC20} utility implements wrappers for
+  these functions. It implements the safe versions, so
+  \texttt{safetransfer}, \texttt{safetransferFrom},
+  \texttt{safeapprove}, \texttt{safeincrease} and \texttt{safedecrease}
+  that always revert to failure after checking the different conditions
+  for these functions.\\
+
+  You may notice this utility being used with the contracts with the
+  \texttt{using\ for} directive of \texttt{Solidity} as
+  \texttt{using\ safeERC20\ for\ IERC20;}.
+\item
+  \textbf{\texttt{TokenTimelock}}\strut \\
+
+  The next utility is what is known as \texttt{TokenTimelock}. This
+  implements a token holder contract where tokens are held by the
+  contract and there is a specific address that is defined as the
+  beneficiary address for all the tokens held by this contract, that are
+  only released to that beneficiary address after a particular time has
+  expired.\\
+
+  The application are things like token investing, where a certain
+  number of tokens are allocated to the various team members: to the
+  advisors and so on\ldots{} that need to be claimable by them only
+  after a certain point in time.\\
+
+  This library implements the notion of a token, the beneficiary address
+  and specifically a release function that, when triggered, checks if
+  the \texttt{block.timestamp} is greater than the release time that was
+  declared earlier and if so, transfers the amount of tokens held by the
+  contract to the beneficiary address.
+\end{itemize}
+
+\textbf{ERC721}
+
+The next one is the OpenZeppelin library that implements \texttt{ERC721}
+token standard. This is the token standard that is commonly referred to
+as NFTs or non-fungible tokens. It is perhaps the other widely used
+popular token standard besides \texttt{ERC20} that we just talked about.
+
+Unlike \texttt{ERC20} tokens, \texttt{ERC721} tokens are considered as
+non-fungible because every token is distinguishable from the other every
+token has a \texttt{tokenId}, unlike ERC20 tokens that are
+indistinguishable from each other.
+
+So this library implements all the required functions as per the
+specification:
+
+\begin{itemize}
+\tightlist
+\item
+  The \texttt{balanceOf()} function (that returns a number of tokens in
+  the specified owner address).
+\item
+  The \texttt{orderOf()} function (that returns the address that owns
+  the specified \texttt{tokenId}).
+\item
+  The \texttt{transferFrom()} and \texttt{safetransferFrom()} functions
+  (that allow transferring tokens from one address to another address;
+  the \texttt{safetransferFrom} function makes certain checks before
+  doing the transfer).
+\end{itemize}
+
+There are multiple checks implemented with respect to the zero address,
+the ownership of the tokens and specifically to check if the recipient
+is a contract account, and if so, if that contract recipient is aware of
+the \texttt{ERC721} protocol itself. This is done to prevent these
+tokens from getting locked in that address forever.
+
+Approvals with \texttt{ERC721} work differently from \texttt{ERC20}:
+unlike ERC20 (that has a notion of spender for the tokens),
+\texttt{ERC721} introduces the concept of an operator, which is somewhat
+similar. The approve function in this case specifies the address of the
+operator, the specific \texttt{tokenId} and it gives permission to the
+operator to transfer this particular token to another account.
+
+This approval is automatically cleared when the token is transferred and
+only a single account can be approved at any time, which means that
+approving the zero address clears the previous approvals. There are
+other functions associated with the \texttt{ERC721} as part of this
+library and there are also various extensions presets and utilities
+similar to the \texttt{ERC20} contract.
+
+\textbf{ERC777}
+
+The next library is one that implements the \texttt{ERC777} token
+standard. This is a token standard similar to \texttt{ERC20}. It's
+backwards compatible with \texttt{ERC20}, so it implements a standard
+for fungible tokens and it's considered as implementing several
+improvements over \texttt{ERC20}.
+
+One of the key features is the notion of \textbf{hooks}, which are
+functions within the contract that are called automatically when tokens
+are being sent from it, or when tokens are being received. This allows
+the contract to control and reject which tokens are being sent and which
+tokens are being received. These features allow us to implement several
+improvements over \texttt{ERC20} such as avoiding the need for a
+separate \texttt{approve} and \texttt{transferFrom} transactions, which
+is considered as a significant user experience challenge for
+\texttt{ERC20} contracts.
+
+\texttt{ERC777} also allows one to prevent tokens from getting stuck in
+the contracts using the hooks feature. This also implements the decimals
+as being a fixed value of 18, so there's no need for the contract to set
+or change it. It introduces a notion of operators that are special
+accounts that can transfer tokens on behalf of others and it also
+implements a \texttt{send} function where, if the recipient contract is
+not aware of \texttt{ERC777} by not having registered itself as being
+aware, then transfers to that contract are disabled to prevent tokens
+from getting stuck in that contract.
+
+\textbf{ERC1155}
+
+\texttt{ERC1155} is another token standard that allows a contract to
+manage tokens in a fungibility agnostic and Gas efficient manner, so a
+single contract that implements a standard that can manage multiple
+tokens, some of which can be fungible tokens like \texttt{ERC20} or
+NFTs. All these are managed within a single contract: this means that a
+single transaction can manipulate multiple tokens within that
+transaction.
+
+This makes it very convenient from a user experience perspective. It
+also makes this standard very Gas efficient. This standard specifically
+provides two functions: \texttt{balanceOfBatch()} and
+\texttt{safeBatchtransfersFrom()} that allow querying balances of
+multiple tokens and transferring multiple tokens in the same
+transaction. This makes the management of these tokens within the
+contract very simple and Gas efficient.
+
+\subsection{Access Control}\label{access-control}
+
+OpenZeppelin Access Control Libraries
+
+\textbf{\texttt{Ownable}}
+
+The \texttt{Ownable} library of \texttt{OpenZeppelin} allows a smart
+contract to implement basic access control by introducing the notion of
+the owner for a particular contract.
+
+The default owner is the address that deployed the contract, this allows
+the smart contract to implement access control on special or critical
+functions that modify critical parameters within that contract to only
+be accessible by this owner address. This is made possible by the
+modifier \texttt{onlyOwner} within this library.
+
+This library also supports the transferring of ownership where a new
+owner can be specified to be switched over from the existing owner.
+There's also the \texttt{renounceOwnership} where the ownership is set
+to the zero address, which essentially makes all the only owner
+functions uncallable thereafter.
+
+\textbf{\texttt{AccessControl}}
+
+\texttt{OpenZeppelin} provides a second library to implement a more
+flexible access control known as role based access control (RBAC for
+short). This allows a contract to define different roles that are mapped
+to different sets of permissions, and by using the \texttt{onlyRole}
+modifier, access to different functions can be restricted to specific
+roles.
+
+Every role also has an associated \texttt{admin} with it that can grant
+and revoke those roles. So unlike \texttt{ownable} which implements a
+very basic access control using the notion of an owner address and all
+other addresses, this library allows for a more flexible role-based
+access control.
+
+\subsection{Security}\label{security}
+
+OpenZeppelin Security Libraries
+
+\textbf{\texttt{Pausable}}
+
+The pausable library from \texttt{OpenZeppelin} is interesting from a
+security perspective because it allows teams to execute what is known as
+a ``\emph{guarded launch}''. What this means is that when the team is
+launching a new project with smart contracts, it's good for the team to
+anticipate potential emergencies that could arise and using this
+functionality of the pausable library, they can pause the smart
+contracts to deal with the emergency, remediate any risks and then
+unpause the contract to continue normal operations. This is made
+possible using the \texttt{pause} and \texttt{unpause} functions that
+can be triggered by authorized accounts.
+
+These functions allow the authorized accounts to pause the contract and
+unpause it at the desired times. The way this works is by using the
+\texttt{whenPaused} and \texttt{whenNotPaused} modifiers on different
+functions. So in all functions that should be callable during the normal
+operations of the contract, the \texttt{whenNotPaused} modifier should
+be used and for those functions that should still be callable during
+emergencies, the \texttt{whenPaused} modifier should be used.
+
+Effectively, this library allows project teams to implement a circuit
+breaker mechanism to deal with any vulnerabilities discovered in the
+contract or to also deal with exploits that are happening with the
+contracts when they can use the \texttt{pause} functionality, pause the
+contracts and all the user interactions with the contract, mitigate the
+risk from that emergency, if possible, then resume normal operations by
+unpausing the contract.
+
+\textbf{\texttt{ReentrancyGuard}}
+
+The other OpenZeppelin library that is very critical to security is the
+reentrancy guard library. This is used to mitigate the risk from
+re-entrancy vulnerabilities that are somewhat unique to smart contracts
+and very dangerous. \textbf{This is the vulnerability category that was
+exploited during the DAO hack, which has historical significance to
+Ethereum.}
+
+\emph{\textbf{Reentrancy vulnerability is: if our smart contract is
+making an external call to any function of an external contract where
+that external contract is potentially untrusted (it is not one of our
+own contracts and it's been deployed by some other project team), then
+in such cases those external contracts can make a nested call to our
+contract. So they can re-enter our contract function (the function that
+made that external call or any other function) and in cases where
+certain contract state has not been updated within our contract, that
+aspect can be exploited by this nested call to do things such as
+transferring tokens multiple times or triggering logic multiple times
+where in fact it should have been able to do that only one time.}}
+
+The name ``\emph{reentrancy attack}'' because because of the concept of
+re-entering or nesting that happens, that can be exploited in many
+different ways. This particular library introduces a modifier called
+\texttt{nonReentrant} and when this modifier is applied to different
+functions in our contract, those functions can't be re-entered after
+making an external call. This can be used to mitigate reentrancy risk
+and is one of the standard security best practices that is recommended.
+
+Note that all these security features implemented in these different
+libraries where specific modifiers need to be used for implementing
+those checks, are applicable \textbf{only on functions that use those
+modifiers}. So just by using those libraries in those contracts we do
+not get the security benefits. Those benefits are realized only on
+functions where this modifier is used in the expected manner.
+
+\textbf{\texttt{PullPayment}}
+
+\texttt{OpenZeppelin} implements a pull payment library that is relevant
+in the context of payments. Payments between two contracts can be done
+either by the paying contract (by pushing the payment to the receiver
+account) or the receiving contract (by doing a pull of the payment from
+the paying contract).
+
+This is interesting in the context of avoiding re-entrancy attacks, so
+in the case of the pull payment library, the paying contract makes no
+calls on any of the functions of the receiver contract because the
+receiver contract may be potentially malicious, and it's better for that
+receiving contract or account to withdraw the payment itself by using
+the notion of pull. This prevents reentrancy by favoring the pull
+payment as opposed to the push payment and therefore is a standard
+security best practice that is recommended.
+
+\subsection{Utilities}\label{utilities}
+
+Various OpenZeppelin Utilities Libraries
+
+\textbf{\texttt{Address}}
+
+The \texttt{OpenZeppelin} \texttt{Address} library implements a set of
+functions related to the address type.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  The first one is the \texttt{isContract} function that we often
+  encounter within different smart contracts. It takes an address and a
+  contract as parameters and returns a \texttt{bool}. This function
+  returns \texttt{true} if the account address is a contract. However,
+  if it returns \texttt{false}, then it is not safe to assume that the
+  specified address is an EOA.\\
+
+  The reason for that is because \texttt{isContract} will return
+  \texttt{false} in 4 different situations:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    If it is an EOA.
+  \item
+    If it is a contract account that is in construction (so within the
+    constructor of that contract account).
+  \item
+    If it is an address where a contract will be created.
+  \item
+    If the address specified had a contract in it, but was later
+    destroyed.
+  \end{itemize}
+
+  So for all these 4 cases, this function will return \texttt{false} and
+  an EOA is only one of the four reasons, so this is something where
+  contracts using this function typically make incorrect assumptions
+  about what this function does and something that has to be paid
+  attention from a security perspective.
+\item
+  The second function is \texttt{sendValue}. Remember that
+  \texttt{Solidity} has a \texttt{transfer} primitive that sends wei to
+  a recipient contract, but limits the Gas supplied to 2300 Gas units.\\
+
+  This has the drawback that if the Gas Cost of certain opcodes changes
+  (for example, increases over time) then the 2300 subsidy is not going
+  to be sufficient for some of the logic that would be implemented
+  within the \texttt{fallback} function of that contract.\\
+
+  So the \texttt{sendValue} function removes this 2300 limitation and
+  forwards all the available Gas to the callee contract. This library
+  further implements wrappers around the low-level call primitives
+  supported by \texttt{Solidity}, so for \texttt{call},
+  \texttt{staticcall} and \texttt{delegatecall} primitives, there are
+  equivalent wrappers that are considered as safer alternatives to using
+  these low primitives directly (\texttt{functionCall},
+  \texttt{functionCallWithValue}, \texttt{functionStaticCall},
+  \texttt{functionDelegateCall}).
+\end{enumerate}
+
+\textbf{\texttt{Arrays}}
+
+The \texttt{OpenZeppelin} \texttt{Arrays} library implements array
+related functions. There is a \texttt{findUpperBound()} function that
+takes in a \texttt{uint256} array along with the \texttt{uint256}
+element. The array is expected to be sorted in ascending order with no
+repeat elements in it, and it returns the first index in that array that
+contains a value greater or equal to the specified element. If there is
+no such index which means that all the values in the array are strictly
+less than the element, then in those cases the length of the array
+itself is returned.
+
+\textbf{\texttt{Strings}}
+
+\texttt{OpenZeppelin} provides a \texttt{Strings} library that allows
+one to perform some basic string operations: there is a
+\texttt{toString} function that converts a \texttt{uint256} to its
+\texttt{ASCII} string decimal representation, a \texttt{toHexString}
+function that converts it to an \texttt{ASCII} string hexadecimal
+representation and finally, a \texttt{toHex\ String} that takes in a
+length parameter that converts a \texttt{uint256} to a hexadecimal
+representation with a fixed length.
+
+\textbf{\texttt{Context}}
+
+The context library provides current execution context, specific to the
+\texttt{msg.sender} and \texttt{msg.data} primitives. Remember that
+these parameters are provided by \texttt{Solidity} in situations where
+our smart contract is working with what are known as meta-transactions,
+where the account sending the transaction and paying for the Gas costs
+may not be the actual user as far as our applications context is
+concerned. In such situations, which happen where there are relayers
+between the user and our smart contract, the functions implemented by
+this library help us distinguish between the users context and the
+relayers context.
+
+\textbf{\texttt{ERC2771Context}}
+
+\texttt{ERC2771Context} library is a variant of the \texttt{Context}
+library, that's specific to \texttt{ERC2771}.
+
+At a high level, there is a \textbf{transaction signer} who originates
+transactions, by signing it from an EOA, and sends this signed
+transactions to a relayer off-chain. Then, this relayer is responsible
+for paying the Gas. \texttt{ERC2771} specifies a secure protocol for a
+particular contract to accept such meta-transactions. This protocol is
+concerned about the Gas layer from forging, modifying or duplicating the
+requests that are sent by the transaction signer.
+
+It specifies four different entities:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  The \textbf{transaction signer}, who signs and sends a transaction
+  off-chain to the Gas relayer.
+\item
+  The \textbf{Gas relayer} receives these transactions and is expected
+  to pay for the Gas, then forwards it to a \textbf{trusted forwarder}
+  contract.
+\item
+  The \textbf{trusted forwarder} contract on-chain, is further
+  responsible for verifying the assigned transaction to look at the
+  nonce, the signature and make sure they are correct. Finally, it
+  forwardz that verified transaction to the \textbf{contract that is the
+  ultimate destination for the transaction}.
+\item
+  Destination contract.
+\end{enumerate}
+
+So this protocol is defined by this \texttt{ERC}, the library provides
+various functions to help with it.
+
+\textbf{\texttt{MinimalForwarder}}
+
+The \texttt{MinimalForwarder} library provides support for implementing
+the trusted forwarder that we discussed in the context of the
+\texttt{ERC2771} meta-transactions.
+
+It implements a very simple \texttt{MinimalForwarder} that verifies the
+nonce and signature of the forwarded transaction before calling the
+destination contract and it does.
+
+So with two functions, the \texttt{verify} function for verification of
+\texttt{nonce} and signature; and the \texttt{execute} function for
+executing the specific function on the destination contract.
+
+\textbf{\texttt{Counters}}
+
+There's a simple \texttt{Counters} library that allows a contract to
+declare new counters, increment and decrement them. This is useful for
+doing things like tracking the number of mapping elements for
+\texttt{ERC721} \texttt{tokenId}s or for request IDs depending on the
+application context. There are different functions that let the contract
+get the current value of a counter, reset it to zero, increment and
+decrement the counter by one.
+
+\textbf{\texttt{Create2}}
+
+\texttt{OpenZeppelin} has a \texttt{Create2} library that provides
+library functions to use the \texttt{CREATE2} EVM opcode functionality
+in an easier and safer manner.
+
+Remember that EVM has two instructions: \texttt{CREATE} and
+\texttt{CREATE2} that allow contracts to programmatically create other
+contracts. This is in contrast to creating contracts by sending a
+transaction to the zero address so, if we think of this as a deployer
+contract that is creating a newly deployed contract, then the
+\texttt{CREATE} opcode uses the address of the deployer contract along
+with the state of the deployed contract in the form of the nonce of that
+contract account to determine the address of the newly deployed
+contract.
+
+Contrast to this, the \texttt{CREATE2} opcode does not use the state of
+the deployer contact at all. Instead it only uses the bytecode of the
+newly deployed contract along with a value provided by the deployer
+contract (known as the \texttt{salt}), to determine the address of the
+newly deployed contract.
+
+Because of this change, the address of the newly deployed contract
+becomes deterministic. In this case the \texttt{deploy} library function
+uses 3 parameters: the \texttt{amount}, \texttt{salt} and bytecode to
+create and deploy a newly deployed contract.
+
+\texttt{amount} is the amount of the Ether balance the newly deployed
+contract will start off with, if one only wants to determine the address
+of the new contract without actually deploying it, there is a library
+function called the \texttt{computeAddress} that helps one to do that
+and, if one wants to compute the address of this contract, if it is
+going to be deployed from a different deployer address, then there's a
+different library function \texttt{computeAddress} that takes an
+additional parameter which is the address of the deployer.
+
+\textbf{\texttt{Multicall}}
+
+\texttt{OpenZeppelin} provides a \texttt{Multicall} library that allows
+a smart contract to batch multiple calls together in a single external
+call to this contract.
+
+This function is \texttt{multicall}: it takes in a single data parameter
+and it returns a \texttt{bytes} array of all the return parameters from
+those multiple points. It helps the contract to receive and execute
+multiple function calls in a batch. The benefit of this is that it is
+less overhead and makes it more Gas efficient because all these multiple
+calls are now packaged in a single call within the same transaction of
+the same block.
+
+\textbf{\texttt{ERC165}}
+
+The \texttt{ERC165} library allows one to determine if a particular
+contract supports a particular function interface. This runtime
+detection is implemented using a lookup table.
+
+It provides two functions: the first one is \texttt{\_registerInterface}
+and is used for registering function interfaces. The second one,
+\texttt{supportsInterface}, is to determine if a particular interface is
+supported which returns a \texttt{bool} either \texttt{true} or
+\texttt{false}.
+
+\textbf{\texttt{TimelockController}}
+
+The \texttt{TimelockController} library provides library functions for
+enforcing timelocks. Timelocks are nothing but time delayed operations:
+ff there are operations that need to be executed only after a certain
+window of time delay has passed or occurred, that is referred to as
+timelock.
+
+This library provides various functions to enforce a timelock on
+\texttt{onlyOwner} operations. \texttt{OnlyOwner} here refers to the
+modifier for access control which when applied to functions allows only
+the Owner of that smart contract to execute that function. This becomes
+critical from a security perspective because \texttt{onlyOwner}
+operations are used in smart contracts to make changes to critical
+parameters of that protocol or project.
+
+They're also used on functions that enforce or change access control for
+that smart contract, so in all these scenarios, if we want to give the
+users who interact with the smart contract an opportunity to notice
+these operations that are making these critical changes, then decide if
+they would like to continue engaging with the smart contract or if they
+would like to exit from engaging with the smart contract by removing the
+funds from the smart contract or some other logic, then
+\texttt{Timelock} becomes useful for providing a mechanism to do so.
+
+This library provides various functions that help us schedule, delay,
+execute, cancel such operations or do, so in batches all in a timelocked
+specific manner. There are also functions that let us query, if an
+operation is pending, if it is ready, if it is already done in the
+context of the timelock and one can also update the delay that is
+specific to the timelock operation.
+
+\subsection{Financial Utilities}\label{financial-utilities}
+
+OpenZeppelin Financial Utilities Libraries
+
+\textbf{\texttt{Escrow}}
+
+The \texttt{Escrow} library allows a smart contract to hold funds for a
+designated payee until they withdraw them. The contract that uses this
+as the payment method is its owner and it provides three functions to
+allow this functionality: there is the \texttt{depositsOf} function that
+returns the the amount of the funds designated for the payee, there are
+the \texttt{deposit} and the \texttt{withdraw} functions themselves that
+are only callable by the owner.
+
+\textbf{\texttt{ConditionalEscrow}}
+
+The \texttt{ConditionalEscrow} library is derived from the
+\texttt{Escrow} library and as the name says it only allows withdrawal
+if a particular condition is met. The \texttt{withdrawalAllowed}
+function checks for this condition and returns \texttt{true} or
+\texttt{false}, if it is met or not. The \texttt{withdraw} function
+itself is of public visibility and does not have the \texttt{onlyOwner}
+modifier here, but it checks the \texttt{withdrawalAllowed} condition
+and if that is met it calls the base contract's \texttt{withdraw}
+function that has the \texttt{onlyOwner} modifier.
+
+\textbf{RefundEscrow}
+
+The \texttt{RefundEscrow} library is further built on top of the
+\texttt{ConditionalEscrow} library that we just discussed. This allows
+holding funds for a beneficiary that are deposited from multiple parties
+multiple depositors.
+
+This contract has three states in which it can be:
+
+\begin{itemize}
+\tightlist
+\item
+  The active state: when deposits are allowed to be made by the multiple
+  depositors.
+\item
+  The refunding state: refunding is where refunds are sent back to the
+  depositors.
+\item
+  The closed state: the state in which the beneficiary can make the
+  withdrawals.
+\end{itemize}
+
+\textbf{\texttt{PaymentSplitter}}
+
+The \texttt{PaymentSplitter} library provides functions that allows to
+split Ether payments among a group of accounts. The sender, who sends
+Ether to this contract that uses this library does not know about the
+splitting aspect, so it is sender agnostic. The splitting can be done in
+equal proportions or in an arbitrary manner.
+
+This is done by assigning a particular number of shares to every
+account. That account can later claim an amount of Ether that is
+proportional to the percentage of the total shares that they were
+assigned. This follows the \texttt{PullPayment} model that we have
+discussed earlier, which is much safer from a security perspective than
+a PushPayment model.
+
+\subsection{Cryptography Utilities}\label{cryptography-utilities}
+
+OpenZeppelin Cryptography Utilities Libraries
+
+\textbf{ECDSA}
+
+\texttt{OpenZeppelin} provides an \texttt{ECDSA} library. Remember that
+ECDSA signatures are used very commonly in Ethereum smart contracts. The
+signature itself has three components \texttt{v}, \texttt{r} and
+\texttt{s} which are \texttt{bytes1}, \texttt{byte32} and
+\texttt{bytes32} in length respectively, making the signature 65 bytes.
+
+The EVM has an \texttt{ecrecover} opcode and \texttt{Solidity} has a
+similar primitive that supports this opcode. But that opcode allows for
+what are known as malleable (or non-unique signatures if you remember).
+
+This library prevents that by providing a library function recovered
+that is not susceptible to this malleability. The way that it's made
+possible is that this function requires the \texttt{s} value that
+signature to be in the lower half order, the \texttt{v} value to be
+either 27 or 28, so this becomes important depending on how the smart
+contract is using the signatures and, if malleability is a concern or a
+risk, for that use case the \texttt{ecrecover} function takes in the
+hash of the message (the signature component of that message) and
+returns a signer address.
+
+To sum it up, the EVM \texttt{ecrecover} is malleable which may be a
+concern depending on how the signature is being used in the smart
+contract logic. This library provides a non-malleable way of using
+\texttt{ecrecover}.
+
+\textbf{MerkleProof}
+
+The \texttt{MerkleProof} library provides functionality to help with the
+verification of Merkle tree proofs. Remember that Merkle trees are data
+structures where the leaves contain the data and all the other nodes in
+the tree contain a combination of the hashes of their two child nodes.
+
+This library provides a verify function that takes in three parameters:
+the leaf, the root, the proof, and returns a \texttt{bool} value which
+is \texttt{true} if the leaf parameter can be proved to be a part of the
+Merkle tree defined by the root parameter.
+
+In order to do that, a proof must be provided to this function that
+contains all the sibling hashes on the branch from the leave to the root
+of the tree. This is an interesting library that is used often where
+Mertkle tree proofs are required within smart contracts.
+
+\textbf{SignatureChecker}
+
+The \texttt{SignatureChecker} library provides functionality that allows
+smart contracts to work with both ECDSA signatures and \texttt{ERC1271}
+signatures.
+
+We've talked about ECDSA signatures that are signatures that can be
+created with the use of a private key which is possible only with EOAs.
+The reason for this is that contracts can't possess a private key
+because all contract state is public.
+
+\texttt{ERC1271} allows the concept of contract signatures in in a
+manner that is different from ECDSA signatures. This library becomes
+interesting for applications such as smart contact wallets that need to
+work with the contract signatures and ECDSA signatures.
+
+\textbf{EIP-712}
+
+There is an \texttt{EIP712} library that provides support for the
+hashing and signing of typed structured data as opposed to binary blobs.
+This supports the notion of an \texttt{EIP-712} domain separator.
+
+The source code of this library this is again often used in smart
+contracts and from a security perspective, what becomes interesting here
+is whether this signature includes the \texttt{chainId} of the chain
+where the smart contract is deployed and being executed and whether this
+also includes the address of the smart contract itself.
+
+\textbf{Not using these two values within the signature can allow replay
+attacks, if the contact is redeployed to some other address on the same
+chain or to a different chain.}
+
+\subsection{Math Utilities}\label{math-utilities}
+
+OpenZeppelin Math Utilities Libraries
+
+\textbf{Math}
+
+\texttt{OpenZeppelin} provides a \texttt{Math} library that has some
+basic standard math utilities that are missing in the \texttt{Solidity}
+language itself. There's a \texttt{max} function that returns the
+maximum of two \texttt{uint256} values. There's a \texttt{min} function
+that provides the minimum of those two values. Then the \texttt{average}
+function that returns the average of those two numbers, which is rounded
+towards zero.
+
+\textbf{SafeMath}
+
+Then there is the \texttt{SafeMath} library which we have talked about
+earlier. It provides the basic math functions that are safe from
+overflow and underflow conditions because of wrapping.
+
+It has support for \texttt{add}, \texttt{sub}, \texttt{mul},
+\texttt{div} and \texttt{mod} functions. The typical usage is done via
+the \texttt{using\ for} directive where you would see something like
+\texttt{using\ SafeMath\ for\ uint256} where the \texttt{SafeMath}
+library functions are applied to all variables of type \texttt{uint256}
+in that contract.
+
+There are the \texttt{try...} variants of these functions where instead
+of reverting, if the overflow and underflows happen a flag is returned.
+This is useful for exception handling, so this \texttt{SafeMath} library
+is almost absolutely required for smart contracts that deal with
+integers and use a \texttt{Solidity} compiler version below
+\texttt{0.8.0} (because remember that \texttt{Solidity\ 0.8.0}
+introduced default overflow and underflow checked arithmetic).
+
+\textbf{SignedSafeMath}
+
+The \texttt{SignedSafeMath} library provides the same mathematical
+functions as SafeMath, but for signed integers. The only operation that
+is missing is the modulus operation which does not make sense for signed
+integers. The motivation for this is the same as SafeMath.
+
+\textbf{\texttt{SafeCast}}
+
+Remember that \texttt{Solidity} allows both implicit casting of types
+and explicit casting between types. Explicit casting is where the
+developers can force the compiler to cast one type into another type
+where the compiler may not be able to determine that it is safe to do.
+So in cases where the developers want to do what is known as
+downcasting, the \texttt{OpenZeppelin}'s \texttt{SafeCast} library
+provides various functions to do so in a safe manner.
+
+Downcasting is when the developer wants to cast a source type into a
+target type where the target type has fewer storage bits to represent it
+than the source type. In such cases, because the target type has fewer
+storage bits, it may not always be safe to do so.
+
+If the variable of that type actually requires the storage bits being
+reduced from the source type to destination type. The \texttt{SafeCast}
+library provides functions that allow the developer to determine if that
+downcasting is safe and if not, it raises an exception by reverting the
+transaction.
+
+There are various functions to safely downcast from \texttt{uint256} to
+\texttt{uint224} and all the way to \texttt{uint8}. Similarly, there are
+functions for signed integers to do so as well, so these functions
+become very useful for developers when they're doing downcasting to
+prevent overflows because of doing so.
+
+\subsection{Structs Extension
+Libraries}\label{structs-extension-libraries}
+
+OpenZeppelin Structs Extension Libraries
+
+\textbf{\texttt{EnumerableMap}}
+
+Remember that the mapping types and \texttt{Solidity} can't be
+enumerated for all the keys and values that they contain. The
+\texttt{EnumerableMap} library of \texttt{OpenZeppelin} allows a
+developer to create and use EnumerableMaps.
+
+Adding and removing entries from this mapping type can be done in
+constant time. Checking for existence of entries can also be done in
+constant time. Enumerating the maps can be done in $\mathcal{O}(n)$,
+$n$ is the size of the mapping. As of the latest version, the only
+supported mapping type is the one where keys are of \texttt{uint256} and
+the values are of \texttt{address} type.
+
+\textbf{\texttt{EnumerableSet}}
+
+The \texttt{EnumerableSet} library allows the developers to use
+enumerated sets. There are various functions that are provided to manage
+the sets, adding and removing entries to the set and checking entries
+for existence. Again can be done in $\mathcal{O}(1)$ time (that's
+constant time). Enumerating them can be done in $\mathcal{O}(n)$ time.
+As of the latest version, the only supported set types are those that
+contain \texttt{bytes}, \texttt{address} or \texttt{uint256}.
+
+\textbf{\texttt{BitMaps}}
+
+Bitmaps are commonly encountered data structures in computer science,
+where every bit of the underlying type can be thought of as representing
+a different variable. The \texttt{BitMaps} library maps a
+\texttt{uint256} type to \texttt{bool} types, where this bitmap can be
+used to represent 256 different \texttt{bool} values within that single
+\texttt{uin256} type.
+
+This library allows developers to do that in a very compact and
+efficient manner. The library provides 4 different functions to operate
+on these BitMaps:
+
+\begin{itemize}
+\tightlist
+\item
+  The \texttt{get} function returns the \texttt{bool} value at a
+  particular index of the bitmap.
+\item
+  The \texttt{setTo} function allows us to set the value at a particular
+  index of the bitmap to the specified value.
+\item
+  The \texttt{set} function sets the value of the bitmap at that index
+  to 1.
+\item
+  The \texttt{unset} function sets the value of the index at that bitmap
+  to 0.
+\end{itemize}
+
+\subsection{Proxies}\label{proxies}
+
+\texttt{OpenZeppelin} provides support for different libraries that help
+with proxies. At a high level the Proxy setup requires two contracts:
+the Proxy contract, and what is known as the implementation contract.
+
+The Proxy contract receives the calls from the user, and forwards it to
+the implementation contract, this forwarding is done via
+\texttt{delegateCall}. In this setup the Proxy contract is typically the
+one that holds the contract state, the implementation contract is the
+one that implements the logic. So when the forwarding is done via
+\texttt{delegateCall}, the implementation logic executes that logic on
+the state held in the Proxy contract.
+
+As you can imagine this has to be done in a very careful manner because
+it can lead to a variety of security issues, there are many many
+articles that have been written on this topic by \texttt{OpenZeppelin}
+and also by \texttt{Trail\ of\ Bits} and other security firms.
+
+So, \texttt{OpenZeppelin}'s basic \texttt{Proxy} library provides a
+\texttt{fallback} function, that forwards the call to an implementation.
+It also provides a \texttt{delegate} function, that allows one to
+specify, the delegation to a specific implementation contract. This also
+allows us to specify a hook, via the \texttt{beforeFallback} function,
+that gets called before falling back to the implementation.
+
+Various OpenZeppelin Proxy Libraries
+
+\textbf{\texttt{ERC1967Proxy}}
+
+The \texttt{ERC1967Proxy} library helps us implement what are known as
+\textbf{upgradable proxies}. These are upgradable because the
+implementation contract that sits behind the Proxy can be changed to
+point to a different implementation contract.
+
+Remember the Proxy setup where the application state is held in the
+Proxy contract, the logic may be implemented in the implementation
+contract. So, if you want the logic to change for whatever reason maybe
+to fix a bug, in the current implementation or to enhance and add more
+logic, upgradeable proxies are one way to do so.
+
+In this case, the address of the implementation contract that can be
+changed is stored in the storage of the Proxy contract. This specific
+storage location is specified by the EIP, so that it does not conflict
+with the layout of the implementation contact that sits behind the
+Proxy.
+
+The address of the logic or the implementation contract can be specified
+as part of the constructor, the address of the new implementation can be
+provided while upgrading using the upgrade function. So upgradeable
+proxies are something that we encounter commonly in smart contracts,
+this again has to be done in a very careful manner because it can lead
+to security issues such as the storage conflict that is specified here.
+
+\textbf{\texttt{TransparentUpgradeableProxy}}
+
+Another Proxy related library is the
+\texttt{TransparentUpgradeableProxy}. This helps one implement a Proxy
+that is upgradable only by an admin. It specifically helps us mitigate
+the risk due to attacks from \textbf{Selector Clash}.
+
+What this means is that, if a function is present both in the Proxy and
+the implementation such that their selectors, their \textbf{function
+selectors clash} (i.e.~they evaluate to the same value) which could lead
+to problems, because if there is a function call to that function, then
+it will not be clear if the function should be executed in the context
+of the Proxy contract or, if it should be forwarded to the
+implementation contract.
+
+So this library specifies that all function calls coming from the
+non-admin users will be forwarded to the implementation contract even,
+if those calls match the function selected of the Proxy contract.
+Similarly, the function calls made by the admin users are restricted to
+the Proxy contract, they are not forwarded to the implementation
+contract.
+
+This allows for clean separation where the admin functions are
+restricted to the Proxy contract and non-admin functions are forwarded
+to the implementation contract. So the admin can do things such as
+upgrade the implementation contract or create the admin address itself.
+
+\textbf{\texttt{ProxyAdmin}}
+
+The \texttt{ProxyAdmin} library is meant to be used as the admin of the
+\texttt{TransparentUpgradeableProxy} that we just discussed. It provides
+support for various functions that are required by the admin, these
+include:
+
+\begin{itemize}
+\tightlist
+\item
+  The \texttt{getProxyImplementation()} which returns the implementation
+  contract address.
+\item
+  The \texttt{getProxyAdmin()} which returns the admin address.
+\item
+  \texttt{changeProxyAdmin()}, that changes the ProxyAdmin.
+\item
+  \texttt{(upgrade(proxy,\ implementation)}, that upgrades the
+  implementation contract pointed to by the Proxy.
+\item
+  The \texttt{upgradeAndCall(proxy,\ implementation,\ data)} function
+  that both upgrades implementation, then makes a call to that new
+  implementation.
+\end{itemize}
+
+\textbf{\texttt{BeaconProxy}}
+
+The BeaconProxy library allows one to implement a Proxy where the
+implementation address is obtained from a different contract known as a
+beacon contract. That beacon contract itself is upgraded:
+
+\[\text{Implementation Address}\rightarrow\text{UpgradeableBeacon}\]
+
+The address of the beacon contract is stored in the Proxy storage at a
+slot specified by \texttt{EIP1967}:
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+Beacon Address -> Slot uint256(keccak256("eip1967.proxy.beacon")) - 1
+\end{lstlisting}
+
+The constructor can be used to initialize where the beacon contact is
+located. There are functions that allow us to get the address of the
+beacon the address of the implementation:
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+Constructor -> Beacon Init, _beacon() -> Beacon Addr
+\end{lstlisting}
+
+Finally, to set the beacon contract to a different address than what was
+initialized:
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+_implementation()
+_setBeacon(beacon, data)
+\end{lstlisting}
+
+\textbf{\texttt{UpgradeableBeacon}}
+
+The \texttt{UpgradeableBeacon} library provides support for implementing
+the beacon contract in the context of the \texttt{BeaconProxy} that we
+just discussed.
+
+The Owner of this contract can change the implementation contract that
+this \texttt{BeaconProxy} points to. The initial implementation contract
+is specified in the constructor, the Owner is the one who deployed the
+contract.
+
+There are functions that allow one to determine what that implementation
+contract is and also to upgrade it to a new implementation:
+\texttt{\_implementation()}, \texttt{upgradeTo(newImlementation)}.
+
+\textbf{\texttt{Clones}}
+
+\texttt{OpenZeppelin}'s \texttt{Clones} library helps one implement what
+are known as minimal Proxy contracts as specified by \texttt{EIP1167}.
+In this case all the implementation contracts are clones of specific
+byte code, where all the calls are delegated to a known fixed address.
+
+The deployment can be done in a traditional way using create or it can
+be done in a deterministic way using \texttt{CREATE2}.
+
+Corresponding to these two deployment options, there are two functions:
+
+\begin{itemize}
+\tightlist
+\item
+  There's the \texttt{clone(implementation)} function that clones that
+  implementation and returns the address of the instance deployed using
+  create
+\item
+  There is the equivalent version for \texttt{CREATE2} the
+  \texttt{cloneDeterministic(implementation,\ salt)} that takes in the
+  implementation, the sort and returns the instance of the clone that
+  was created.
+\end{itemize}
+
+\textbf{\texttt{Initializable}}
+
+The \texttt{Initializable} library provides critical functionality that
+is required for applications that work with Proxy contracts.
+
+Remember that in the Proxy setup we have a Proxy contract that forwards
+all the calls to an implementation contract. The Proxy contract
+maintains the data or the application state and delegates the calls to
+the implementation contract, which implements the logic that works on
+the application state maintained by the Proxy contract.
+
+So in this setup, if there are functions in the implementation contract
+that need to work with certain initialized values, then all such
+initialization should not be done in the constructor of the
+implementation contract, because the constructor would modify the state
+of the implementation contract which is never used in this setup.
+
+So all this initialization is expected to be moved to a different
+function, which is typically called the initialize function that has an
+external visibility, this initialized function is expected to be called
+by the Proxy contract.
+
+This aspect of not using constructors for initialization, but using a
+separate initialize function applies not only to the implementation
+contract, but to all the base contracts that it derives. This
+initialization should be performed only once and should be performed
+immediately after the implementation contract is deployed, either from a
+deploy script or from a factory contract.
+
+The \texttt{Initializable} library provides an \texttt{initializer}
+modifier, which when applied to this initialize function allows that to
+be called only once. So these concepts of the Proxy setup, the fact that
+the implementation contract should not be using a constructor, but
+instead an \texttt{OpenZeppelin} \texttt{Initializable} library function
+that needs to be called immediately after deployment, more importantly
+needs to be called only once.
+
+These are very critical from a security perspective there have been
+multiple vulnerabilities reported because of this not being followed
+multiple exploits and something that therefore needs to be paid very
+careful attention to.

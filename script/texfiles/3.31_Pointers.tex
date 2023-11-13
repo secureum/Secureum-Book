@@ -1,0 +1,22 @@
+\section{Pointers}\label{pointers}
+
+\subsection{Storage Pointers}\label{storage-pointers}
+
+There is a security pitfall related to the use of uninitialized storage
+pointers. Local storage variables that are uninitialized can point to
+unexpected storage locations within the contract.
+
+This can lead to developers unintentionally modifying the contract
+state, which can lead to serious vulnerabilities. Given that this is so
+error-prone, \texttt{Solidity} compiler \texttt{0.5.0} started
+disallowing such pointers.
+
+\subsection{Function Pointers}\label{function-pointers}
+
+There was a security risk in using uninitialized function pointers
+within constructors of contracts because of a compiler bug that resulted
+in unexpected behavior.
+
+This compiler bug was present in \texttt{Solidity} versions
+\texttt{0.4.5} to \texttt{0.4.26} and \texttt{0.5.0} to \texttt{0.5.7}
+and has since been fixed.

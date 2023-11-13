@@ -1,0 +1,68 @@
+\section{Events}\label{events}
+
+Events are an abstraction that are built on top of the EVM's logging
+functionality. Emitting events cause the arguments that are supplied to
+them to be stored in what is known as the transactions log. This log is
+a special data structure in the blockchain associated with the address
+of the specific contract that created the event. This log stays there as
+long as that block is accessible.
+
+The log and its event data are not accessible from within the contracts,
+not even from the contract that created them. This is an interesting
+fact of logs in EVM: they're meant to be accessed off-chain and this is
+allowed using \textbf{RPC}s (\textbf{Remote Procedure Calls}). So
+applications, off-chain interfaces or monitoring tools can subscribe and
+listen to these events through the RPC interface of an Ethereum client.
+
+From a security perspective, these events play a very significant role
+when it comes to auditing and logging for off-chain tools to know what
+the state of a contract is and monitor the state along with all the
+transitions that happen due to the transactions.
+
+\subsection{Indexed Parameters in
+Events}\label{indexed-parameters-in-events}
+
+Up to three parameters of every event can be specified as being indexed
+by using the \texttt{indexed} keyword. This causes those parameters to
+be stored in a special data structure known as topics instead of the
+data part of the log. Putting parameters into the topics part allows one
+to search and filter those topics in a very optimal manner.
+
+Parameters are commonly part of some of the specifications such as the
+\texttt{ERC20} token standard, and the events in that standard. These
+indexed parameters use a little more gas than the non-indexed one but
+they allow for faster search and query.
+
+\subsection{Event Emission}\label{event-emission}
+
+Events are triggered by using the \texttt{emit} keyword. Every contract
+would declare a certain set of events as relevant, and within the
+contract functions, wherever these events need to be created and stored
+in the log, they would be done so by using the \texttt{emit} keyword. An
+example would look like this
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+emit Deposit(msg.sender, _id, msg.value);
+\end{lstlisting}
+
+for the above example, let's say that we have a deposit event as part of
+a particular contract, and we have specific parts of functions where we
+would want to create this event and store them in the log.
+
+So, following the example above, we specify the event plus the arguments
+that are required according to the parameters of the event. These look
+in some way very similar to a function call, where the event corresponds
+to the function and the arguments that are supplied to it correspond to
+the event parameters.
+
+From a security perspective, it's critical for the contract and for the
+developers to emit the correct event and to use the correct parameters
+that are required by that event.
+
+This is something that is sometimes missed or not paid attention to
+because it's harder to be tested perhaps, and not critical to the
+control flow of the contract.
+
+But the only way for off-chain entities, any kind of user interfaces or
+monitoring tools to keep track of the contract state and the transitions
+is by looking at these event parameters stored in the logs.

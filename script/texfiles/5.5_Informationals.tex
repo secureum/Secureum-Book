@@ -1,0 +1,909 @@
+\section{Informationals}\label{informationals}
+
+\subsection{ConsenSys Diligence}\label{consensys-diligence}
+
+\subsubsection{Umbra}\label{umbra}
+
+This finding was a ConsenSys Diligence audit of Umbra where it was an
+informational issue related to specification and documentation of token
+behavior restrictions.
+
+For context, as with any protocol that interacts with arbitrary ERC20,
+tokens it is important to clearly document which tokens are supported.
+This is best done by providing a specification for the behavior of the
+expected ERC20 tokens and only relaxing the specification after careful
+review of a particular class of tokens and their interactions with the
+protocol.
+
+The recommendation was that node deviations from normal ERC20 behavior
+should be explicitly noted as not supported by Umbra protocol, such as
+deflationary tokens or fee on transferred tokens. These are tokens in
+which the balance of the recipient of a transfer may not be increased by
+the amount of the transfer there may also be some alternative mechanism
+by which balances are unexpectedly decreased.
+
+While these tokens can be successfully sent, the internal accounting of
+Umbra contract will be out of sync with the balance as recorded in the
+token contract resulting in loss of funds. For inflationary tokens, the
+Umbra contract provided no mechanism for claiming positive balance
+adjustments. For rebasing tokens (a combination of deflationary and
+inflationary tokens; rebasing tokens are tokens in which an account's
+balance increases or decreases along with expansions or contractions in
+their supplies) this applies too.
+
+This is related to token deflation via fees in 107, total inflation via
+interest in 108, garden launch via asset types and 129, and broader
+aspects of token handling in 159, system specification and documentation
+in 136, 137 and accounting issues in 171, that we discussed in security
+pitfalls and best practices 201 model.
+
+\subsubsection{DeFi Saver}\label{defi-saver}
+
+\begin{itemize}
+\item
+  This finding was a ConsenSys Diligence audit of DeFi where it was an
+  informational issue related to testing: the test suite was not
+  complete and many of the tests failed to execute.\\
+
+  For complicated systems such as DeFi Saver, which uses many different
+  modules and interacts with different DeFi protocols, it is crucial to
+  have a full test coverage that includes edge cases and fail scenarios,
+  which is critical for safer development and future upgrades.\\
+
+  As seen in some smart contact incidents, a complete test suite could
+  have prevented issues that might be hard to find with manual reviews.
+  So the recommendation was to add a full coverage test suite.\\
+
+  This is related to the broad aspect of testing in 155 that we
+  discussed in security pitfalls and best practices 201 modules.
+\item
+  Another informational finding from ConsenSys audit of DeFi Saver was
+  related to naming, documentation and refactoring, where
+  \texttt{hyperGetRatesCode} was unclear because function names did not
+  reflect their true functionalities. Additionally, the code used some
+  undocumented assumptions as well.\\
+
+  The recommendation was to refactor the code to separate
+  \texttt{getRateFunctionality} with \texttt{getSellRate} and
+  \texttt{getPiRate}, and also to explicitly document any assumptions in
+  the code.\\
+
+  This is related to broad aspects of system documentation in 137 and
+  clarity in 188 that we discussed in security pitfalls and best
+  practices to one module.
+\end{itemize}
+
+\subsubsection{DAOfi}\label{daofi}
+
+\begin{itemize}
+\item
+  This finding was a ConsenSys Diligence audit of DAOfi where it was an
+  informational issue related to documentation, where stale comments
+  about storage slots were present in the codebase. The recommendation
+  was to remove such stale comments.\\
+
+  This is related to comments in 154 redundant constructs in 157 and
+  broad aspects of system documentation in 137 that we discussed in
+  security pitfalls and best practices to one module.
+\item
+  Another informational finding from ConsenSys Diligence audit of DAOfi
+  was related to unnecessary code, or logic, where there was an
+  unnecessary call to \texttt{DAOfiV1Factory} \texttt{formula()}
+  function. For context, few \texttt{DAOfiV1} pair functions used a
+  external function, which made a call to the factory to retrieve the
+  immutable formula address set in the constructor. Such calls could
+  simply be replaced with that immutable value instead. The
+  recommendation was therefore to remove such unnecessary calls and
+  replace them with variable reads.\\
+
+  This is related to broad aspects of redundant constructs in 157, the
+  principle of economy of mechanism in 197 that we discussed in security
+  pitfalls and best practices 201 module.
+\item
+  Another informational finding from ConsenSys Diligence audit of DAOfi
+  was related to testing, where increased testing of edge cases in
+  complex mathematical operations, could have identified at least one
+  issue raised in the report.\\
+
+  The recommendation was adding additional unit tests as well as Fuzzing
+  or property based testing of curve related operations for more
+  validation of mathematical operations.\\
+
+  This is related to the broad aspect of testing in 155 and numerical
+  issues in 170 that we discussed in security pitfalls and best
+  practices to one module.
+\end{itemize}
+
+\subsubsection{MStable}\label{mstable}
+
+This finding was a ConsenSys Diligence audit of DAOfi where it was an
+informational issue related to documentation, where there was a mismatch
+between what the code implemented and what the corresponding comment
+described. The recommendation was to update the code or the comment to
+be consistent.
+
+This is related to comments in 154 and broad aspects of system
+documentation in 137 and clarity issues in 188 that we discussed in
+security pitfalls and best practices 201 module.
+
+\subsubsection{1inch}\label{inch}
+
+\begin{itemize}
+\item
+  This finding was a ConsenSys Diligence audit of 1inch where it was an
+  informational issue related to documentation and testing, where the
+  source code hardly contained any inline documentation which made it
+  hard to reason about functions and how they were supposed to be
+  used.\\
+
+  Additionally, the test coverage seemed to be limited, whereas
+  especially for a public facing exchange contract system test coverage
+  should have been extensive covering all functions especially those
+  that could be directly accessed including potentially security
+  relevant and edge cases. This would have helped in detecting some of
+  the findings raised with the report.\\
+
+  The recommendations were to consider adding NatSpec format compliant
+  inline code documentation, describing what were functions used for and
+  who was supposed to interact with them. i.e.~documenting specific
+  assumptions and and increasing test coverage.\\
+
+  This is related to system documentation in 137 comments in 154 and
+  broad aspects of testing in 155 and clarity issues in 188 that we
+  discussed in security pitfalls and best practices 201 modules.
+\item
+  Another informational finding from ConsenSys Diligence audit of DAOfi
+  was related to configuration, where the compiler version
+  \texttt{pragma} was unspecific in that it was floating or unlocked
+  with caret \texttt{\^{}0.6.0}.\\
+
+  That often makes sense for libraries to allow them to be included with
+  multiple different versions of an application. It may be a security
+  risk for the application implementation itself: a known vulnerable
+  compiler version may accidentally be selected for deployment or
+  security tools might fall back to an older compiler version, ending up
+  actually checking a different version from what is ultimately deployed
+  in the blockchain.\\
+
+  The recommendation was to avoid floating parameters and pin a concrete
+  compiler version, the latest without known security issues in at least
+  the top level deployed contracts to make it unambiguous as to which
+  compiler version was being used. The suggested rule of thumb was that
+  a flattened source unit should have at least one non-floating concrete
+  \texttt{Solidity} compiler version.\\
+
+  This is related to unlocked \texttt{pragma} in number two of security
+  pitfalls and best practices 101 module and broader aspects of tests in
+  155 of security pitfalls and best practices 201 model.
+\end{itemize}
+
+\subsubsection{Growth DeFi}\label{growth-defi}
+
+\begin{itemize}
+\item
+  This finding was a ConsenSys Diligence audit of Growth DeFi where it
+  was an informational issue related to specification and documentation,
+  where the only documentation for Growth DeFi was a single README file,
+  as well as some code comments.\\
+
+  A system's design specification and supporting documentation should be
+  as important as the system's implementation itself because users rely
+  on high level documentation to understand the big picture of how a
+  system works.\\
+
+  Without spending time and effort to create such documentation, a
+  user's only resource is the code itself, something the vast majority
+  of users can't understand.\\
+
+  Security assessments depend on a complete technical specification to
+  understand the specifics of how a system works when a behavior is not
+  specified or is specified incorrectly security assessments must base
+  their knowledge in assumptions leading to less effective review.\\
+
+  Also maintaining and updating code relies on supporting documentation
+  to know why the system is implemented in a specific way, if code
+  maintainers can't reference documentation they must rely on memory or
+  assistance to make high quality changes. The recommendation therefore
+  was to improve system documentation and create a complete technical
+  specification.\\
+
+  This is related to broad aspects of system specification and
+  documentation in 136 and 137 undefined behavior issues in 179 and
+  clarity issues in 188 that we discussed in security pitfalls and best
+  practices 201 modules.
+\item
+  Another informational finding from ConsenSys Diligence audit of Growth
+  DeFi was related to naming convention and readability, in which the
+  codebase made use of many different contracts, abstract contracts,
+  interfaces and libraries for inheritance and code reuse. This is in
+  principle a good practice to avoid repeated use of similar code, but
+  without descriptive naming conventions to indicate which files would
+  contain meaningful logic, the code pairs became difficult to navigate.
+  The recommendation was to use descriptive names for contracts and
+  libraries.\\
+
+  This is related to broad aspects of programming style code layout and
+  any convention in number 97 to 101 of \texttt{Solidity} 101 module and
+  clarity issues in 188 principle of economy of mechanism at 197 and
+  principle of psychological acceptability in 199 that we discussed in
+  security pitfalls and best practices 201.
+\end{itemize}
+
+\subsubsection{Aave CPM}\label{aave-cpm}
+
+This finding was a ConsenSys Diligence audit of Aave CPM where it was an
+informational issue related to testing of ChainLink's performance at
+times of price volatility. The recommendation was that, in order to
+understand the risk of the Oracle deviating significantly from the
+price, it would help to compare historical prices on Chainlink, when
+prices were moving rapidly and see what the largest historical delta was
+compared to the live price on a large exchange.
+
+This is related to the broad aspect of testing in 155 external
+interaction in 180 and freshness issues in 185 that we discussed in
+security pitfalls and best practices 201 module.
+
+\subsubsection{Lien Protocol}\label{lien-protocol}
+
+This finding was a ConsenSys Diligence audit of Lien Protocol where it
+was an informational issue related to configuration, where the concern
+was that the system had many components with complex functionality
+leading to a high attack surface, but no operand upgrade path if any
+vulnerabilities were to be discovered after launch.
+
+The recommendation was to identify which components were crucial for a
+minimum viable system, to focus efforts on ensuring the security of
+those components first, then moving on to others. Also to have a method
+for pausing and upgrading the system at least at the early phases of the
+project.
+
+This is related to the various guarded launch approaches in 128 to 135,
+the broader principles of economy of mechanism and work factor in 197
+and 200 of security pitfalls and best practices 201.
+
+\subsubsection{Balancer}\label{balancer}
+
+\begin{itemize}
+\item
+  This finding was a ConsenSys Diligence audit of Balancer where it was
+  an informational issue related to code factoring, where it is
+  generally considered error-prone to have repeated checks across the
+  codebase, and therefore it was recommended to use modifiers for common
+  checks within different functions, because that would result in less
+  code duplication and increased readability.\\
+
+  This is related to function modifiers in 141 and broader aspects of
+  clarity in 188 and cloning issues in 190 of security pitfalls and best
+  practices 201 module.
+\item
+  Another informational finding from ConsenSys Diligence audit of
+  Balancer was related to ordering, where \texttt{BPool} functions used
+  modifiers \texttt{\_logs} and \texttt{\_lock} in that order. Because
+  \texttt{\_lock} is a reentrancy guard, it should have taken precedence
+  over \texttt{\_logs} in order to prevent \texttt{\_logs} from
+  executing first before checking for re-entrancing.\\
+
+  The recommendation was to place \texttt{\_lock} before other modifiers
+  to ensure that it was the very first and very last thing to run when a
+  function was called because we call that the order of execution is
+  from left to right for modifiers.\\
+
+  This is related to function modifiers and 141 incorrectly used
+  modifiers in 152 and broader aspects of ordering in 178 and business
+  logic issues in 191 of security pitfalls and best practices 201
+  module.
+\end{itemize}
+
+\subsubsection{MCDEX V2}\label{mcdex-v2}
+
+This finding was a ConsenSys Diligence audit of MCDEX V2 where it was an
+informational issue related to codebase fragility. Software is
+considered fragile when issues or changes in one part of the system can
+have side-effects in conceptually unrelated parts of the codebase.
+Fragile software tends to break easily and may be challenging to
+maintain.
+
+The recommendation was to prioritize two concepts:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  follow the single responsibility principle for functions where one
+  function does exactly one thing and nothing else
+\item
+  reduce reliance on external systems.
+\end{enumerate}
+
+This is related to broad aspects of external interactions in 180
+dependency 183 clarity in 188 and principle of economy of mechanism in
+197 of security pitfalls and best practices 201 module.
+
+\subsection{Trail of Bits}\label{trail-of-bits}
+
+\subsubsection{Origin Dollar}\label{origin-dollar}
+
+\begin{itemize}
+\item
+  This finding was a Trail of Bits audit of Origin Dollar where it was
+  an informational issue related to error handling. For context,
+  \texttt{worldCoreRebase} functions were declared to return a
+  \texttt{uint}, but lacked a return statement. As a result, these
+  functions would always return the default value of 0 and were likely
+  to cause issues for their callers. Third party code relying on the
+  return values might therefore not have worked as intended.\\
+
+  The recommendation was therefore to add the missing return statements
+  or remove the return type in those functions, then adjust the
+  documentation as necessary.\\
+
+  This is related to function \texttt{return} values in 142 and error
+  reporting issues in 175 of security pitfalls and best practices to one
+  module.
+\item
+  Another informational finding from Trail of Bits audit of Origin
+  Dollar was related to inheritance, where the concern was about
+  multiple contracts missing inheritances. Multiple contracts where the
+  implementations of their interfaces inferred based on their names and
+  implemented functions, but did not inherit from them. This behavior is
+  error-prone and might lead the implementation to not follow the
+  interface if the code were to be updated. The recommendation was to
+  ensure that contracts inherit from their interfaces.\\
+
+  This is related to unused constructs in 156 and undefined behavior
+  issues in 179 of security pitfalls and best practices to one body.
+\end{itemize}
+
+\subsubsection{Yield Protocol}\label{yield-protocol}
+
+This finding was a Trail of Bits audit of Yield Protocol where it was an
+informational issue related to \texttt{Solidity} compiler optimizations,
+where the concern was that such compiler optimizations could be
+dangerous. Yield protocol had enabled optional compiler optimizations in
+\texttt{Solidity}, but there have been bugs with security implications
+related to such optimizations. \texttt{Solidity} compiler optimizations
+are disabled by default therefore it was unclear how many contracts in
+the wild actually used them and how well they were being tested and
+exercised.
+
+The short-term recommendation was to measure Gas savings from
+optimizations and evaluate the trade-offs against the possibility of an
+optimization related bug, and in the long term monitor the development
+and adoption of \texttt{Solidity} compiler optimizations to assess their
+maturity.
+
+This is generally related to \texttt{Solidity} versions in number one
+and compiler bugs in 77 to 94 of \texttt{Solidity} 101 module and
+dependency issues in 183 of security pitfalls and best practices 201
+module.
+
+\subsubsection{DFX Finance}\label{dfx-finance}
+
+\begin{itemize}
+\item
+  This finding was a Trail of Bits audit of DFX Finance where it was an
+  informational issue related to specification, in that the \texttt{min}
+  and \texttt{max} family of functions had unorthodox semantics.
+  Throughout the curve contract, \texttt{minTargetAmount} and
+  \texttt{maxOriginAmount} were used as open ranges, that is ranges that
+  exclude the value itself. This is unlike the conventional
+  interpretation of the terms minimum and maximum which are generally
+  used to describe closed ranges.\\
+
+  The recommendation was to make the inequalities in the required
+  statements non-strict unless they are intended to be strict or
+  alternatively document to convey that they are meant to be exclusive
+  bonds. And in the long term ensure that mathematical terms such as
+  minimum at least and at most are used in the typical way to describe
+  values inclusive of minimums or maximums.\\
+
+  This is related to dangerous equalities in 28 now security pitfalls
+  and best practices 101 module and broad aspects of system
+  specification and documentation in 136 and 137 and numerical issues in
+  170 that we discussed in security pitfalls and best practices to one
+  body.
+\item
+  Another informational finding from Trail of Bits audit of DFX Finance
+  was related to configuration, in that curve being an ERC20 token
+  implemented all six required ERC20 methods: \texttt{balanceOf},
+  \texttt{totalSupply}, \texttt{allowance}, \texttt{transfer},
+  \texttt{approve} and \texttt{transferFrom}. However, it did not
+  implement the optional but extremely common \texttt{view} methods for
+  \texttt{symbol}, \texttt{name} and \texttt{decimals}.\\
+
+  The recommendation was to implement \texttt{symbol},
+  \texttt{name\ and}
+  decimals\texttt{on\ curve\ contracts\ to\ ensure\ that\ contacts\ confirm\ to\ all\ required\ and\ recommended\ aspects\ of\ the}ERC20`
+  specification.\\
+
+  This is related to \texttt{ERC20} name decimals and simple functions
+  in 103 and configuration issues in 169 of security pitfalls and best
+  practices 201 modules.
+\end{itemize}
+
+\subsubsection{Hermez}\label{hermez}
+
+\begin{itemize}
+\item
+  This finding was a Trail of Bits audit of Hermez Network where it was
+  an informational issue related to patching, in that contracts used as
+  dependencies did not track upstream changes. For context, third-party
+  contracts like \texttt{concatStorage} were copy-pasted into the Hermez
+  repository, the code documentation did not specify the exact version
+  used or if it was modified.\\
+
+  This would make updates and security fixes on such dependencies
+  unreliable since they would have to be updated manually. Specifically,
+  \texttt{concatStorage} was borrowed from the \texttt{Solidity}
+  \texttt{BytesUtils} library, which provided helper functions for
+  bite-related operations and a critical vulnerability was discovered in
+  that library's \texttt{slice} function, that allowed arbitrary writes
+  for user supplied inputs.\\
+
+  The recommendation was to review the codebase and document each
+  dependency (source and version) and also include the third party
+  sources as git submodules in the repository, so that internal path
+  consistency could be maintained and dependencies could be updated
+  periodically.\\
+
+  This is related to the broad aspect of configuration issues in 165
+  external interaction of 180 dependency of 183 and cloning issues in
+  190 that we discussed in security pitfalls at best practices 201
+  modules.
+\item
+  Another informational finding from Trail of Bits audit of Hermez
+  Network was related to access control, in that the expected behavior
+  regarding authorization for adding new tokens was unclear. For context
+  \texttt{addToken} allowed anyone to list a new token on Hermez, which
+  contradicted the online documentation that implied that only the
+  governance should have had this authorization. It was therefore
+  unclear whether the implementation or the documentation was correct.\\
+
+  The recommendation was to update either the implementation or the
+  documentation to standardize the authorization specification for
+  adding new tokens.\\
+
+  This is related to the broad aspects of guarded launch via asset types
+  and 129 system specification in 136 access control in 172 and clarity
+  issues of 180a we discussed in security pitfalls and best practices to
+  one module.
+\item
+  Another informational finding from Trail of Bits audit of Hermez
+  Network was related to undefined behavior, in that contract name
+  duplication left the code page error-prone. The codebase had multiple
+  contracts that shared the same name which allowed Builder Waffle to
+  generate incorrect JSON artifacts preventing third parties from using
+  their tools. Builder Waffle did not currently support a code base with
+  duplicate contact names, the compilation overwrote its artifacts and
+  prevented the use of third-party tools such as Slither.\\
+
+  The recommendation was to avoid duplicate contact names change the
+  compilation framework or use Slither which helps detect duplicate
+  contract names.\\
+
+  This is related to broad aspects of programming style code layout and
+  aiming convention in 97 to 101 percentage 101 module and clarity
+  issues in 188 principle of economy of mechanism in 197 and principle
+  of psychological acceptability in 199 that we discussed in security
+  pitfalls and best practices to one module.
+\end{itemize}
+
+\subsubsection{Advanced Blockchain}\label{advanced-blockchain}
+
+\begin{itemize}
+\item
+  This finding was a Trail of Bits audit of Advanced Blockchain where it
+  was an informational issue related to patching, in that there was use
+  of hard-coded addresses which may have caused errors. For context,
+  each contract needed contract addresses in order to be integrated into
+  other protocols and systems. These addresses were hardcoded, which
+  could have cast errors and resulted in the code basis deployment with
+  a correct asset. Using hardcoded values instead of deploying provided
+  values would have made these contracts difficult to test.\\
+
+  The recommendation was to set addresses when contacts were created
+  rather than using hardcoded values which would also facilitate
+  testing.\\
+
+  This is related to tests in 155 configuration and initialization
+  issues in 165 and 166 that we discussed in security pitfalls and best
+  practices 201.
+\item
+  Another informational finding from Trail of Bits audit of Advanced
+  Blockchain was related to patching, in that the logic in the
+  repositories contained a significant amount of duplicated code, which
+  increased the risk that new bugs would be introduced into the system
+  as bug fixes must be copied and pasted into files across the system.\\
+
+  The recommendation was to use inheritance to allow code to be used
+  across contracts and to minimize the amount of manual copying and
+  pasting required to apply changes made in one file to other files.\\
+
+  This is related to programming style code layout and naming convention
+  in 97 to 101 of \texttt{Solidity} 101 module and broad aspects of
+  configuration in 165 clarity 188 cloning in 190 principle of economy
+  of mechanism in 197 and principle of psychological acceptability in
+  199 that we discussed in security pitfalls and best practices 201
+  modules.
+\item
+  Another informational finding from Trail of Bits audit of Advanced
+  Blockchain was related to insufficient testing. The repositories under
+  review lacked appropriate testing which increased the likelihood of
+  errors in the development process and made code more difficult to
+  review.\\
+
+  The recommendation was to ensure that unit tests cover all public
+  functions at least once as well as all known corner cases, and also to
+  integrate coverage analysis tools into the development process and
+  regularly review the coverage. This is related to broad aspect of
+  testing in 155 that we discussed in security pitfalls and best
+  practices 201.
+\item
+  Another informational finding from Trail of Bits audit of Advanced
+  Blockchain was related to project dependencies containing
+  vulnerabilities. Yarn audit identified off-chain dependencies with no
+  vulnerabilities and due to the sensitivity of the deployment code and
+  its environment it was important to ensure that dependencies were not
+  malicious.\\
+
+  The recommendation was to ensure that dependencies were tracked
+  verified patched and audited. This is related to the broad aspects of
+  configuration in 165 external interaction in 180 and dependency of 183
+  that we discussed in security pitfalls and best practices to one
+  module.
+\item
+  Another informational finding from Trail of Bits audit of Advanced
+  Blockchain was related to documentation, where the codebase lackied
+  documentation, high level descriptions and examples, making the
+  contracts difficult to review and increasing the likelihood of user
+  mistakes.\\
+
+  The recommendation was to review and properly document the code base
+  and also consider writing a formal specification of the protocol. This
+  is related to broader aspects of system specification and
+  documentation in 136 and 137, the principle of psychological
+  acceptability in 199 that we discussed in security pitfalls and best
+  practices 201.
+\end{itemize}
+
+\subsubsection{dForce}\label{dforce}
+
+This finding was a Trail of Bits audit of dForce where it was an
+informational issue related to poor error handling practices in the test
+suite. For context, the test suite did not properly test expected
+behavior and certain components lacked error handling methods, which
+would cause failed tests to be overlooked. For example, errors were
+silenced with a \texttt{try}/\texttt{catch} statement, which meant that
+there was no guarantee that a call had reverted for the right reason. As
+a result, if the test suite passed, it would have provided no guarantee
+that the transaction call had reverted correctly.
+
+The recommendation was to test operations against a specific error
+message and ensure that errors were never silenced to check that a
+contact call had reverted for the right reason and overall follow
+standard testing best practices for smart contracts to minimize the
+number of issues during development. This is related to the broad aspect
+of testing in 155 of security pitfalls and best practices 201 modules.
+
+\subsection{Sigma Prime}\label{sigma-prime}
+
+\subsubsection{Synthetix Ether Collateral
+Protocol}\label{synthetix-ether-collateral-protocol}
+
+\begin{itemize}
+\item
+  This finding was a Sigma Prime audit of Synthetix Ether Collateral
+  Protocol where it was an informational issue related to redundant and
+  unused code. For example, the \texttt{recordLoanClosure} function
+  returned a \texttt{bool} which was never used by the calling function,
+  and there were also some \texttt{if} statements that were redundant
+  and unnecessary.\\
+
+  The recommendation was to remove such redundant constructs or use them
+  in meaningful ways. This is related to redundant construction 157 of
+  security pitfalls and best practices 201 module.
+\item
+  Another informational finding from Trail of Bits audit of Synthetix
+  Ether Collateral Protocol was related to unused event logs, in that
+  log events were declared, but never emitted.\\
+
+  The recommendation was to emit these events where required
+  appropriately or remove them entirely. This is related to unused
+  constructs in 156 and auditing and locking in 173 of security pitfalls
+  and best practices 201 module.
+\end{itemize}
+
+\subsubsection{InfiniGold}\label{infinigold}
+
+This finding was a Sigma Prime audit of InfiniGold where it was an
+informational issue related to an unnecessary \texttt{require} statement
+in \texttt{blacklistable} contract, which implemented a zero-address
+check on the \texttt{to} address, when this check was also implemented
+in the \texttt{transfer} function of ERC20 contract.
+
+The recommendation was to consider removing the \texttt{require}
+statement for Gas saving purposes. This is related to redundant
+constructs in 157 now security pitfalls and best practices 201.
+
+\subsection{OpenZeppelin}\label{openzeppelin}
+
+\subsubsection{HoldeFi}\label{holdefi}
+
+\begin{itemize}
+\item
+  This finding was a OpenZeppelin audit of HoldeFi where it was an
+  informational issue related to business logic. The concern was about
+  insufficient incentives to liquidators. For context, the liquidation
+  process is a very important part of every DeFi project because it
+  addresses the problem of a system being under collateralized when the
+  market finds itself in critical conditions and therefore needs a
+  design that incentivizes speed of liquidation execution, as per modify
+  specification and implementation the liquidators would end up paying
+  for the expensive liquidation process without receiving any benefit
+  other than buying potentially discounted collateral assets.\\
+
+  The recommendation was to consider improving the incentive design to
+  give liquidators higher incentives to \texttt{execute} the liquidation
+  process this is related to function invocation timeliness in 143 and
+  incentive issues in 187 of security pitfalls and best practices 201
+  module.
+\item
+  Another informational finding from OpenZeppelin audit of HoldeFi was
+  related to patching. The concern was that the project re-implemented
+  some of OpenZeppelin's libraries and copied them as is in some others,
+  instead of importing the official ones. OpenZeppelin maintains a
+  library of standard, audited, community reviewed and partly tested
+  smart contracts. Re-implementing or copying them increases the amount
+  of code that the HoldeFi team would have to maintain and missed all
+  the improvements and bug fixes that the OpenZeppelin team was
+  constantly implementing with the help of the community.\\
+
+  The recommendation was to consider importing the open zipline
+  libraries instead of re-implementing or copying them and further
+  extend them where necessary to add extra functionalities this is
+  specifically related to cloning issues in 190 of security pitfalls and
+  best practices 201.
+\item
+  Another informational finding from OpenZeppelin audit of HoldeFi was
+  related to event emission. The concern was that there was a lack of
+  indexed parameters in events throughout the whole device codebase.\\
+
+  The recommendation was to consider indexing event parameters to
+  facilitate off-chain services searching and filtering for specific
+  events because remember that indexed event parameters are put into the
+  topic part of the event log, which is faster to look up than the data
+  part. This is specifically related to unindexed event parameters and
+  46 or security pitfalls and best practices 101 module and broadly
+  related to auditing logging issues in 173 of security pitfalls and
+  best practices 201 modules.
+\item
+  Another informational finding from OpenZeppelin audit of HoldeFi was
+  related to naming conventions. The concern was that there was an
+  inconsistent use of named return variables across the codebase that
+  affected explicitness and readability.\\
+
+  The recommendation was to consider removing all named return variables
+  explicitly declaring them as local variables in the function body and
+  adding the necessary explicit return statements where appropriate.
+  This is related to function return values in 142 explicit over
+  implicit in 164 and clarity issues in 188 of security pitfalls and
+  best practices 201 module.
+\end{itemize}
+
+\subsubsection{BarnBridge}\label{barnbridge}
+
+\begin{itemize}
+\item
+  This finding was a OpenZeppelin audit of BarnBridge where it was an
+  informational issue related to conventions. The concern was about a
+  \texttt{require} statement that made an assignment which deviates from
+  standard usage and intention of \texttt{require} statements, and could
+  lead to confusion.\\
+
+  The recommendation was to consider moving the assignment to its own
+  line before the \texttt{require} statement. Then, using the
+  \texttt{require} statement only for condition checking. This is
+  related to \texttt{assert}/\texttt{require} state change in 51 of
+  security pitfalls and best practices 101 module and broader aspects of
+  error reporting in 175 and clarity issues in 188 of security pitfalls
+  and best practices 201 module.
+\item
+  Another informational finding from OpenZeppelin audit of BarnBridge
+  was related to stale comments. The concern was that the codebase had
+  lines of code that had been commented up. This could lead to confusion
+  and affected code readability and auditability.\\
+
+  The recommendation was to consider removing commented out lines of
+  code that were no longer needed. This is related to comments in 154
+  and clarity issues in 188 of security pitfalls and best practices 201.
+\end{itemize}
+
+\subsubsection{Compound}\label{compound}
+
+This finding was a OpenZeppelin audit of Compound where it was an
+informational issue related to misleading error messages. Error messages
+are intended to notify users about failing conditions and should provide
+enough information so that appropriate corrections needed to interact
+with the system can be applied. Uninformative error messages affect user
+experience.
+
+The recommendation therefore was to consider reviewing the code pairs to
+make sure error messages were informative and meaningful and also reuse
+error messages for similar conditions. This is related to error
+reporting issues in 175 clarity issues in 188 and principle of
+psychological acceptability in 199 of security pitfalls and best
+practices 201 modules.
+
+\subsubsection{Fei}\label{fei}
+
+\begin{itemize}
+\item
+  This finding was a OpenZeppelin audit of Fei where it was an
+  informational issue related to \texttt{Solidity} versions. The concern
+  was about multiple outdated \texttt{Solidity} versions being used
+  across contracts. The compiler options in the Truffle config file
+  specified version \texttt{0.6.6} which was released in April 2020, and
+  throughout the codebase there were also different versions of
+  \texttt{Solidity} being used.\\
+
+  The recommendation was that given \texttt{Solidity}'s fast release
+  cycle to consider using a more recent version of the compiler and
+  specifying explicit \texttt{Solidity} versions in \texttt{pragma}
+  statements to avoid unexpected behavior. This is related to
+  \texttt{Solidity} versions unlocked \texttt{pragma} and multiple
+  \texttt{Solidity} \texttt{pragma}s in 1, 2 and 3 of security pitfalls
+  and best practices 101 module and explicit over implicit in
+  configuration in 165 and dependency issues in 183 of security pitfalls
+  and best practices 201.
+\item
+  Another informational finding from OpenZeppelin audit of Fei was
+  related to test and production constants being in the same codebase.
+  For example, the \texttt{coreOrchestrator} contract defined the
+  \texttt{testMode} boolean variable which was then used to define
+  several other test constants in the system. This decreased the
+  legibility of production code and made the system's integral values
+  more available.\\
+
+  The recommendation was to consider having different environments for
+  production and testing with different contracts. This is related to
+  tests in 155 and configuration issues in 165 of security pitfalls and
+  best practices 201 module.
+\item
+  Another informational finding from OpenZeppelin audit of Fei was
+  related to the use of unnecessarily smaller sized integer variables.
+  In \texttt{Solidity}, using integers smaller than 256 bits (which is
+  the EVM word size) tends to increase Gas Cost because the EVM must
+  then perform additional operations to zero or mask out the unused bits
+  in remaining parts of storage slots for such integers. This can be
+  justified by savings and storage costs in some scenarios. However that
+  was not the case for this code base.\\
+
+  The recommendation was to consider using integers of size 256 bits to
+  improve Gas efficiency. This is related to system specification in 136
+  and principle of economy of mechanism in 197 of security pitfalls and
+  best practices 201 module.
+\item
+  Another informational finding from OpenZeppelin audit of Fei was
+  related to the use of \texttt{uint} instead of \texttt{uint256} across
+  the codebase.\\
+
+  The recommendation was to consider replacing all instances of
+  \texttt{uint} with \texttt{uint256} in favor of explicitness. This is
+  related to explicit over implicit in 164 and clarity 188 of security
+  pitfalls at best practices 201.
+\end{itemize}
+
+\subsubsection{UMA Protocol}\label{uma-protocol}
+
+This finding was a OpenZeppelin audit of Fei where it was an
+informational issue related to functions with unexpected Side-effects.
+For example, the \texttt{getLatestFundingRate} function of the
+\texttt{fundingRateApplier} contract might also update the funding rate
+and send rewards. The \texttt{getPrice} function of the
+\texttt{optimisticOracle} might also settle a price request. These
+setter-like side-effect actions were not clear in the getter-like names
+of functions and were thus unexpected and could lead to mistakes if the
+code were to be modified by new developers not experienced in all the
+implementation details of the project.
+
+The recommendation was to consider splitting such functions into
+separate getters and setters, or alternatively consider renaming the
+functions to describe all the actions that they performed. This is
+related to broad aspects of programming style code layout and naming
+convention in 97 to 101 of \texttt{Solidity} 101 module and clarity in
+188 principle of economy of mechanism in 197 and principle of
+psychological acceptability in 199 that we discussed in security
+pitfalls and best practices 201 module.
+
+\subsubsection{GEB Protocol}\label{geb-protocol}
+
+\begin{itemize}
+\item
+  This finding was a OpenZeppelin audit of GEB Protocol where it was an
+  informational issue related to missing error messages in
+  \texttt{require} statements. There were many places where
+  \texttt{require} statements were correctly followed by their error
+  messages, clarifying what the triggered exception was. However, there
+  were also places where \texttt{require} statements were not followed
+  by corresponding error messages. If any of those required statements
+  were to fail the check condition, the transaction would revert
+  silently without an informative error message.\\
+
+  The recommendation was to consider including specific and informative
+  error messages in all \texttt{require} statements. This is related to
+  error reporting issues in 175 clarity issues in 188 and principle of
+  psychological acceptability in 199 of security pitfalls and best
+  practices to one module.
+\item
+  Another informational finding from OpenZeppelin audit of GEB Protocol
+  was related to the use of Assembly in multiple contracts. While this
+  did not pose a security risk per se, it is a complicated and critical
+  part of the system. Remember that the use of Assembly discards several
+  important safety features of \texttt{Solidity} which may render the
+  code unsafe and more error-prone.\\
+
+  The recommendation therefore was to consider implementing thorough
+  tests to cover all potential use cases of these functions to ensure
+  that they behaved as expected and to consider including extensive
+  documentation regarding the rationale behind its use, clearly
+  explaining what every single Assembly instruction does, which would
+  make it easier for users to trust the code, for reviewers to verify it
+  and for developers to build on top of it or update it.\\
+
+  This is related to Assembly usage in 63 of security pitfalls and best
+  practices 101 module and broader aspects of system documentation in
+  137 tests in 155 clarity 188 and principle of psychological
+  acceptability in 199 security pitfalls and best practices 201.
+\item
+  Another informational finding from OpenZeppelin audit of GEB Protocol
+  was related to the \texttt{try}/\texttt{catch} statements. The concern
+  was about the \texttt{catch} clause not being handled appropriately in
+  a couple of functions. The \texttt{catch} clause of
+  \texttt{Solidity}'s \texttt{try}/\texttt{catch} exception handling
+  primitive was neither emitting events nor handling the error, but
+  simply continuing the execution.\\
+
+  The recommendation was that, even if continuing execution after a
+  possible fail was something explicitly wanted, to consider handling
+  the \texttt{catch} clause by either emitting an appropriate event or
+  registering the failed (tricol?) in the spirit of the failed early and
+  loudly principle. This is related to error reporting in 175 clarity in
+  188 and principle of psychological acceptability in 199 of security
+  pitfalls and best practices 201 modules.
+\item
+  Another informational finding from OpenZeppelin audit of GEB Protocol
+  was related to unnecessary event emission. For example, the
+  \texttt{popDebtFromQueue} function of the \texttt{accountingEngine}
+  contract was emitting an unnecessary event whenever it was called with
+  a debt \texttt{block.timestamp} that had not been saved before.\\
+
+  The recommendation was to remove such event emits and prevent Gas
+  wastage. This is related to redundant constructs in 157 of security
+  pitfalls and best practices 201.
+\end{itemize}
+
+\subsubsection{Opyn Gamma}\label{opyn-gamma}
+
+This finding was a OpenZeppelin audit of Opyn Gamma Protocol where it
+was an informational issue related to mismatches between contracts and
+interfaces. Interfaces define the exposed functionality of implemented
+contracts. However, in several interfaces there were functions from the
+counterpart contracts that were not defined.
+
+The recommendation was to consider applying necessary changes in the
+mentioned interfaces and contracts, so that definitions and
+implementations fully match. This is related to system specification in
+136 undefined behavior in 179 and clarity issues in 188 of security
+pitfalls and best practices 201.
+
+\subsubsection{Set Protocol}\label{set-protocol}
+
+This finding was a OpenZeppelin audit of Set Protocol where it was an
+informational issue related to clearing address variables by setting
+them to zero-addresses instead of using \texttt{delete}.
+
+The recommendation was to consider replacing assignments of zero with
+\texttt{delete} statements because \texttt{delete} better conveyed the
+intention and was also more idiomatic. This is related to explicit over
+implicit in 164 cleanup in 167 and clarity issues in 188 of security
+pitfalls and best practices 201 module.

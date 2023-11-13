@@ -1,0 +1,73 @@
+\section{Inline Assembly}\label{inline-assembly}
+
+Inline assembly is a way to access the EVM features directly at a low
+level, and from a security perspective this is important because it
+bypasses some of the safety features provided by \texttt{Solidity} at a
+high level language.
+
+Type safety is one such aspect, so if a developer is manipulating in
+inline assembly, then the corresponding code does not enjoy the type
+safety benefits provided by the \texttt{Solidity} compiler. The language
+used by solution for inline assembly is called \texttt{Yul}. This is
+somewhat of a recent feature.
+
+There have been a lot of developments in the inline assembly support by
+\texttt{Solidity} in the most recent versions. This sees constant
+updates. As you look at the most recent versions of \texttt{Solidity},
+an inline assembly block is marked using the keyword
+\texttt{assembly\{...\}}. The inline assembly code is placed within the
+curly braces, and is specified in \texttt{Yul}.
+
+\subsection{Assembly Access}\label{assembly-access}
+
+\texttt{Yul} supports assembly access to various features such as the
+external variables, functions and libraries. Local variables of value
+type are directly usable in inline assembly, and local variables that
+refer to memory or calldata evaluate to the variable address and not the
+value itself, effectively serving as a reference.
+
+For local storage variables or state variables that are also allocated
+in the storage, a single \texttt{Yul} identifier is not sufficient,
+because remember that storage has a concept of packing, where multiple
+variables can share the same storage slot and therefore their address is
+in two parts: it refers to the slot and the offset within the slot.
+
+Assignments are possible to assembly language variables which allow rich
+manipulation of these variables within inline assembly. One should take
+care when manipulating in this aassembly language: one should remember
+that variables that point to memory or storage changed the pointer
+itself and not the data and, there are many other rules and restrictions
+as you can imagine when it comes to manipulating all these aspects
+within assembly as supported by \texttt{Yul}.
+
+\subsection{\texorpdfstring{\texttt{Yul}
+Syntax}{Yul Syntax}}\label{yul-syntax}
+
+\texttt{Yul} supports literals and calls. there are variable
+declarations that are possible in the form of \texttt{let\ x\ :\ 7}
+which declares a new variable \texttt{x} and assigns an initial value of
+\texttt{7} to it.
+
+There are scoping blocks that are supported by \texttt{Yul}, so that
+multiple blocks can be considered within the assembly blocks. There is
+rich control flow that is supported using, \texttt{if}, \texttt{switch}
+and \texttt{for}.
+
+There are also function definitions that are supported by \texttt{Yul},
+so that within inline assembly you can have multiple functions that help
+you modularize code.
+
+Take a look at the developments in the \texttt{Yul} language as
+supported by \texttt{Solidity}, this is happening at a great speed:
+there are a lot of features being added to provide a lot of richness and
+expressiveness by the \texttt{Yul} language for developers who want to
+code directly in assembly, but like mentioned before from a security
+perspective this becomes even more critical than programming in
+\texttt{Solidity} itself because inline assembly is typically considered
+as very close to the underlying virtual machine.
+
+So in this case, very close to the EVM and, if the internals of the EVM
+layout and all the nuances with respect to that are not paid attention
+to, then coding directly in \texttt{Yul} in \texttt{Solidity}'s assembly
+language might result in some serious bugs where the manipulations are
+not done correctly and corruption happens or maybe even vulnerabilities.

@@ -1,0 +1,64 @@
+\section{Events}\label{events}
+
+Events should be emitted within smart contracts for all critical
+operations. Emission of events that are missing for such critical
+operations is a security concern.
+
+The reason for this is because it affects off-chain monitoring remember
+that events emitted from smart contracts end up storing the parameters
+of such events in the log part of the blockchain.
+
+These logs either the topics part or the data part can be queried by
+off-chain monitoring tools or off-chain interfaces to understand what is
+happening in the smart contracts. This is an easier way to understand
+the state of the smart contracts without having to query the contracts
+themselves.
+
+These events become very important from a transparency and user
+experience perspective. So the best practice is to recommend the
+addition of events in all places within the smart contracts where
+critical operations are happening, these could be updates to critical
+parameters from the smart contract applications perspective this could
+be operations that are being done only by the owner or privileged roles
+within the smart contract. So in all such cases events should be emitted
+to allow transparency and a better user experience.
+
+\subsection{Event Parameters}\label{event-parameters}
+
+Having talked about events, let's now focus on the event parameters.
+Event parameters not being indexed may be a concern in certain
+situations.
+
+Remember that event parameters may be considered as either indexed or
+not depending on the use of the \texttt{indexed} keyword. This results
+in those parameters being stored either in the topics part of the log or
+the data part of the log. Being stored in the topics part of the log
+allows for those parameters to be accessed or queried faster due to the
+use of the bloom filter. If they're stored in the data part, then it
+results in a much slower access.
+
+There are certain parameters for certain events that are required to be
+indexed as per specifications. let's take the \texttt{ERC20} token
+standard for example: it has transfer and approval events that require
+some of their parameters to be indexed.
+
+Not doing it will result in the off-chain tools that are looking for
+such index events to be confused or thrown off track.
+
+So the best practice here is to add the \texttt{indexed} keyword to
+critical parameters in an event. Especially if the specification
+requires them to be in text, this comes at cost of some additional Gas
+usage, but allows for faster query.
+
+\subsection{Event Signatures}\label{event-signatures}
+
+The concern here was that of incorrect event signature in libraries. The
+reason for this happening was because, if events used in libraries had
+parameters of contract types, then because of a compiler bug, the actual
+contract name was used to generate the signature hash instead of using
+their address type.
+
+This resulted in a wrong hash for such events being used in the logs.
+The mitigation here was to fix the compiler bug which happened in
+version \texttt{0.5.8} where the address type was used instead of using
+the contract name incorrectly.

@@ -1,0 +1,560 @@
+\section{\texorpdfstring{\texttt{Solidity}
+Variables}{Solidity Variables}}\label{solidity-variables}
+
+\subsection{Scoping}\label{scoping}
+
+This is fundamental to every programming language as it affects what is
+known as variable visibility, or in other words ``\emph{where can
+variables be used in relation to where they're declared}''. In the case
+of \texttt{Solidity}, it uses the widely used scoping rules of
+\texttt{C99} standard.
+
+So variables are visible from the point right after the declaration
+until the end of the smallest curly bracket block that contains that
+declaration. As an exception to this rule, variables declared in the
+initialization part of a \texttt{for} loop are only visible until the
+end of the loop.
+
+Variables that are parameters, like function parameters, modifier
+parameters or catch parameters are visible inside the code block that
+follows the body of the function (or modifier or catch).
+
+Other items declared outside of a code block such as functions,
+contracts, state variables or user defined types are visible even before
+they are declared. This means that we can see the usage of state
+variables even before they are declared within the context of a
+contract. This is what allows functions to be called recursively.
+
+From a security perspective, understanding the scoping rules of
+\texttt{Solidity} becomes important when we are doing data flow
+analysis. This could be in the context of a manual review, where you're
+looking at the code yourself or when you're writing tools to do static
+analysis on \texttt{Solidity} smart contracts.
+
+\subsection{Default Values}\label{default-values}
+
+Variables that are declared but not initialized have default values. In
+the case of \texttt{Solidity}, the default values of variables are what
+is known as a ``\emph{zero state}'' of that particular type. This means
+is that in the case of a boolean, it has a value of zero as a default
+which represents a value of \texttt{false} for the boolean. For unsigned
+integers or integer types, this is \texttt{0} (as expected). For
+statically sized arrays and \texttt{bytes1} to \texttt{bytes32}, each
+individual element will be initialized to the default value
+corresponding to its type. For dynamically sized arrays, \texttt{bytes}
+and \texttt{string} the default value is an empty array or
+\texttt{string}. For enum types, the default value is its first member.
+
+From a security perspective this becomes important because variables
+that are declared and not initialized end up with these default values.
+In some cases, such as an address type, the zero address (which is a
+default value) has a special meaning in Ethereum, and that affects some
+of the security properties within the contract depending on how those
+address variables are used.
+
+\subsection{Literals}\label{literals}
+
+This is something that you would have come across in other programming
+languages, as well \texttt{Solidity} supports five types of literals:
+\textbf{address types}, \textbf{rational}/\textbf{integers},
+\textbf{strings}, \textbf{unicode} and \textbf{hexadecimals}.
+
+The address literals are hexadecimal literals that pass the address
+checksum test. Remember that Ethereum addresses are 20 bytes in length,
+so in the case of the hexadecimal address representation, half a byte is
+represented by a hexadecimal character. This results in the address
+literal having 40 characters: 2 for every byte. These should pass the
+checksum test.
+
+The checksum is something that has been introduced in EIP55 to make sure
+that there are no typographical errors when you're using addresses in
+the context of Ethereum. This is a mixed case addressed exam.
+
+Rational literals and integer literals are also supported. Integer
+literals have a sequence of numbers in the 0 to 9 range. Decimal
+fraction literals are formed by using a decimal point, with at least one
+number in each side. Scientific notation is supported where the base can
+have fractions and the exponent cannot. Underscores can be used to
+separate these digits, which is used to help with readability and does
+not have any semantic significance.
+
+String literals are written with either double quotes (\texttt{""}) or
+single quotes (\texttt{\textquotesingle{}\textquotesingle{}}). They can
+only contain printable \texttt{ASCII} characters and a set of escape
+characters. Unicode literals they have to be prefixed with the keyword
+\texttt{unicode}. They can contain any \texttt{utf-8} sequence.
+
+The hexadecimal literals are hexadecimal digits prefixed with the
+keyword \texttt{"hex"} or
+\texttt{\textquotesingle{}hex\textquotesingle{}}. The usage of all these
+literals is in the context of constants.
+
+\subsection{Booleans}\label{booleans}
+
+\textbf{Boolean types} are declared using the \texttt{bool} keyword.
+They can have only two possible values: \texttt{true} or \texttt{false}.
+
+There are five operators that can operate on boolean types:
+
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Name & Operator \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+not operator & \texttt{!} \\
+equality operator & \texttt{==} \\
+inequality operator & \texttt{!=} \\
+and operator & \texttt{\&} \\
+or operator &
+\texttt{\textbackslash{}\textbar{}\textbackslash{}\textbar{}} \\
+\end{longtable}
+
+The latter two operators are also known as logical conjunction and
+logical disjunction operators.
+
+\textbf{Operators apply the short circuiting rules}. For example, in an
+expression that uses the logical disjunction or, operator if there are
+two booleans let's say \texttt{x} or \texttt{y}, if x evaluates to
+\texttt{true}, then the boolean \texttt{y} will not be evaluated at all
+even if it may have side effects.
+
+This is because the expression already evaluates to \texttt{true} and
+there's no need for the second boolean to be evaluated at all and
+similarly this applies to the \textbf{and} operator logical conjunction
+as well. So if there are two booleans that have this operator, let's say
+\texttt{x} and \texttt{y}, and if \texttt{x} happens to be
+\texttt{false}, then we know that the expression finally will evaluate
+to \texttt{false}, so there is no reason for the compiler to evaluate,
+because the result is already known to be \texttt{false} from a security
+perspective.
+
+\textbf{Booleans are used significantly in smart contract functions} for
+various conditionals and evaluations of expressions. \textbf{This
+affects the control flow and specifically when it comes to certain
+checks access control checks}.
+
+\subsubsection{\texorpdfstring{\textbf{\emph{History}}}{History}}\label{history}
+
+There have been cases where booleans have been used, and the wrong
+operator has been used in those checks. So for example using the
+\textbf{not} or logical disjunction instead of logical conjunction.
+
+It can have big implications to how that particular expression evaluates
+and that check, the access control check or whatever that might be,
+might not be effective at all as intended by the specification. So this
+is again something to pay attention to when you're looking at booleans
+and the operators that evaluate that operate on the booleans in smart
+contracts.
+
+\subsection{Integers}\label{integers}
+
+\textbf{Integer types} are very common in \texttt{Solidity} and any
+programming language. There are unsigned and signed integers of various
+sizes. In \texttt{Solidity} they use the \texttt{uint} or \texttt{int}
+keywords. They come in \textbf{sizes from 8 bits all the way to the word
+size of 256 bits}.
+
+So you'll see declarations of unsigned integers or integers signed
+intgers in the form of \texttt{uint8} all the way to 256.
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+uint8, uint16, ..., uint256 
+int8, int16, ..., int256
+\end{lstlisting}
+
+There are various operators for integer types. There are different
+categories that we saw in the EVM instruction set: \textbf{arithmetic
+operators}, \textbf{comparative operators}, \textbf{bit operators} and
+\textbf{shift operators}.
+
+From a security perspective, given that integer variables are vastly
+used in \texttt{Solidity} contracts, they \textbf{affect the data flow
+of the contract logic} and specifically there is an aspect of integers
+that becomes \textbf{security critical} which is that of
+\textbf{underflow and overflow}.
+
+\subsubsection{Integer Arithmetic}\label{integer-arithmetic}
+
+Integer arithmetic is arithmetic that operates on integer operands,
+signed integer operands or unsigned integers operands \texttt{Solidity}.
+Like in any other language, they are really restricted to a certain
+range of values, so for example if you have \texttt{uint256}, then the
+range of that variable is from a value of $0$ to $2^{256} - 1$.
+
+If there is any operation on a variable of, let's say \texttt{uint256}
+type that forces it to go \textbf{beyond this range}, then it leads to
+what is known as an \textbf{overflow} or an \textbf{underflow}: this
+causes wrapping.
+
+In the case of \texttt{uint256} (let's say that the value of one of
+those \texttt{uint256} variables was the maximum value), if the contract
+logic incremented it by 1 more, then that integer value would overflow:
+it would wrap to the other side of the range and would become 0.
+
+Similarly an underflow, let's say in the case of the value was 0, if the
+logic decremented it by one more, then it would again cause wrapping to
+the other end of the range and the value of that variable would now be
+$2^{256} - 1$. This can have significant unintended side effects when
+it comes to the integer values used in that logic.
+
+There have been numerous cases of certain integer values being
+overflowed or underfloored, leading to huge exploits vulnerabilities
+from a security perspective. This is something that is critical when it
+comes to the security of integers, basically in the smart contract.
+
+To address this specific aspect in versions of \texttt{Solidity} below
+\texttt{0.8.0}, \textbf{the best practice was to use the
+\texttt{SafeMath} libraries from OpenZeppelin} that made operating on
+integer variables safe with respect to overflows and underflows.
+\texttt{Solidity} itself as a language recognized this aspect of
+security and introduced in version \texttt{0.8.0} default overflow and
+underflow checks for integers.
+
+In contracts that are written with the compiler version \texttt{0.8.0}
+and above, one can actually switch between the default checked
+arithmetic (that checks for underflows and overflows and causes
+exceptions when that happens) versus unchecked arithmetic (where the
+programmer or the developer asserts that for the expressions used in
+that unchecked arithmetic there is no way or no cause for concern when
+it comes to overflows and underflows), so all the default underlying
+checks in the language in the compiler itself should be disabled.
+
+This is something to be paid attention as it is a critical aspect of
+smart contact security. When looking at smart contracts, pay attention
+to the solution compiler version that was used: if it is below
+\texttt{0.8.0}, then there should be the use of safe map from
+OpenZeppelin, or some of the other equivalents that make sure that the
+integers don't overflow and underflow and cause security
+vulnerabilities. If the compiler version is \texttt{0.8.0} or beyond,
+then one should pay attention to any expressions, integer expressions,
+that are using \texttt{unchecked} blocks to make sure that those don't
+have any overflows or underflows.
+
+\subsubsection{Fixed point arithmetic}\label{fixed-point-arithmetic}
+
+Conceptually you would have seen this in other languages, as well for
+numbers that have an integer part and a fractional part, the location or
+the position of the decimal point indicates if it is fixed or floating.
+If that position or location of the decimal point can change for that
+type then it is referred to as a floating point type.
+
+But if that position is fixed for all variables of that type, then it is
+known as fixed point arithmetic. In the case of \texttt{Solidity}, these
+can be declared but cannot be assigned. There's no real support in
+\texttt{Solidity}. \textbf{For any use of fixed point arithmetic}, one
+has to \textbf{depend on some of the libraries such as} \texttt{DSMath},
+\texttt{PRBMath}, \texttt{ABDKMath64x64} or others.
+
+\subsubsection{Integer Members}\label{integer-members}
+
+Integers have some members accessible with the \texttt{type(x)}
+instruction (where \texttt{x} happens to be an integer).
+
+\texttt{type(x).min} returns the smallest value representable by the
+type \texttt{x}. Similarly, \texttt{type(x).max} primitive returns the
+largest value that is representable by the type \texttt{x}. So for
+example the \texttt{type(uint8).max} returns the maximum value
+representable by the unsigned integer of size 8 bits, and in this case
+it happens to be $255$ which is $2^8 - 1$.
+
+\subsection{Arrays}\label{arrays}
+
+Array types are something that are very common in most programming
+languages, in the case of \texttt{Solidity} they come in two types
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Static arrays}: where the size of the array is known at
+  compile time. They are represented as \texttt{T{[}k{]}} (a static
+  array of size \texttt{k}).
+\item
+  \textbf{Dynamic size arrays}: where the size of the array is known at
+  compile time and its size may vary dynamically. They are represented
+  as \texttt{T{[}{]}}
+\end{itemize}
+
+The elements of these arrays can be of any type that is supported by
+\texttt{Solidity}. The indices that are used with these arrays are 0
+based (the first array element is stored at \texttt{T{[}0{]}} and not
+\texttt{T{[}1{]}}).
+
+If these arrays are accessed by the logic past their length, then
+\texttt{Solidity} automatically reverts that access and creates an
+exception, which causes a failing assertion in the context of the
+contract doing such an access.
+
+From a security perspective, arrays are very commonly used in smart
+contracts, \textbf{so the things to pay attention to are to check if the
+correct index is being used especially in the context of indices being
+zero based and to check if arrays have an off by 1 error, where they're
+being accessed either beyond or below their supported indices}, in which
+case such an \textbf{access could lead to an exception and the
+transaction would revert.}
+
+The other aspect to keep in mind with arrays is if the length of the
+array that is being accessed is really long and if the types are
+complicated underneath, then the amount of gas that is used for the
+processing of such arrays could end up in what is known as a denial of
+service attack (DoS) where those transactions revert because not enough
+gas can be supplied as part of the transaction so you would end up with
+no processing happening because a transaction would revert.
+
+\subsubsection{Array Members}\label{array-members}
+
+The members that are supported for array types there are four:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{length} returns the number of elements in the array.
+\item
+  \texttt{push()} appends a 0 initialized element at the end of the
+  array and it returns a reference to that element.
+\item
+  \texttt{push(x)} appends the specified element \texttt{x} to the end
+  of the array and it returns nothing.
+\item
+  \texttt{pop} on the other hand removes an element from the end of the
+  array and implicitly calls delete on that remote element.
+\end{itemize}
+
+\subsubsection{Memory Arrays}\label{memory-arrays}
+
+\textbf{Memory arrays are arrays that are created in memory, they can
+have dynamic length and can be created using the} \texttt{new}
+\textbf{operator}. But as opposed to storage arrays, \textbf{it's not
+possible to resize them}. So the \texttt{push()} \textbf{member
+functions are not available} for such memory arrays.
+
+So the options are for the developer to either \textbf{calculate the
+required size in advance} and use that appropriately during the creation
+of these arrays, \textbf{or create a new memory array and copy every
+element of the older memory array into the new one} an example is shown
+here.
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+uint[] memory a = new uint[](7);
+\end{lstlisting}
+
+\subsubsection{Array Literals}\label{array-literals}
+
+They are another type that is supported by \texttt{Solidity}. They are a
+comma separated list of one or more expressions, enclosed in square
+brackets (which is how arrays are represented in \texttt{Solidity}).
+
+These are always statically sized memory arrays, whose length is the
+number of expressions used within them. The base type of the array is
+the type of the first expression of that list, such that all other
+expressions can be converted to the first expression. If that is not
+possible then it is a type error indicated by \texttt{Solidity}.
+
+Fixed size memory arrays cannot be assigned to dynamically sized memory
+arrays within \texttt{Solidity}, so these are some aspects to be kept in
+mind when evaluating contracts that have array literals.
+
+\subsubsection{Array Gas Costs}\label{array-gas-costs}
+
+Arrays have \texttt{push} and \texttt{pop} operations. Increasing the
+length of a storage array by calling \texttt{push}, has constant Gas
+cost because storage is zero initialized. Whereas if you use
+\texttt{pop} on such arrays to decrease their length, the Gas cost
+associated with that operation depends on the size of the element being
+removed. If the element being removed happens to be an entire array,
+then it can be very costly because it includes explicitly clearing the
+removed elements, which is similar to calling \texttt{delete} on each
+one of them.
+
+\subsubsection{Array Slices}\label{array-slices}
+
+\texttt{Solidity} supports the notion array slices. Array slices are
+views that are supported on contiguous array portions of existing
+arrays. They are not a separate type in \texttt{Solidity}, but they can
+be used in intermediate expressions to extract useful portions of
+existing arrays as required by the logic within the smart contracts.
+These are written as
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+X[start:end]
+/** This expression takes the array from element X[start]
+up to element X[end-1]
+*/
+\end{lstlisting}
+
+From an error checking perspective if
+\texttt{start\ \textgreater{}\ end} or if
+\texttt{end\ \textgreater{}\ n} (where \texttt{n} is the size of the
+array) then an exception is thrown. Both these \texttt{start} and
+\texttt{end} values are optional, where \texttt{start} defaults to
+\texttt{0} and \texttt{end} defaults to the length of the array
+\texttt{n}. Array slices do not have any members that are supported, and
+for now \texttt{Solidity} only supports array slices for call data
+arrays.
+
+\subsection{Byte Arrays}\label{byte-arrays}
+
+\textbf{Byte array types are used to store arrays of raw bytes}. There
+are two kinds here:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Fixed size byte arrays}: we can use them if we know what the
+  size of the byte array is going to be in advance. They come in 32
+  kinds: \texttt{bytes1} for storing 1 byte, all the way to
+  \texttt{bytes32} for storing 32 bytes, which is the full word size in
+  the context of EVM.
+\item
+  \textbf{Dynamic size byte arrays}: we must use them if we do not know
+  the fixed size in advance. They are indicated by \texttt{byte{[}{]}},
+  but due to padding rules of EVM it wastes 31 bytes of space for every
+  element that is stored in it. So, if we have a choice, then it's
+  better to use the \texttt{bytes} type instead of the \texttt{byte}
+  type for these byte arrays. This is something that you will commonly
+  come across in smart contracts for storing raw bytes example in case
+  of hashes.
+\end{itemize}
+
+\subsubsection{\texorpdfstring{\texttt{bytes} \&
+\texttt{string}}{bytes \& string}}\label{bytes-string}
+
+\texttt{bytes} are used to stir arbitrary byte data of arbitrary length.
+Remember that \textbf{if we know beforehand the size of the byte array},
+then we can \textbf{use the fixed size byte arrays} to store those
+number of bytes.
+
+But if you do not know what the size is beforehand, then we can use the
+\texttt{bytes} type, and even there we have a choice of bytes or the
+byte array we talked about earlier.
+
+Remember that the byte array uses 31 bytes of padding for every element
+stored and leads to waste of that space so \textbf{it's preferable to
+use bytes over the byte array}.
+
+\textbf{String type is equivalent to the byte style except that it does
+not allow accessing the length of the string and the index of a
+particular byte in that string}, so it does not have those members.
+\texttt{Solidity} \textbf{does not yet have inbuilt string manipulation
+functions but there are third party string libraries} that one can use.
+
+\subsection{Function Types}\label{function-types}
+
+\textbf{Function types are types used to indicate that variables
+represent actual functions}. These variables can be used just like any
+other variables: they can be assigned from functions because they are of
+the function type, and they can be sent as arguments to other functions
+and can also be used to return values from other functions.
+
+They come in two types: \texttt{internal} and \texttt{external}. -
+\textbf{Internal functions} can only be called inside the current
+contract. - \textbf{External functions} consist of the address of the
+contract where they're relevant and a function signature along with it.
+They can be passed and returned from external function calls.
+
+The usage of function types is somewhat minimal in most of the common
+smart contracts.
+
+\subsection{Structs}\label{structs}
+
+From a data structure perspective, structs are custom data structures
+that can group together several variables of the same or different types
+to create something very unique to the contract as required by the
+developer. So these are used extensively within smart contracts, they're
+very commonly encountered. The various members of the structs are
+accessed as follows
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+// Create a struct
+struct Book { 
+   string title;
+   string author;
+   uint book_id;
+}
+// Fill in some info
+Book my_book = Book("El Quixote", "Miguel de Cervantes", 1);
+// Access a member
+my_book.author
+\end{lstlisting}
+
+which returns\ldots{}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+"Miguel de Cervantes"
+\end{lstlisting}
+
+Some of the properties of \texttt{struct} types are that they can be
+used inside mappings, arrays and they themselves can contain mappings
+and arrays. All these different complex reference types can be used in a
+very interrelated manner and allows for a versatile usage of these data
+structures to support different kinds of encapsulation logic when it
+comes to the different data types within a smart contract.
+\textbf{There's one exception: \texttt{struct} types cannot contain
+members of the same \texttt{struct} type.}
+
+\subsection{Enums}\label{enums}
+
+\textbf{Enums are a way to create user defined types in}
+\texttt{Solidity}. \textbf{They can have members anywhere: from 1 member
+all the way to a maximum of 256 members, and the default value of an}
+\texttt{enum} \textbf{is that of the first member}. This is something
+that you see sometimes in smart contracts where \texttt{enums}
+\textbf{are used to represent the names of the various states} within
+the context of the contract logic or the transitions in some cases. This
+is something that helps to \textbf{improve readability} instead of using
+the underlying integers that the \texttt{enums} really represent. As
+they represent the underlying integer values, they can be explicitly
+converted to and from integers. An example looks as follows
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+enum ActionChoices{GoLeft, GoRight};
+ActionChoices choice = ActionChoices.GoRight;
+\end{lstlisting}
+
+So here \texttt{choice} is a variable of \texttt{ActionChoices} and it
+can be assigned the members of \texttt{ActionChoices}. Here we are
+assigning \texttt{ActionChoices.GoRight} to \texttt{choice} and during
+the course of the contact function, different members can be assigned to
+that variable and it can be read from. This is used to improve
+readability, so instead of using integer values one can use specific
+names that correspond to those integer values in the context of what
+makes sense from that contract and its underlying logic.
+
+\subsection{Mappings}\label{mappings}
+
+It is an interesting reference type somewhat unique to
+\texttt{Solidity}. Mapping types define \texttt{(key,\ value)} pairs,
+they're declared using the following syntax
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+mapping(_key => _value) _Var
+\end{lstlisting}
+
+The \texttt{key} type in a \texttt{mapping} can be really any built-in
+value type: \texttt{byte}, \texttt{string} or any contract or enum type
+even. Other user defined or complex types, such as
+\texttt{mapping\ structs} or \texttt{array} types are not allowed to be
+used as the key type, so there are some restrictions here.
+
+On the other hand, the \texttt{value} type of that
+\texttt{(key,\ value)} pair, can be any type including mappings, arrays
+and structs. There are some interesting aspects of how mappings are
+created and maintained by \texttt{Solidity}: the \texttt{key} data is
+not stored in the \texttt{mapping}, it is only used to look up the value
+by taking a Keccak-256 hash of that \texttt{key} data.
+
+They also do not have a concept of length nor a concept of a
+\texttt{key} or \texttt{value} being set in the mapping. They can only
+have a storage data location, so they are only allowed for state
+variables. They cannot be used as parameters or return values of contact
+functions that are publicly visible.
+
+These restrictions are also true for arrays and structs that contain
+mappings, not just mappings themselves. Also one cannot iterate over the
+mappings, you cannot enumerate their keys and get the resulting values.
+This is not supported by default but it is possible where required by
+implementing another data structure on top of mappings and iterating
+over them. So very versatile type in \texttt{Solidity} again, very
+commonly encountered in smart contracts to store associations between
+different data structures that are used in that contract logic.

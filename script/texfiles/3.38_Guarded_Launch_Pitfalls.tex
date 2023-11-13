@@ -1,0 +1,180 @@
+\section{Guarded Launch Pitfalls}\label{guarded-launch-pitfalls}
+
+Let's now talk about the critical concept of guarded launch. This
+framework of ideas is widely used by almost every project in the
+ecosystem today in some form. It was put together and made popular by
+the team at Electric Capital.
+
+The fundamental idea is that when a new project is being launched, then
+there could be failures and vulnerabilities that have not been
+considered or discovered. Because of that, it makes a lot of security
+sense for the project to launch with minimal risk and over time increase
+the exposure as the project team gains more confidence in the normal
+functioning of the system.
+
+This idea is heavily inspired and motivated by a similar concept from
+the Web2 world: canary development. However in the web3 world, because
+of notions of immutability, the difficulty of upgrading or updating code
+once it is deployed, the immediate nature, the extent of exploit
+possible make guarded launch in the web3 space somewhat different and
+perhaps difficult. It is nevertheless, more critical to implement and
+execute. There are multiple ways of doing guarded launches for smart
+contact applications. Let's take a look at the first such way of doing
+so.
+
+\subsection{Asset Limits}\label{asset-limits}
+
+The notion of asset limits: during launch the amount of assets that are
+managed by the smart contact application can be kept to a lower value
+than what is possible or desirable, and over time this asset value that
+is managed by the system can be increased gradually as we gain more
+confidence that this application does not have any further latent
+vulnerabilities that may get exploited and result in loss of these
+assets.
+
+The rationale again is that at launch time, there is likely a higher
+risk from latent bugs or failure modes that haven't been considered that
+could be exploited, so the best way to mitigate that is by introducing
+this notion of target launch and in this case specifically with asset
+limits.
+
+\subsection{Asset Types}\label{asset-types}
+
+Guarded launch can also be applied to asset types. smart contract
+applications can deal with multiple asset types (for example different
+types of ERC20 tokens) and each of these asset types may be associated
+with a different level of risk.
+
+For example there could be ERC20 tokens that are very widely used, well
+understood, time and battle tested that are generally considered as
+safer to use and there may also be newer or different ERC20 token types
+that have slightly different behavior than those that are widely
+understood. Those come with a much greater risk because of the lower
+understanding for the lower use, so from a guarded launch perspective
+the idea is to launch with fewer asset types that are supported
+initially by the application and over time increase this in a certain
+manner.
+
+One way to do that is to first allow the use of known assets (those
+generally accepted as being safe by the community), then later on as the
+project matures and more confidence is gained, other asset types could
+be allowed within this application. This again mitigates the risk in a
+guarded launch approach.
+
+\subsection{User Limits}\label{user-limits}
+
+Limiting the number of users that can use a newly launched application
+(or new versions/features of the application). This is a widely used and
+time tested technique in the web2 world. The same concept applies to the
+web3 world where, upon guarded launch using user limits, few trusted
+users are whitelisted or selected (based on certain criteria) and only
+these users are allowed to use or interact with the application.
+
+Over time, as the project team gains more confidence that these
+interactions by the selected group of users is as anticipated, they can
+open up the application to other users as well. The the outcome with
+this gradual approach is similar to the other ones where there is a
+higher risk initially, so limit it to a few trusted users and mitigate
+risk in that fashion, but then the idea is to gradually increase the
+exposure to other sets of users as well.
+
+\subsection{Usage Limits}\label{usage-limits}
+
+Similar to user limits, we can also consider a guarded launch approach
+where there are usage limits: upon launch the usage is limited across
+certain criteria, then over time these limitations are removed to allow
+more extensive usage. This usage could be along the aspects of
+transaction size, volume of the transactions daily limits that are
+imposed on every user or even rate limiting per user or across all the
+users of that application.
+
+With these two guarded launch approaches of user limits and usage
+limits, it's easy to imagine how risk is mitigated because if something
+were to go wrong, then only that limited set of users (or limited set of
+transactions, or the limited set of value of the tokens or any other
+asset held by an application) is impacted.
+
+\subsection{Composability Limits}\label{composability-limits}
+
+Composability is another aspect where we can apply the guarded launch
+approach. Remember that composability is a defining feature of web3
+where every application can expect to interact with or to be interacted
+with by any other application. So in this ecosystem this makes
+considering these applications as ``\emph{LEGO}''s that can be picked,
+chosen and combined in interesting ways to build applications that were
+originally unexpected. While this is a defining feature and even
+expected by design in the web3 ecosystem, we have also talked about the
+security risks from unconstrained composability.
+
+Because applications can interact with and be composed with an arbitrary
+number and unknown applications, their differing assumptions,
+configurations, requirements and expectations could lead to failure
+modes that have not been considered or validated in the context of the
+application itself. Therefore, composability becomes critical from a
+guarded launch perspective.
+
+One way to approach it is to, again, impose limits on composability
+where upon launch the application is only allowed to be composed (or
+interact) with known applications (or protocol) and over time, extend
+this to arbitrary external smart contract applications that may pose an
+additional or increased risk. This gradual increase of exposure from
+whitelisted or trusted contracts extending to arbitrary untrusted
+contracts is another guarded launch approach.
+
+\subsection{Escrow}\label{escrow}
+
+Another guarded launch approach is to use the familiar concept of Escrow
+from the traditional finance space. In this case, high value
+transactions (or high value operations) are escrowed where there are
+timelocks or specific governance capabilities that have the power to
+nullify or revert these transactions in case something unexpected
+happens with them. So the guarded launch approach is to first start off
+with an Escrow capability, which upon greater confidence in the system
+is removed.
+
+\subsection{Circuit Breaker}\label{circuit-breaker}
+
+The next guarded launch approach is what is known as circuit breaker.
+This is perhaps the most widely used guarded launch approach by many of
+the smart contract applications that we see today. This is something
+that we discussed earlier where smart contracts allow certain authorized
+users to pause certain functions or functionalities of that smart
+contract when there is an emergency, and upon recovering from that
+emergency, there are unpause capabilities for those functionalities
+which again the authorized users can decide and trigger to recover from
+this emergency.
+
+This is something we discussed in the context of the
+\texttt{OpenZeppelin}'s \texttt{Pausable}\textless{} library that allows
+these capabilities to be applied selectively on different functions of a
+smart contract. So the guarded approach is to start off with this
+circuit breaker pause/unpause capabilities and later renounce to these
+capabilities, so that those authorized users need not be trusted with
+pausing and unpausing which, if abused, can lead to a DoS attack on
+those applications.
+
+\subsection{Emergency Shutdown}\label{emergency-shutdown}
+
+An extended or extreme version of the circuit breaker capability is what
+is known as emergency shutdown. In scenarios where simply
+pausing/unpausing the smart contract application does not help us
+recover from the issue at hand, and where there is something
+fundamentally broken or wrong with the smart contract application that
+needs to be fixed in a more involved manner, the emergency shutdown
+helps authorized users to turn off the smart contact applications from
+allowing users to further interact with it, and it also allows users to
+reclaim their assets that are held by that application and, where
+possible, this capability could also allow one to reset and restart such
+smart contact applications.
+
+From a guarded launch perspective, the idea is again to launch an
+application with this emergency shutdown capability and over time, once
+we gain more confidence on the correct functioning of the system, remove
+this capability.
+
+So far we have talked about removing these capabilities (the way that
+this is typically enforced within smart contracts is by removing the
+authorized users who can trigger those capabilities through setting the
+list of authorized addresses to an empty list or by setting them to the
+zero address). This is yet another way or an extreme way to deal with
+the emergencies with this guardeded launch approach.

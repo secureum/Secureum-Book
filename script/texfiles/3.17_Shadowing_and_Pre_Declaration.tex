@@ -1,0 +1,40 @@
+\section{Shadowing and
+Pre-declaration}\label{shadowing-and-pre-declaration}
+
+\subsection{Shadowing}\label{shadowing}
+
+Shadowing of built-in \texttt{Solidity} variables was a concern in some
+of the older \texttt{Solidity} versions. Built-in variables such as
+\texttt{now}, \texttt{assert} and some others could be shadowed by other
+variables, functions or modifiers in the contract to override their
+behavior.
+
+This as you can imagine is dangerous and could lead to many unexpected
+behavior and therefore this Shadowing was disallowed in later
+\texttt{Solidity} versions.
+
+Similar to the Shadowing of built-in variables the older versions of
+\texttt{Solidity} also allowed state variable shadowing.
+
+This meant that the right contracts could have state variables that had
+the same name as some of their base contracts. You can imagine that the
+base variables and shadowed variables with the same names could be
+confusing even for the developer and they could end up using or
+modifying the wrong variable from the base contracts.
+
+This dangerous and unexpected consequences was recognized, so
+\texttt{Solidity} compiler \texttt{0.6.0} disallowed Shadowing of state
+variables.
+
+\subsection{Pre-declaration}\label{pre-declaration}
+
+Earlier versions of \texttt{Solidity} allowed the use of local variables
+even before they were declared.
+
+These variables could be declared later or they could have been declared
+in another scope. This led to undefined behavior as you may expect.
+
+\texttt{Solidity} version \texttt{0.5.0} and beyond change this, to
+implement the popular C99-style scoping rules where variables can only
+be used after they have been declared and only in the same or nested
+scopes.

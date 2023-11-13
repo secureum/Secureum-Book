@@ -1,0 +1,205 @@
+\section{Inheritance}\label{inheritance}
+
+Remember that \texttt{Solidity} is an object-oriented programming
+language, so it supports various aspects of inheritance: multiple
+inheritance and polymorphism. If you have studied other object-oriented
+programming languages, a lot of these concepts must be familiar to you,
+and are very similar in \texttt{Solidity}.
+
+Languages that allow multiple inheritance have to solve some problems.
+One of them is known as the \textbf{diamond problem}: this is solved in
+\texttt{Solidity} in a very similar way to how it is solved in
+\texttt{Python}, using what is known as \texttt{C3} linearization, that
+forces a specific order in the directed acyclic graph constructed from
+the base classes. At a high level, when a function is called that is
+defined multiple times in different contracts (in the base and derived
+classes) the given bases are searched in a specific order from right to
+left, in a depth first manner and stopping at the first match that is
+found. The difference between how \texttt{Solidity} implements this
+versus \texttt{Python} is \texttt{Solidity} searches these classes from
+right to left in the specified order as opposed to left to right in
+\texttt{Python}.
+
+\subsection{Polymorphism}\label{polymorphism}
+
+\textbf{Polymorphism} means that a function call executes the function
+of the specified name and parameter types in the most derived contract
+in the inheritance hierarchy. When a contract inherits from multiple
+other contracts, only a single contract is created on the blockchain
+with the code from all the base contracts compiled into the created
+contract.
+
+\subsection{Function Overriding}\label{function-overriding}
+
+\textbf{Function overriding} means that functions in the base classes
+can be overridden by those in the derived classes which can change their
+behavior. If they are marked as virtual using the \texttt{virtual}
+keyword the overriding function must then use the \texttt{override}
+keyword to specify that it's overriding the virtual function in the base
+classes.
+
+Note that virtual functions are functions without implementation. It is
+mandatory for them to be marked as \texttt{virtual} outside of
+interfaces. In interfaces all functions are automatically considered
+\texttt{virtual}, so they don't need to use the \texttt{virtual}
+keyword. However in \texttt{abstract} contracts for example, if a
+function has to be considered as \texttt{virtual}, that is without
+specifying an implementation, then it should specifically use the
+\texttt{virtual} keyword to indicate as such. Functions with
+\texttt{private} visibility can't be made \texttt{virtual}.
+
+An interesting feature is that the overriding functions may also change
+the visibility of the overridden function, but this can only be done
+from changing them from \texttt{external} to \texttt{public}. The
+mutability of these functions may also be changed, but only to a more
+stricter one following this order:
+
+\begin{itemize}
+\tightlist
+\item
+  non-\texttt{payable} mutability can be changed to either \texttt{view}
+  or \texttt{pure}.
+\item
+  \texttt{view} mutability may be changed to \texttt{pure}.
+\item
+  \texttt{payable} mutability is an exception: it can't be changed to
+  any other mutability.
+\end{itemize}
+
+\subsection{Function Modifiers
+Overriding}\label{function-modifiers-overriding}
+
+Function modifiers can also override each other. This is very similar to
+how function overriding works except that there is no concept of
+overloading for modifiers. The \texttt{virtual} keyword again must be
+used on the overridden modifier and the \texttt{override} keyword must
+be used in the overriding modifier. Again very similar to the concept of
+\texttt{virtual} and \texttt{override} functions.
+
+\subsection{Base Class Functions}\label{base-class-functions}
+
+When considering the inheritance hierarchy, there are base classes and
+then derived classes. It is possible to call functions further up in the
+inheritance hierarchy (e.g.~the base classes) from the derived classes.
+If we specifically know the contract that has the function that we would
+like to call, then we could specify that as shown here
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+Contract.function();
+\end{lstlisting}
+
+If we wanted to call the function exactly one level higher up in the
+flattened inheritance hierarchy, this can be done by using the
+\texttt{super} keyword as shown here
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+super.function();
+\end{lstlisting}
+
+\subsection{Shadowing}\label{shadowing}
+
+It was supported in \texttt{Solidity} for the state variables until
+version \texttt{0.6.0}. This effectively allowed state variables of the
+same name to be used in the derived classes as they were declared in the
+base classes. These shadowed variables could effectively be used for
+purposes other than those declared in the base classes.
+
+This was removed from version \texttt{0.6.0} onward because it caused
+quite a bit of confusion and potentially could lead to serious errors
+from a security perspective. As of the latest versions, state variable
+shadowing is not allowed in \texttt{Solidity}. This means that
+\textbf{state variables in the derived classes can only be declared if
+there is no visible state variable with the same name in any of its base
+classes}.
+
+\subsection{Base Constructor}\label{base-constructor}
+
+When you have classes deriving from other base classes, then the base
+and the derived classes could have constructors. The constructors of all
+the base contracts will be called following the linearization rules
+(which we touched upon earlier in the context of \texttt{Solidity}). If
+the base constructors have arguments, then the derived contracts need to
+specify those arguments. This can be done either in the inheritance list
+of the derived contract or it can be explicitly done, so within the
+derived constructor itself.
+
+\subsection{Name Collision}\label{name-collision}
+
+Name collision is always an error in \texttt{Solidity}. It is an error
+when any one of the following pairs in a contract have the same name due
+to inheritance. A function and a modifier can't have the same names in
+the base and derived classes. A function and an event can't have the
+same name either. Finally, an event and a modifier also can't have a
+same name, if this happens, then this is a compile time error.
+
+\subsection{Contract Types}\label{contract-types}
+
+Besides the typical contracts supported by \texttt{Solidity}, it also
+supports three other contract types that are relevant when it comes to
+inheritance. Those are abstract contracts, interfaces and libraries.
+
+\subsubsection{Abstract Contracts}\label{abstract-contracts}
+
+Abstract contracts are contracts where at least one of the functions in
+the contract is not implemented. These are specified using the
+\texttt{abstract} keyword.
+
+\subsubsection{Interfaces}\label{interfaces}
+
+Interfaces, in contrast to abstract contracts, \textbf{can't have any of
+the functions implemented within them}, they can't inherit from other
+contracts, all the declared functions must be external, they can't
+declare a constructor and they can't have any state variables. These are
+specified using the \texttt{interface} keyword.
+
+\subsubsection{\texorpdfstring{Libraries. The \texttt{using\ for}
+directive.}{Libraries. The using for directive.}}\label{libraries.-the-using-for-directive.}
+
+Libraries are meant to be deployed only once at a specific address. The
+callers call the libraries using the \texttt{DELEGATECALL} opcode. This
+means that if library functions are called, their code is executed in
+the context of the calling contract. Libraries are specified using the
+\texttt{library} keyword.
+
+Libraries in particular have several restrictions compared to typical
+contracts: they can't have state variables, they can't inherit from
+other classes or be inherited themselves, they can't receive Ether, they
+can't also be destroyed, they have access to state variables of the
+calling contract only, if they are explicitly supplied.
+
+Library functions can only be called directly without the use of
+\texttt{delegatecall}, if they do not modify the state, that is, if they
+are \texttt{view} or \texttt{pure} functions. This is because libraries
+are assumed to be stateless by default.
+
+Additionally, \texttt{Solidity} supports \texttt{using\ for} directive,
+which is used for attaching library functions to specific types in the
+context of a contract. So for the directive \texttt{using\ A\ for\ B;},
+\texttt{A} specifies the library and \texttt{B} specifies a particular
+type.
+
+This means that the library functions in \texttt{A} will receive objects
+of type \texttt{B} as their first parameter when they are called on such
+types. This directive is applicable only within the current contract,
+including within all its functions.
+
+It has no effect outside of the contract in which it is used, so for
+example, if this directive is used as shown here saying
+\texttt{using\ safeMath\ for\ uint256;}, it means that variables of type
+\texttt{uint256} within that contract where this directive is used can
+be attached functions from the \texttt{SafeMath} library.
+
+\subsection{State Variables}\label{state-variables}
+
+Remember that state variables in \texttt{Solidity} can have different
+visibilities. One of them is \texttt{public}. \texttt{public} state
+variables have automatic getter functions generated by the
+\texttt{Solidity} compiler. These getters are just functions that are
+generated to allow accessing the value of the \texttt{public} state
+variable, so they return the value of those state variables. Such
+\texttt{public} state variables can override external functions in their
+base classes that have the same name as the \texttt{public} state
+variables, parameter and return types of those \texttt{external}
+functions match the getter function of these variables. so while public
+state variables in \texttt{Solidity} can override \texttt{external}
+functions according to thpse, they themselves can't be overridden.

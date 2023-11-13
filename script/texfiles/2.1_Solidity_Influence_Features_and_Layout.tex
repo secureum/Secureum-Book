@@ -1,0 +1,66 @@
+\section{Solidity: Influence, Features \&
+Layout}\label{solidity-influence-features-layout}
+
+\texttt{Solidity} is a \textbf{high level language} specifically
+designed for writing smart contracts on Ethereum. It was proposed in
+2014 by Gavin Wood and was later developed (and continues to be
+developed) by the Ethereum Foundation team led by Dr.~Christian
+Reitwiessner, Alex Beregszsaszi and others.
+
+It targets the underlying EVM and is mainly influenced by \texttt{C++}
+(a lot of the syntax and object oriented programming), a bit from
+\texttt{Python} (the use of modifiers, multiple inheritance, C3
+linearization and the use of the \texttt{super} keyword) and some of the
+early motivation was also from \texttt{Javascript} (things like function
+level scoping or the use of \texttt{var} keyword, although those
+influences have significantly been reduced since version
+\texttt{0.4.0}).
+
+One of the few alternatives to \texttt{Solidity} is \texttt{Vyper}: it's
+a language that is mostly based on \texttt{Python} and has just started
+to catch up with some of the high profile projects on Ethereum. However,
+to a great extent, due to the maturity of the language and the tool
+chains built around it, \texttt{Solidity} is by far the most widely
+used, so it becomes critical that in order to evaluate security of smart
+contracts we understand the syntax semantics, the pitfalls and various
+other aspects related to it.
+
+\texttt{Solidity} is known as a ``\emph{curly bracket language}'' (it
+means that curly brackets are used to group together statements within a
+particular scope), it is also an object oriented language (so there
+exitsts the use of inheritance), statically typed (which means that the
+types of variables defined are static and defined at compile time),
+there is code modularity in the form of libraries and there are also
+user defined types.
+
+All these characteristics make \texttt{Solidity} a fully featured high
+level language that allows the definition of complex logic in smart
+contracts to leverage all the underlying features of the EVM.
+
+\begin{itemize}
+\item
+  \textbf{So, how does the physical layout of a smart contract written
+  in \texttt{Solidity} look like?}
+
+  This is important to the readability aspect of the file and the
+  maintainability aspect of the smart contract in the context of the the
+  project itself.\\
+
+  A \texttt{Solidity} source file can contain an arbitrary number of
+  various directives and primitives. These include the \texttt{pragma}
+  and the \texttt{import} directives, the declarations of structs, enums
+  and contract definitions. Every contract can itself contain
+  structures, enums, state variables, events, errors, modifiers,
+  constructor and various functions that define the various
+  functionalities that are implemented by the smart contract.
+\end{itemize}
+
+This physical layout is something that is specific to the syntax of
+\texttt{Solidity}. When it comes to helping with the readability or the
+maintainability, it is prime to layout all the components in the order
+mentioned.
+
+This is something that you will commonly see when you evaluate smart
+contracts in \texttt{Solidity}. There might be cases where some of these
+are out of order from what is considered as best practice, but it's
+still something to keep in mind.

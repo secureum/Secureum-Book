@@ -1,0 +1,85 @@
+\section{Addresses}\label{addresses}
+
+\subsection{Zero Addresses}\label{zero-addresses}
+
+The zero address in Ethereum and \texttt{Solidity} has a special
+consideration. Remember that Ethereum addresses are 20 bytes in length
+and, if all these bytes are zeros, then it's referred to as the zero
+address.
+
+The zero address becomes significant, because state variables or local
+variables of \texttt{address} type have a default value of zero in
+\texttt{Solidity}. The zero address is also used as burn address because
+the private key corresponding to this zero address is not known, so any
+Ether or tokens that are sent to the zero address gets burnt or is
+inaccessible forever.
+
+If addresses used for access control within the smart contracts end up
+being the zero address, such functions can't be invoked again because of
+the lack of knowledge of the private key, which might in the worst case
+ends up in such contract getting locked.
+
+So the best practice is to perform input validation on all address
+parameters that are of \texttt{address} type to check that they are not
+the zero address.
+
+This is a very commonly encountered security pitfall where address
+parameters of constructor setters or public \texttt{external} functions
+are not input validated to not be the zero address.
+
+In the best case such scenarios only result in exceptional behavior at
+runtime, but in the worst case they could result in tokens getting burnt
+or the contract being locked.
+
+\subsection{Critical Addresses}\label{critical-addresses}
+
+Another security pitfall related to addresses is the aspect of changing
+values of critical addresses. Certain addresses within the context of
+the smart contract may be considered as critical. These may be special
+privileged roles such as the owner address, which has special access to
+certain functions for updating critical parameters or doing other
+administrative aspects related to the smart contract.
+
+Or these could also be addresses of other smart contracts that are used
+within the context of the application. As you can imagine, there may be
+scenarios where such addresses would need to be changed, so for example
+the default owner of a contract could be the deployer of the contract
+and we may want to change this to another address later on.
+
+Or, if the addresses correspond to other smart contracts, then we may
+want to change the value to another smart contract once we have updated
+it.
+
+In such scenarios, the security pitfall is when this change is done in a
+single step, this may be using the \texttt{Owned} library from
+\texttt{OpenZeppelin} where there is a transfer ownership function
+provided that transfers the ownership from the existing owner to a new
+owner that is provided as a parameter.
+
+This happens in a single step where the \texttt{owner} variable is
+updated to the new address provided. This single step change is prone to
+errors. If an incorrect address is used as a new address, then it may
+result in that contract getting locked forever. The reason for this is
+the address used may be an address for which we do not have the private
+key, so we can't sign any transactions from that address, which results
+in all the administrative functions or any of the address change
+functions being inaccessible.
+
+Thereafter the mitigation here or the best practice is to move away from
+a single step change and to move to what is known as a two-step change.
+
+Where the first step grants or approves a new address as being the owner
+or as being that changed address, the second step is a transaction from
+the new address that claims itself as being the new owner or as being
+the new address.
+
+So this two-step change allows any errors that happen in the first step,
+where we grant or approve it to an incorrect address for which we do not
+have the key it allows us to recover from this mistake because the
+second transaction which claims itself as a new address can never be
+done if an incorrect address was used in the first step.
+
+So this aspect of critical addresses being changed and allowing errors
+to be recovered by moving away from a single step to a two-step change
+is a critical aspect of mitigating the risk from incorrect address
+changes.

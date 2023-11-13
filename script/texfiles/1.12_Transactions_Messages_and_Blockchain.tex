@@ -1,0 +1,212 @@
+\section{Transactions, Messages \&
+Blockchain}\label{transactions-messages-blockchain}
+
+\subsection{Distinction between Transactions and
+Messages}\label{distinction-between-transactions-and-messages}
+
+So far, we have used both the terms Transaction and Message
+interchangeably, but in the context of the protocol they are actually
+very different:
+
+\begin{itemize}
+\item
+  \textbf{Transactions}: originate off chain (by an EOA when an external
+  actor, that is, external to the blockchain, sends a signed data
+  package onto the blockchain) and target an entity on the blockchain.\\
+
+  This transaction can trigger a message that can do one of two things:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    It can trigger a message to another EOA, in which case it leads to a
+    transfer of value (transfer of Ether).
+  \item
+    It can trigger a message to a contract account, in which case it
+    leads to the recipient contract account running its contract code
+    and doing whatever the code is intended to do.
+  \end{itemize}
+\item
+  \textbf{Messages}: the origination and the destination are both
+  onchain\\
+
+  Messages can be triggered in two ways:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    externally by a transaction. The destination of that message could
+    be another EOA or another contract account.
+  \item
+    internally within the EVM. This happens when a smart contract
+    executes the call family of opcodes and that leads to the recipient
+    contract account running its code, or value transfer to the
+    recipient.
+  \end{itemize}
+\end{itemize}
+
+\subsection{How to build a Blockchain}\label{how-to-build-a-blockchain}
+
+Blocks are batches of transactions that are grouped together plus the
+hash of the previous block (a cryptographic hash that is derived from
+the previous flux data), creating thus a ``chain'' among the blocks.
+This is how at high level a blockchain is constructed, and it is also
+the fundamental reason why a blockchain is considered immutable, which
+lends itself to the blockchain's integrity.
+
+The reason for that is because if someone were to change any component
+of a historical block (any of the transaction data: the destination or
+any other aspect) then that change would affect all of the following
+blocks: all the hashes that are included in the following blocks would
+be different from the hash of the modified block, and this is something
+that anybody running the blockchain or looking at the blockchain would
+notice. That would break the the immutability of the blockchain.
+
+To preserve the transaction history, blocks are ordered. Therefore,
+every new block created contains a reference to its parent block and
+similarly, transactions within the blocks are also strictly ordered. All
+these critical aspects are the reason why the integrity of a blockchain
+is maintained and prevents any fraud from happening.
+
+\subsection{Block Header}\label{block-header}
+
+So far we have said that the blocks in the Ethereum blockchain contain
+transactions, but there's more to it: every block contains a block
+header along with the transactions. The headers of the Ommer's blocks.
+
+Each block header itself has several components to it that are critical
+to how the Ethereum blockchain functions. They contain several things
+such as:
+
+\begin{itemize}
+\item
+  \textbf{The parent hash}: the hash of the parent block's header.\\
+
+  This is what chains the blocks and the Ethereum blockchain together to
+  make it immutable and provides the fantastic integrity property of the
+  blockchain.
+\item
+  \textbf{The Ommer's hash}
+\item
+  \textbf{Beneficiary address}: the address of the Ethereum account to
+  which the block reward for mining this block and all the transaction
+  fees collected from the mining of the transactions included in this
+  block are transferred to.\\
+
+  This address is typically controlled by the miner who has mined this
+  block.
+\item
+  \textbf{\texttt{stateRoot}}: one of the three root hashes of the
+  modified Merkle-Patricia tree. These root hashes are 256 bit in
+  length.\\
+
+  The manner in which the state root is derived is critical to how the
+  Ethereum state is captured within the blockchain: the leaves of the
+  state root are \texttt{(key,\ value)} pairs of all the Ethereum
+  address accounts.\\
+
+  The keys are the Ethereum addresses of the accounts and the values
+  represent the Ethereum state within that account.\\
+
+  Recall that every Ethereum account has four fields: a \texttt{nonce},
+  a \texttt{balance}, a \texttt{codeHash} and a \texttt{storageRoot}. If
+  that account happens to be an EOA, then the \texttt{codeHash} and
+  \texttt{storageRoot} don't really matter (they don't contain anything
+  in them).\\
+
+  But if that account happens to be a contact account, then the
+  \texttt{codeHash} has the Keccak-256 hash of the code that is
+  contained within that contract account, and the \texttt{storageRoot}
+  of that contract account has the rootHash of another Merkle-Patricia
+  tree where the leaves represent the storage that is associated with
+  that contract.
+\item
+  \textbf{\texttt{transactionsRoot}}: one of the three root hashes of
+  the modified Merkle-Patricia tree, where the leaves represent the
+  transactions. Also 256 bit in length.
+\item
+  \textbf{\texttt{receiptsRoot}}: one of the three root hashes of the
+  modified Merkle-Patricia tree, where the leaves represent the
+  transaction receipts. Also 256 bit in length.\\
+
+  \textbf{But what is a transaction receipt?}\\
+
+  A transaction receipt can be thought of as the side effects of a
+  particular transaction that are captured on the blockchain. Besides
+  any changes to the account state that transactions might make, there
+  are other side effects that are captured on the blockchain for this
+  particular transaction. It is a tuple that contains four items:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{The cumulative Gas used}: the total Gas used in the block up
+    until right after this particular transaction has happened, so in
+    some sense it captures the ordering of the transactions within the
+    block.
+  \item
+    A \textbf{set of logs}: related to the concept of events in
+    \texttt{Solidity} (which we will study in the \texttt{Solidity}
+    chapter). These are events that can be generated by any transaction
+    that is captured on the blockchain.\\
+    \strut \\
+    They're really critical to how off-chan components, user interfaces
+    and other components monitor what's happening with a smart contract.
+  \item
+    The \textbf{Bloom filters} specifically associated with those logs:
+    they capture the indexed parameters for every event, so that one can
+    query particular parameters of that event in a faster manner.
+  \item
+    A \emph{status quo}: what really happened with the transaction.
+  \end{itemize}
+\item
+  \textbf{\texttt{logsBloom}}
+\item
+  \textbf{\texttt{dificulty}}: difficulty of the block in the context of
+  PoW.
+\item
+  \textbf{\texttt{blockNumber}}: the number of blocks that have been
+  mined so far right. This number sort of indicated the position of the
+  block within the blockchain.
+\item
+  \textbf{\texttt{gasLimit}} (called Block Gas Limit under more formal
+  contexts): the Gas limit that's specific to this block.\\
+
+  This concept is essential to Ethereum as it dictates \textbf{the
+  number of transactions that are added in this block}.\\
+
+  This concept is different from the Gas limit which we talked about
+  earlier that was specific to the transaction. This Block Gas Limit
+  refers to the total Gas that is spent by all the transactions in that
+  block and this effectively caps the number of transactions that can be
+  included within that block.\\
+
+  So the block size is in fact not fixed in terms of the number of
+  transactions, but it's fixed in terms of the Gas used by all the
+  transactions. The reason for that is that every transaction can
+  consume a different amount of Gas.\\
+
+  The Block Gas Limit is set by the Ethereum miners in a very
+  interesting way: by voting on the blockchain. This is currently set to
+  15 million and it has also changed over time, depending on the miners'
+  voting. It also represents the level of demand there is for the block
+  space on Ethereum.
+\item
+  \textbf{\texttt{gasUsed}}: the total Gas used by all the transactions
+  in this block.
+\item
+  \textbf{\texttt{extraData}}
+\item
+  \textbf{\texttt{timestamp}}: (derived from the unix time) indicates at
+  what point in time was the block was mined.
+\item
+  \textbf{mix-hash}: critical component of the PoW. See
+  \textbf{subsection}
+  \href{1.4_Ethereum_core_components.md\#Ethereum-PoW:-Present-and-Future}{\emph{\textbf{Ethereum
+  PoW: Present and Future}}}.
+\item
+  \textbf{\texttt{nonce}}: critical component of the PoW. See
+  \textbf{subsection}
+  \href{1.4_Ethereum_core_components.md\#Ethereum-PoW:-Present-and-Future}{\emph{\textbf{Ethereum
+  PoW: Present and Future}}}.
+\end{itemize}

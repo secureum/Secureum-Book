@@ -1,0 +1,60 @@
+\section{Mainnet and Testnets}\label{mainnet-and-testnets}
+
+Mainnet refers to the main Ethereum network. There is a distinction
+because there also exist several testnets. These testnets are test
+Ethereum networks where protocol and smart contract developers can test
+their protocol upgrades and smart contracts prior to final deployment in
+mainnet.
+
+While mainnet uses real Ether, testnets use what is known as
+``\emph{test Ether}'\,', so that you can simulate the Gas, the transfer
+of value and so on\ldots{} These test Ether can be obtained from
+faucets.
+
+Some of the popular Ethereum testnets are \textbf{Goerli} (a proof of
+authority testnet that allows one to look at a lot of the Ethereum
+concepts and test them as if they are happening on mainnet). This
+particular testnet works across all the clients.It's called proof of
+authority because there are a small number of nodes that are allowed to
+create the blocks and validate them. After the Ropsten testnet reached a
+Terminal Total Difficulty (TTD) of $5\times 10^{16}$, the Goerli
+testnet transitioned to a proof-of-stake consensus mechanism to mimic
+Ethereum mainnet.
+
+Then we have the \textbf{Kovan} testnet, which is again a proof of
+authority testnet specifically for those running OpenEthereum clients.
+
+There is also the \textbf{Sepolia} Testnet. Sepolia was a
+proof-of-authority testnet created in October 2021. Similarly to Goerli,
+after the Ropsten testnet reached a Terminal Total Difficulty (TTD) of
+$5\times 10^{16}$, the Sepolia testnet transitioned to a
+proof-of-stake consensus mechanism. Sepolia was designed to simulate
+harsh network conditions, and has shorter block times, which enable
+faster transaction confirmation times and feedback for developers.
+Compared to other testnets like Goerli, Sepolia's total number of
+testnet tokens is uncapped, which means it is less likely that
+developers using Sepolia will face testnet token scarcity like Goerli.
+
+As you can see, these testnets are also evolving, new ones are being
+added over time trying to make it as easy as possible for the developers
+to simulate the real mainnet Ethereum blockchain and all its
+dependencies. This again becomes very critical to security because
+\textbf{testing is fundamental}: if you do not test, or if the testing
+environment is not very similar to the production environment, then the
+assumptions (the dependencies and other aspects that are tested) will be
+very different from what happens when you deploy the contract, which
+could end up causing a lot of security issues.
+
+\subsection{Deprecated testnets}\label{deprecated-testnets}
+
+Testnets are also removed over time. Some of the deprecated testnets are
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Rinkeby} testnet. It was a proof of authority based testnet
+  which was specifically for the Geth clients. It shut down in 2023.
+\item
+  \textbf{Ropsten} testnet. It was a proof of work testnet. It shut down
+  at the end of 2022.
+\end{itemize}

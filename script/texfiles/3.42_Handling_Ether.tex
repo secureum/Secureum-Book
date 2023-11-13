@@ -1,0 +1,34 @@
+\section{Handling Ether}\label{handling-ether}
+
+Let's now talk about another fundamental aspect of smart contracts and
+Ethereum which is the way they handle Ether. Contracts that accept,
+manage or transfer Ether should take care of several things.
+
+\begin{itemize}
+\tightlist
+\item
+  They should ensure that functions handling Ether are using
+  \texttt{msg.value} appropriately, remember that \texttt{msg.value} is
+  a global variable in the context of a transaction which, for example
+  when used or accounted multiple times (say inside loops) have led to
+  critical vulnerabilities.
+\item
+  They should ensure that logic that depends on Ether value accounts for
+  either less or more Ether set via \texttt{payable} functions.
+\item
+  Logic that depends on contract Ether balance, accounts for the
+  different direct or indirect ways of receiving Ether such as
+  \texttt{coinbase} transaction or \texttt{selfDestruct} recipient that
+  we have discussed earlier.
+\item
+  Logic that handles withdrawal balance and transfers does so correctly
+  in any accounting logic.
+\item
+  Transfers should be reentrancy safe.
+\item
+  Ether can't accidentally get locked within a contract.
+\end{itemize}
+
+Functions handling Ether should also be checked extra carefully for
+access control input validation and error handling all these various
+aspects of Ether handling should be reviewed for correctness.

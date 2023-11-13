@@ -1,0 +1,15 @@
+\section{Out-of-range Enum}\label{out-of-range-enum}
+
+Older versions of \texttt{Solidity} produced unexpected behavior with
+out-of-range enums. For example we had \texttt{enum\ E\{a\}} (with a
+single member \texttt{a}) as shown here, then \texttt{E(1)} is
+out-of-range because, remember, indexing of \texttt{enum} members begins
+with 0.
+
+So \texttt{E(1)} here is out-of-range because there's a single mapper.
+This out-of-range \texttt{enum} produced unexpected behavior in
+\texttt{Solidity\ \textless{}\ 0.4.5}. This was due to a compiler bug
+which has since been fixed.
+
+The best practice until the fix was applied was to check the use of
+\texttt{enums} to make sure they are not out-of-range.

@@ -1,0 +1,96 @@
+\section{Hash Collisions and Byte Level
+Issues}\label{hash-collisions-and-byte-level-issues}
+
+\subsection{Hash Collisions}\label{hash-collisions}
+
+Hash collisions are possible in certain scenarios where the
+\texttt{abi.encodePacked()} primitive, is used with multiple variable
+length arguments.
+
+This happens because this primitive does not zero pad the arguments, and
+it also does not save any length information for those arguments. As a
+result, this packed encoding could lead to collisions in certain
+scenarios, which you can imagine can affect the security of the smart
+contract.
+
+The best practice here is to avoid the use of the
+\texttt{abi.encodePacked()} primitive where possible and use the
+\texttt{abi.encode()} primitive instead.
+
+In scenarios where it can't be avoided, one should at least make sure
+that only one variable length argument is used in this parameter and
+certainly, users who can reach this primitive via function calls should
+not be allowed to write to the parameters used and tainted to force
+collisions from happening.
+
+\subsection{Dirty Bits}\label{dirty-bits}
+
+There is a security risk from Dirty High Order Bits in
+\texttt{Solidity}. Remember that the EVM word size is 256 bits or 32
+bytes, and there are multiple types in \texttt{Solidity} whose size is
+less than 32 bytes. Using variables of such types may result in their
+higher order bits containing dirty values.
+
+What this means is that they may contain values from previous writes to
+those bits, that have not been cleared or zeroed out. Such Dirty Order
+Bits are not a concern for variable operations because the compiler is
+aware of these Dirty Bits and takes care to make sure that they do not
+affect the values of variables.
+
+By the way, if those variables end up getting used or passed around as
+message data, then that may result in them having the different values
+and causing malleability or non-uniqueness. This is a risk that needs to
+be kept in mind when looking at contracts that have variables of such
+types.
+
+\subsection{Incorrect Shifts}\label{incorrect-shifts}
+
+There is a security pitfall related to the use of incorrect shifts in
+\texttt{Solidity} assembly specifically.
+
+\texttt{Solidity} assembly supports three different Shift operations:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Shift left \texttt{shl()}.
+\item
+  Shift right \texttt{shr()}
+\item
+  Shift arithmetic right \texttt{sar()}
+\end{enumerate}
+
+all of which take two operands \texttt{x} and \texttt{y}. These
+operations shift the \texttt{y} operand by \texttt{x} bits and not the
+other way around.
+
+This can be confusing, understandably the developer may have used these
+two operands interchangeably in which case the shift operation do
+something completely different from what the developer anticipated. This
+is something that needs to be checked when looking at Shift operations
+in \texttt{Solidity} assembly.
+
+\subsection{Assembly}\label{assembly}
+
+The use of assembly in \texttt{Solidity} itself is considered as a
+security risk because assembly bypasses multiple security checks such as
+type safety, that is enforced by \texttt{Solidity}.
+
+Developers end up using \texttt{Solidity} Assembly to make the
+operations more optimized and efficient from a Gas perspective, but on
+the flip side this is very error-prone because the assembly language
+\texttt{Yul}, is very different from \texttt{Solidity} itself and
+requires much greater understanding of the syntax and semantics of that
+assembly language.
+
+So the use of \texttt{Solidity} assembly not only affects readability
+and maintainability, but also the auditability, because the auditors
+themselves might not be aware of the \texttt{Yul} language: the syntax
+and semantics.
+
+All these aspects result in the recommended best practice of trying to
+avoid \texttt{Solidity} assembly as much as possible or, if absolutely
+required, then the developers and the security review should
+double-check to make sure that they have been used appropriately in the
+context of the smart contracts.

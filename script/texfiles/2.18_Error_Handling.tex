@@ -1,0 +1,250 @@
+\section{Error Handling}\label{error-handling}
+
+Error handling is one of the most important fundamental and critical
+aspects of programming languages' security. The reason is that errors
+during program execution are what result in security vulnerabilities.
+These could be errors resulting from user inputs when they interact with
+the smart contract and the inputs are not as expected by the developer
+during the coding of the contract.
+
+In the EVM, an exception undoes or reverses all the changes made to the
+state of the smart contract in the context of the current transaction:
+the calls and all the subcalls that may be several levels deep. In
+addition, an error is also flagged to the caller so that they can take
+appropriate action.
+
+They could also be due to assumptions made within the smart contract
+that are not really valid for the various control and data flows that
+happen during program execution. They could also be related to the
+programming variants that are expected from a specification perspective
+and these invariants might not hold good during certain control and data
+flows.
+
+\subsection{Exceptions}\label{exceptions}
+
+So when exceptions happen within subcalls in that call hierarchy, during
+runtime they bubble up, and What this means is that exceptions are
+rethrown at the higher level calls automatically.
+
+There are some exceptions to this rule. There are some differences here
+in the context of the \texttt{send} primitive, and the low level
+function calls: \texttt{call}, \texttt{delegatecall} and
+\texttt{staticcall} which we talked about earlier. These primitives
+(\texttt{send}, \texttt{call}, \texttt{delegatecall} and
+\texttt{staticcall}) return a boolean \texttt{true} or \texttt{false} as
+their first return value instead of an exception bubbling up.
+
+This is an important distinction to be kept in mind when analyzing smart
+contracts because the exception behavior is different for these
+primitives, compared to the standard message calls. Exceptions that
+happen in external calls made during the contact execution can be caught
+with the \texttt{try\ catch} statement.
+
+These exceptions can contain data that is passed back to the caller and
+this data consists of a function selector indicating which function the
+exception happened in, and also some other ABI encoded data that gives
+more information about the exception.
+
+\subsection{\texorpdfstring{Error Signatures: \texttt{error} and
+\texttt{panic}}{Error Signatures: error and panic}}\label{error-signatures-error-and-panic}
+
+\texttt{Solidity} supports two error signatures: \texttt{error} and
+\texttt{panic}. \texttt{error} takes a \texttt{string} parameter whereas
+\texttt{panic} takes an unsigned parameter. \texttt{error} is meant to
+be used for ``\emph{regular error conditions}'', such as input
+validation and so on. \texttt{panic} is used for errors that should not
+be present in bug free code.
+
+\subsubsection{\texorpdfstring{\texttt{panic}}{panic}}\label{panic}
+
+The \texttt{panic} exception is generated in various situations in
+\texttt{Solidity}, and the error code supplied with the error data
+indicates the kind of panic.
+
+There are many of these error codes. Some of them are
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{0x01}: indicates that \texttt{assert} has an argument that
+  evaluated to \texttt{false}.
+\item
+  \texttt{0x11}: an overflow or underflow happened in arithmetic.
+\item
+  \texttt{0x12}: division by zero or modulus by zero occured.
+\item
+  \texttt{0x31}: \texttt{pop()} of an empty array occurred.
+\item
+  \texttt{0x32}: out of bounds access for an array.
+\end{itemize}
+
+There are numerous error codes for \texttt{panic}\ldots{}
+
+This error reverts all the state changes made to the contract logic so
+far in the context of the transaction that triggered it.
+
+\subsubsection{\texorpdfstring{\texttt{error}}{error}}\label{error}
+
+Error string exception, as discussed earlier, are generated when
+\texttt{require} (which we'll see shortly) executes and its argument
+evaluates to \texttt{false}.
+
+The error string is also generated in other situations such as an
+external call made to a contact that contains no code, or if the
+contract receives ether via public function without the payable
+modifier. Or if the contract receives ether via a public getter
+function.
+
+\subsection{Error Handling Primitives}\label{error-handling-primitives}
+
+\texttt{Solidity} supports multiple primitives for error handling, being
+the first set of primitives are functions that let the developer assert
+or require certain conditions to be held.
+
+\subsubsection{\texorpdfstring{\texttt{assert}}{assert}}\label{assert}
+
+The \texttt{assert(x)} primitive for example, specifies a condition
+\texttt{x} as its argument, and if that condition is not met (if it
+evaluates to \texttt{false} during runtime), The \texttt{assert}
+primitive is meant to be used for internal errors for program invariants
+that should never be violated within the smart contract if it does not
+have bugs as intended by the developer.
+
+These asserts result in the \texttt{panic} errors that take the
+\texttt{uint256} type, to reiterate they should be used for internal
+errors for checking invariants, normal code bug free code should never
+cause \texttt{panic}s.
+
+\subsubsection{\texorpdfstring{\texttt{require}}{require}}\label{require}
+
+It is another error handling primitive supported by \texttt{Solidity}.
+Similarly to \texttt{assert} it also specifies a condition that gets
+evaluated at runtime, and if that condition evaluates to \texttt{false},
+then it again raises a \texttt{revert}, that reverses all the state
+changes made to the contract so far. The \texttt{require} primitive
+takes an optional string as an argument: this is a message that gets
+printed if the required condition is not met.
+
+Therefore, it either creates an error of type error string or an error
+without any error data.
+
+The \texttt{require} primitive is meant to be used for errors in inputs
+from users which should be validated to make sure they are within the
+thresholds of what is acceptable with the smart contract logic, so some
+sanity checks on those values are necessary (this is a fundamental
+pillar of security).
+
+\texttt{require} is also used for checking the return values from calls
+that are made to external contracts. So any type of external
+interaction, be it inputs from users or return values from external
+contact calls, are what require is meant to be used with. Require takes
+in an optional message string that is output when the condition fails.
+
+The thing to be kept in mind is the difference between \texttt{assert}
+and \texttt{require}. There were some historical differences as well in
+the use of a particular opcode: a different opcode for \texttt{assert}
+versus \texttt{require} that affects the Gas consumption, but some of
+these have been changed in the recent \texttt{Solidity} versions.
+
+\subsubsection{\texorpdfstring{\texttt{revert}}{revert}}\label{revert}
+
+Finally there is a \texttt{revert} primitive that unconditionally aborts
+execution when triggered, reverting all the state changes similar to
+when the conditions are not met for a certain \texttt{require}
+primitive.
+
+There are two ways to explicitly trigger a \texttt{revert} in
+\texttt{Solidity}: using the \texttt{revert\ CustomError(arg1,...)}
+primitive or the \texttt{revert({[}string{]})} function, where the
+\texttt{string} parameter is optional.
+
+In both these cases, the execution is aborted and all the state changes
+made. as part of the transaction, are reversed. This distinction between
+\texttt{CustomError} and the \texttt{string}, is interesting from an
+optimization and usecase perspective.
+
+\subsection{try/catch}\label{trycatch}
+
+These primitives supported by \texttt{Solidity} are fundamental error
+handling. The syntax is
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+try Expr [returns()] {...}
+catch <Block> {...}
+\end{lstlisting}
+
+So, we have the \texttt{try} and \texttt{catch} keywords coupled with an
+expression that contains an external function call or creation of a
+contract. These are coupled with code blocks corresponding to the
+success blocks or the catch blocks. These are code segments within the
+curly braces shown above. Which block gets executed depends on whether
+there was a failure or not in that external call within that expression.
+
+If there were no errors then the success block gets executed (the block
+that immediately follows the \texttt{try} expression in the syntax shown
+earlier). But if there was an error in that external call then the catch
+block, or one of the catch blocks, gets executed. Which catch block gets
+executed depends on the error type, and there are multiple of them.
+
+\subsubsection{\texorpdfstring{\texttt{catch}
+Blocks}{catch Blocks}}\label{catch-blocks}
+
+As mentioned, \texttt{Solidity} supports different kinds of
+\texttt{catch} blocks depending on the error type. There is a
+\texttt{catch} block that supports an error string.
+\texttt{catch\ Error(\textless{}string\ reason\textgreater{})}. This is
+executed if the error was caused by \texttt{revert} with a reason
+string, or \texttt{require} where the condition evaluated to
+\texttt{false}.
+
+Then there is a \texttt{catch} kind that supports \texttt{panic} error
+code \texttt{catch\ Panic(uint\ \textless{}error\ code\textgreater{})}.
+If this error was caused by a panic failing \texttt{assert}, (remember:
+division by zero, outer bound array accesses, arithmetic
+underflow/overflow) this is the \texttt{catch} block that will be run.
+
+In addition there is a \texttt{catch} that specifies the low level data
+\texttt{catch\ (bytes\ \textless{}LowLevelData\textgreater{})}. This one
+gets executed if the error signature does not match any other clause
+shown above. Or if there was an error while decoding the error message
+itself, or if no error data was provided with that exception. This
+variable that is declared the low-level data gives us access to the
+error data in that case.
+
+Finally if the developer is not interested in the type of error data,
+one can simply use \texttt{catch} as is. These give various options to
+deal with different types of exceptions, that might come from the
+external call that is used within the \texttt{try} \texttt{catch}
+permit.
+
+\subsubsection{try/catch State Change}\label{trycatch-state-change}
+
+As we just discussed, there exists the concept of the success block,
+that gets executed when there are no exceptions in that external call.
+There are also error blocks that correspond to the different
+\texttt{catch} blocks which get executed when there are exceptions
+encountered in that external call.
+
+If execution reaches the success block, it means that there were no
+exceptions in that external call, and all the state changes that are
+done in the context of the external call are committed to the state of
+the contract.
+
+But if execution reaches one of the \texttt{catch} or error blocks, then
+it means that the state changes in that external call context have been
+reverted, because of the exception. There could also be a context where
+the \texttt{try} \texttt{catch} statement itself reverts for reasons of
+decoding or low level failures.
+
+\subsubsection{External Call Failure}\label{external-call-failure}
+
+These failures of the external call made in the context of the catch
+primitive, could happen for a variety of reasons and one cannot always
+assume that the error message is coming directly from the contract that
+was called in that external call, because the error could happen deeper
+down in the call chain resulting from that call. It was forwarded to the
+point where it was received.
+
+This could also be due to an out of Gas (OOG) situation, in which case
+the caller still has a bit of Gas to deal with that exception because
+not all of it is forwarded to the callee.

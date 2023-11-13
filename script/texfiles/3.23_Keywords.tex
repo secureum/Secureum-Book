@@ -1,0 +1,21 @@
+\section{Keywords}\label{keywords}
+
+This security best practice is related to the use of duplicated keywords
+in \texttt{Solidity} over the different compiler versions.
+
+Different keywords have been deprecated to favor one over the other, so
+for example \texttt{msg.gas} has been deprecated to favor
+\texttt{msg.gasLeft}, \texttt{throw} has been deprecated to favor the
+use of \texttt{revert}, \texttt{sha3} for \texttt{keccak-256},
+\texttt{callcode} for \texttt{delegatecall}, \texttt{constant} Keyword
+for \texttt{view}, the \texttt{var} Keyword for using the actual type
+name instead.
+
+So all such deprecated keywords they start initially as compiler
+warnings where the compiler wants us not to use these keywords and over
+the future versions these warnings could be converted into compiler
+errors in which case the compilation fails.
+
+So the best practice here is to simply avoid the use of deprecated
+keywords even if they are compiling warnings, because these warnings can
+become errors in the future compiler versions.

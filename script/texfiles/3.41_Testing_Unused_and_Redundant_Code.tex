@@ -1,0 +1,64 @@
+\section{Testing, Unused and Redundant
+Code}\label{testing-unused-and-redundant-code}
+
+\subsection{Testing}\label{testing}
+
+Software testing or validation is a fundamental software engineering
+practice that is a critical contributor to improved security. Testing
+validates whether the system implementation meets the requirements as
+detailed by the specification. Unit tests, functional tests, integration
+and end-to-end tests should have been performed to achieve good test
+coverage across the entire code base.
+
+\begin{itemize}
+\tightlist
+\item
+  Changes introduced with any revisions should be validated with
+  regression tests.
+\item
+  Smoke testing indicates at a high level if the functionality works or
+  not.
+\item
+  Stress testing validates extreme scenarios with borderline cases to
+  check if those have been considered correctly.
+\item
+  Performance and security specific testing validates those aspects
+  respectively.
+\end{itemize}
+
+Any code or parameterization used specifically for testing should be
+removed from production code, which in smart contracts may apply
+differently to testnets vs.~mainnet. Leaving test parameters or
+configurations behind may accidentally allow their usage resulting in
+unexpected maintenance behavior or serious vulnerabilities, so overall
+we need to ensure that sufficient levels of testing have been performed
+across all these different categories we just mentioned.
+
+\subsection{Unused Code}\label{unused-code}
+
+Unused constructs may negatively impact security. This applies to any
+unused reports, inherited contracts, functions, parameters, variables,
+modifiers, events or return values; all of which should be removed or
+used appropriately after careful evaluation.
+
+Removing will not only reduce Gas costs, but also improve readability
+and maintainability of the code. Unused constructs may also be
+indicative of missing logic that may be a security concern, if that
+logic were to have implemented security related functionality, so one
+needs to either remove or use such unused constructs.
+
+\subsection{Redundant Code}\label{redundant-code}
+
+Redundant constructs are also concerned. These are a kind of constructs
+that are not required either because there are equivalent constructs
+that implement the same functionality or because they are not relevant
+anymore. Such redundant code and comments can be confusing and should be
+removed or changed appropriately after careful evaluation.
+
+Similar to unused constructs, removing redundant constructs will not
+only reduce Gas costs but also improve readability and maintainability
+of the code. If redundant constructs are indicative of missing or
+incorrect logic, then they may be a security concern, if such logic were
+to have implemented security related functionality. So one needs to
+either remove such redundant constructs or make them relevant by adding
+or changing the corresponding logic.

@@ -1,0 +1,84 @@
+\section{Gas Metering: Solving the Halting
+Problem}\label{gas-metering-solving-the-halting-problem}
+
+\subsection{The Halting Problem}\label{the-halting-problem}
+
+We talked earlier about Turing completeness and how Ethereum supports a
+Turing complete programming language.
+
+Turing completeness lends itself to a fundamental problem in computer
+science: the halting problem. Imagine you have a Turing complete
+programming language, then the halting problem states that: it cannot be
+predicted if an arbitrary program in that language with an arbitrary
+input will ever stop execution for that input.
+
+This problem is taken for granted on our personal laptops or on our
+phones: if there are programs that run into an infinite loop that hangs
+them, then we just manually kill the execution.
+
+In the context of a blockchain however, we are talking about being able
+to deploy a smart contract that is not going to run on my Ethereum node
+exclusively, but it's going to run on all the Ethereum nodes in the
+blockchain. With that in mind, if any of those smart contracts ran into
+an infinite loop, then the whole infrastructure would come to a grinding
+heart, which is obviously undesirable. We would not make further
+progress and everything would come to a standstill.
+
+The way in which Ethereum deals with this issue is constraining the
+resources that are given to the smart contract on the Ethereum node by
+metering them through the concept of Gas.
+
+\subsection{Gas Metering}\label{gas-metering}
+
+The EVM runs smart contracts, which have machine code instructions.
+Every single one of these instructions has a predetermined execution
+cost in Gas units. So when a transaction triggers the execution of that
+smart contract, and the smart contracts starts executing those
+instructions, then the Gas units for those instructions are ``consumed''
+by the smart contract. This is the concept of Gas metering within a
+smart contract, where it accounts for every instruction (it could be a
+computational instruction, a data access, \ldots{} all those
+instructions consume Gas units from the transaction).
+
+This implies that a transaction that triggers a smart contract has to
+include a specific amount of Gas as required by the logic of the smart
+contract. Depending on what logic needs to be executed by said smart
+contract, there is a limit to the gas: a certain amount of Gas units are
+required for a particular flow, so if a transaction is triggering that
+it must include so many Gas units. In fact, even if the transaction is
+just triggering a transfer of value, it has to supply the amount of Gas
+required for what it is triggering.
+
+If the Gas that is required during the execution of the smart contract
+exceeds what is supplied, or if it exceeds the limit, then the EVM will
+terminate execution and the transaction will fail. This is fundamental
+to how Ethereum works, since there is a need to bound the use of
+resources by anyone interacting with a smart contract that runs on all
+the blockchain nodes all over the world.
+
+Up until this point, all we have talked about is the units of Gas that
+have to be provided. However, Gas itself has a price, which is measured
+in Ether. So this Gas price is not fixed as it depends on the supply and
+demand of Ether.
+
+In this context it depends on the demand for the block space within
+Ethereum, and if there are many applications (many smart contracts)
+and/or users competing for that block space, then the Gas price can
+increase vastly. So just like the automobile analogy (which requires Gas
+or petrol, and with a fixed amount of petrol one can drive a certain
+amount of kilometers), the petrol is the equivalent of the Gas units in
+Ethereum (which allows to run a transaction in a certain number of
+instructions within the smart contract based on the amount of Gas you
+supplied). But the Gas price, similar to the price that you pay in Gas
+stations (petrol bunks) is different and depends on the supply and
+demand.
+
+This Gas mechanism has recently been updated; take a look at EIP1559
+(Ethereum Improvement Proposal 1559).
+
+The take home message for this section is: one needs to obtain gas,
+which is obtained by purchasing Ether. A transaction requires gas, and
+if it exceeds the amount of Gas that is supplied, then the transaction
+fails. But if there is more Gas than what is required, that is supplied
+as part of the transaction, then the remaining Gas is sent back to the
+sender who executed the transaction as part of the protocol.

@@ -1,0 +1,234 @@
+\section{EVM Storage}\label{evm-storage}
+
+Let's see how some of the \texttt{Solidity} concepts map to the EVM
+storage. Remember: it is a \texttt{(key,\ value)} store that maps 256
+bit words to 256 bit words, so the \texttt{key} and \texttt{value} are
+both considered to be the word size supported by the EVM. The
+instructions used to access the storage are \texttt{SLOAD} to load from
+storage and \texttt{SSTORE} to write to storage from the stack. Remember
+that all locations in the storage are initialized to zero.
+
+\subsection{Storage Layout}\label{storage-layout}
+
+State variables are stored in the different storage slots. Each slot in
+the EVM storage corresponds to a word size of 256 bits. The various
+state variables declared within the smart contracts are mapped to these
+storage slots in the EVM, and if there are multiple state variables that
+can fit within the same storage slot depending on their types, then they
+are done so to maintain a compact representation of the state variables
+within that storage slot.
+
+The mapping is done in the same order as the declaration of the state
+variables, so state variables that are declared within a contract are
+stored contiguously in their declaration order in the different storage
+slots of the EVM, which means that the first state variable is stored in
+slot 0 the second one in slot 1 or maybe the same slot 0\ldots{}
+
+\subsubsection{Storage Packing}\label{storage-packing}
+
+If the first variable was of a size smaller than 256 bits, the second
+one could fit as well within that slot, so \textbf{except for dynamic
+arrays and mappings, all the other types of state variables are stored
+contiguously item after item starting with the first state variable}.
+This is known as \textbf{storage packing}.
+
+Remember that \texttt{Solidity} supports different types and each type
+has a default size and bytes, so it all depends on the types of the
+state variables declared and their underlying sizes. If there are
+multiple contiguous state variables that need less than 32 bytes, then
+those are packed into the single storage slot where possible.
+
+There are some rules that are followed: the first item in a storage slot
+is stored lower-order aligned value types that only use as many bytes
+that are necessary to store them, and when a value type does not fit the
+remaining part of a storage slot, it is stored in the next storage slot.
+This concept of storage packing becomes important when we are looking at
+a smart contract code and trying to determine which storage slot a
+particular state variable fits in, which depends on the other state
+variables that are declared around it.
+
+\subsubsection{Layout, Types \& Ordering}\label{layout-types-ordering}
+
+Storage packing allows us to optimize the storage slot layout depending
+on the types of the state variables. So state variables can be made to
+have a reduced size type depending on the values that they're supposed
+to hold, then storage packing allows such state variables to share a
+storage slot. This allows the service compiler to combine multiple reads
+or writes into a single operation when it generates the corresponding
+bytecode.
+
+However, if those state variables sharing the same slot are not read or
+written at the same time, depending on the contract logic, this can have
+an opposite effect, which results in more Gas being used than expected.
+This is because when one such value of a state variable that shares that
+slot with other state variables is being read or written, then the
+entire slot is read or written because that is the size that the EVM and
+\texttt{Solidity} work with.
+
+Now the specific state variable within that slot has to be separated out
+for reading or writing, this is done by masking out all the other state
+variables that share that slot.
+
+This masking results in additional instructions being generated which
+lead to additional Gas being used in this case, so depending on the
+specific sizes of the types and on the pattern of reading or writing,
+the types of state variables that are adjacent to each other in the
+declarations should be bid for efficient optimization from storage
+packing.
+
+To summarize: the ordering of the state variable declarations within a
+smart contract impact the layout of their storage slots and affects if
+multiple state variables declared contiguously can be packed within the
+same storage slot or if they need separate storage slots. This packing
+has a huge impact on the Gas Cost because the instructions that read and
+write state variables (if you remember are \texttt{SLOAD}s and
+\texttt{SSTORE}s) are the most expensive instructions from a Gas Cost
+perspective supported by EVM.
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{SSLOAD}s costs as much as 2100 Gas or 100 Gas depending on how
+  many times the state variables has been read. So far in the context of
+  the transaction.
+\item
+  \texttt{SSTORE}s cost as much as 20000 Gas in the most recent EVM
+  versions.
+\end{itemize}
+
+As an example, if we have three state variables of types
+\texttt{uint128}, \texttt{uint128} and \texttt{uint256} that are
+declared within the same smart contract contiguously, then these
+variables would use 2 storage slots because the first 2 storage
+variables can share the same storage slot. The 2 variables of size 128
+bits will fit into the same storage slot: slot 0 in this case (which is
+256 bits in size). The third state variable of type \texttt{uint256}
+would go into the second storage slot (or slot 1).
+
+But if the declaration order is slightly changed (so for example putting
+the 256 bit state variable in between the 128 bit variables), then the
+new order would require 3 storage slots instead of 2: the first 128 bit
+one would go into slot 0, the second one would not fit within slot 0, so
+it would go to slot 1 and consume the whole slot 1. The third state
+variable would then take up a slot.
+
+This gives you an idea of how the state variable declaration order
+impacts a number of storage slots, which has a big impact on the Gas
+Cost used by that contract.
+
+\subsubsection{Inheritance and Storage
+Layout}\label{inheritance-and-storage-layout}
+
+\textbf{How does inheritance affect the storage slot allocation?}
+
+For contracts that use inheritance, the ordering of state variables is
+determined by the \texttt{C3} linearization rule of the contract orders,
+starting from the most base contract to the most derived contract. If
+allowed by any of the rules discussed, state variables from the
+different contracts (the different base and derived contracts) are
+allowed to share the same storage slot with respect to the storage
+packing concept we talked about.
+
+\subsubsection{Storage Layout for Structs \&
+Arrays}\label{storage-layout-for-structs-arrays}
+
+State variables of type structs and arrays have specific rules with
+respect to the storage slot allocation. Such state variables always
+start a new storage slot as opposed to being packed into existing ones.
+The state variables following them also start a new storage slot. The
+elements of the structs and arrays themselves are stored contiguously
+right after each other as if they were individual values, and depending
+on their types the rules we just discussed earlier apply to these as
+well.
+
+\subsubsection{Mappings \& Dynamic
+Arrays}\label{mappings-dynamic-arrays}
+
+Storage slot allocation for mappings and dynamically sized arrays is a
+bit more complex than their value type counterparts. These types are
+unpredictable in their dynamic size by definition and because of that
+reason the storage slots allocated for them can't be reserved in between
+the slots for the state variables that surround them in the declaration
+order within their contract.
+
+Therefore these are always considered to occupy a single slot, that's 32
+bytes in size with regard to the rules discussed so far and the elements
+that they contain within, that that can change dynamically over the
+duration of the contract, are stored in a totally different location:
+the starting storage slot for those elements is computed using
+\texttt{keccak-256} hash.
+
+\begin{itemize}
+\item
+  \textbf{Dynamic Arrays}\\
+
+  Let's say we have a state variable of type dynamic array and, based on
+  the declaration order within that smart contract, let's say that it is
+  assigned slot number \texttt{p}.\\
+
+  This slot only stores the number of array elements within that state
+  variable and is updated during the lifetime of the contract when this
+  changes. The actual elements of the dynamic array itself are stored
+  separately in different storage slots.\\
+
+  The starting slot for those elements is determined by taking the
+  \texttt{keccak-256} hash of the slot number \texttt{p}. The elements
+  themselves starting from that storage slot that we just calculated are
+  stored contiguously and can also share those storage slots if
+  possible, depending on their types, on the size of those types and, if
+  we have dynamic arrays that in turn have dynamic arrays within them,
+  then the same set of rules apply recursively to determine their
+  corresponding storage slots.
+\item
+  \textbf{Mappings}\\
+
+  Again, depending on the declaration order, if there is a state
+  variable of mapping type and it gets assigned a slot number
+  \texttt{p}, then that particular slot stores nothing: it's an empty
+  slot just assigned to that mapping. Compare this to the dynamic array
+  that we just discussed where this slot stores the number of those
+  array elements.\\
+
+  The slots corresponding to the values for keys of this mapping are
+  calculated as follows: for every key \texttt{k}, the slot that is
+  allocated is determined by taking the \texttt{keccak-256} hash of
+  \texttt{h(k).p}. The \texttt{.} is a concatenation of the two values
+  of \texttt{h(k)} and \texttt{p}. We know that \texttt{p} is the slot
+  number, which we mentioned earlier on. \texttt{h} is a function that
+  is specific to the type of the key that we're talking about and, if
+  this is a value type, then there is a padding that is done to make it
+  up to 32 bytes. If it is a string or byte arrays, then \texttt{h()}
+  computes the \texttt{keccak-256} hash of the unpadded data. The type
+  specific rules that determine what \texttt{h()} is and those details
+  are specified better at the reference provided.
+\end{itemize}
+
+\subsubsection{Bytes \& String}\label{bytes-string}
+
+For this case, there is an interesting optimization. The storage layout
+for these is very similar to arrays, so the actual storage slot
+depending on the declaration order, stores the length of these types,
+the elements themselves of the variable are stored separately in a
+storage slot that is determined by taking the \texttt{keccak-256} hash
+of the storage slot assigned to store the length.
+
+However, if the values of these variables are short, then instead of
+storing these elements separately they are stored along with the length
+within the same storage slot. The way this is done is: if the data is at
+most 31 bytes, then the first byte in the lowest order stores the value
+\texttt{length*2} and all the other bytes (the higher order bytes) store
+the elements that fit within the remaining 31 bytes.
+
+If the length of the data is more than 31 (32 bytes or more), then the
+lowest order byte stores the value \texttt{length*2\ +\ 1}, the elements
+themselves don't fit within this storage slot that stores the length, so
+they are stored separately using the \texttt{keccak-256} hash of this
+slot's position.
+
+The distribution of whether the data values values are stored within the
+same storage slot as the length or if they're stored separately, is made
+by looking at the lowest order bit. If that is set (\texttt{1}) it means
+that they are stored separately and, if they're stored within the same
+slot as a length, then this bit will not be set (\texttt{0}). This is
+because of the length being stored as \texttt{length*2\ +\ 1} or just
+\texttt{length*2}.

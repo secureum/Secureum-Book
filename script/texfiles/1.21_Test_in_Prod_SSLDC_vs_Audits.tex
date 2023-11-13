@@ -1,0 +1,103 @@
+\section{Test-in-Prod. SSLDC
+vs.~Audits}\label{test-in-prod.-ssldc-vs.-audits}
+
+\textbf{Test-in-prod} is a concept that, although it may have started as
+a meme, has certainly an element of truth to it in the web3 space and
+Ethereum. If you go back to the concepts of compressed time scales,
+unrestricted composability of contracts and applications in this space,
+the byzantine threat model and the challenges of replicating the full
+state of a live blockchain in a test setting; all these are really what
+make testing in a testing environment very hard.
+
+Again, this contasts with the web2 world where there are very clear
+distinctions between a test environment and a production setting for
+various reasons of owning the complete stack, the maturity of the tools,
+the lack of sort of unconstrained composability with arbitrary
+components outside of the stack for that particular product.
+
+All those aspects that are very well defined in the web2 space from a
+testing perspective, are very challenging to set in the web3 space. This
+is further complicated by the maturity of the tools that are still
+experimental in some sense in the web3 space, and also the mechanism
+design aspect of it: the attackers and the users potentially being the
+abusers.
+
+All these things come together to make testing, which is really
+fundamental when thinking about security and making something more
+secure or getting a better level of assurance from the product, very
+hard to do because the real world failure models cannot be replicated
+very easily in a test environment.
+
+This implies that it forces ``\emph{realistic}'' testing to happen only
+in production. In the case of web3, in the case of Ethereum, on mainnet.
+So none of the testnets we talked about can match to some of the
+assumptions and the constraints that their software contracts will be
+subjected to.
+
+So, the complex technical exploits (i.e.~crypto economic exploits), can
+only be discoverable upon production deployment on the mainnet. This is
+again a hypothesis, but it is worth thinking about.
+
+\subsection{SSDLC}\label{ssdlc}
+
+An interesting concept to go through, is web2's concept of
+\textbf{SSDLC} which stands for \textbf{Secure Software Development Life
+Cycle}. There are many approaches to this, but in general, any web2
+product software, product hardware or product service has a version of
+SSDLC which is used during the development life cycle.
+
+This version guarantees that some minimum requirements have been met in
+a combination of testing, internal validation and some sort of external
+assessment depending on the product. It could be a product audit, a
+process audit, maybe even penetration testing if it is applicable to
+that product.
+
+Also depending on the nature of assets that are managed, the risk that
+is faced, the threat model that is anticipated and even the specific
+sector or domain that the products are introduced in (such as he
+financial sector) there exist certifications assuring that the product
+application or service has to met to be succesfully deployedright. This
+is prevalent in the web2 space and has evolved again over the last
+several decades.
+
+\subsection{Audits}\label{audits}
+
+When it comes to the \textbf{web3} space, however, we do not see a
+mature SSDLC yet. What we see is this concept of \textbf{audits}, and
+unfortunately the life cycle of development has boiled down to building
+the product (be it a smart contract or a web3 application), getting an
+audit done from an external company (a security firm/individual that
+specializes in, let's say, smart contract security) and then going ahead
+and launching it.
+
+There is an expectation both from the development team as well as the
+users (the market in general) to perceive this audit as a silver bullet:
+something that detects all the security issues in the smart contract,
+fixes everything and then sort of guarantees that the product is free of
+bugs and vulnerabilities when it is launched.
+
+\textbf{Audits are not a ``\emph{stamp of security approval}''}. There
+are some fundamental aspects that contribute to audits being perceived
+in this fashion (at least this is a hypothesis). The big one is in
+general the lack of in-house security expertise: given the rapid
+innovation time scales in the space, the developers are few and there's
+a huge demand for developers.
+
+There is even a bigger demand for people who not only understand how to
+develop in Ethereum and the web3 space, but to understand the security
+pitfalls, which require a greater level of effort and expertise. This
+lack of in-house security expertise and the challenge of wanting and
+having to launch some of these protocols as fast as the team can, forces
+such teams to seek out external audit firms and get these audits,
+leading to think of them, market them and brand them as stamps for
+security approval.
+
+So there's this very unrealistic expectations from audits to be
+``\emph{catch-all}'' for all the security vulnerabilities and bugs that
+are anticipated in a smart contract or in a web3 application. For
+reasons of great demand and very low supply of this expertise, these
+audits are also very expensive: there are very few audit firms compared
+to the demand, which leads to a vicious loop where projects want audits
+but all the audit firms are really booked 6 or 9 months (depending on
+the market conditions). It is a core problem in the current space and
+state-of-art.

@@ -1,0 +1,73 @@
+\section{Ether Accounting}\label{ether-accounting}
+
+\subsection{Contract Balance}\label{contract-balance}
+
+This security pitfall is related to the Ether balance of a smart
+contract and how that can change unexpectedly outside the assumptions
+made by the developer.
+
+Remember that smart contracts can be created to begin with a specific
+Ether balance. Also there are also functions within the smart contract
+that can be specified as being payable, which means that they can
+receive Ether via message value.
+
+These two ways can be anticipated by the developer to change the Ether
+balance of the contract. But there are also other ways in which the
+Ether balance of the contract can change.
+
+One such way is the use of \texttt{coinbase} transactions. These are the
+beneficiary addresses used in the block headers where the miner
+typically specifies the address to which the block rewards and all the
+transaction Gas fees should go to. That \texttt{coinbase} address could
+point to a specific smart contract where all the rewards, the Gas fees
+go to, if that block is successfully included in the blockchain.
+
+The other unexpected way could be via the \texttt{selfdestruct}
+primitive where, if a particular smart contract is specified as the
+recipient address of \texttt{selfdestruct()}, then upon that executing
+the balance of the contract being destructed would be transferred to the
+specified recipient contract.
+
+So these two ways the \texttt{coinbase} and \texttt{selfdestruct}
+although very unusual and unexpected could in theory change the Ether
+balance of any smart contract, this could be well outside the
+assumptions made by the developer or the team behind the smart contract.
+
+So what this means is that, if the application logic implemented by a
+smart contract makes assumptions on the balance of Ether in this
+contract and how that can change, then those assumptions could become
+invalid because of these extreme situations in which it can be changed.
+So this is something to be paid attention to while analyzing the
+security for contract from the perspective of the Ether balance that it
+holds.
+
+\subsection{\texorpdfstring{\texttt{fallback}
+vs.~\texttt{receive}}{fallback vs.~receive}}\label{fallback-vs.-receive}
+
+This security consideration is related to the use of \texttt{fallback}
+and \texttt{receive} functions within a smart contract.
+
+Remember from our discussion in the \texttt{Solidity} modules, there are
+differences between these two functions, there are some similarities.
+These are related to the visibility, the mutability and \textbf{the way
+that Ether transfers are handled by these two different functions}.
+
+So from a security perspective, if these functions are used in a
+contract, then one should check that the assumptions are valid and if
+not, what are the implications thereof.
+
+\subsection{Locked Ether}\label{locked-ether}
+
+Locked Ether refers to the situation where the contract has an Ether
+balance that gets locked because Ether can be sent to that contract via
+\texttt{payable} functions, but there's no way for users to withdraw
+that Ether from that contract (the contract contains no functionality to
+withdraw Ether).
+
+The obvious solutions are to remove the \texttt{payable} attributes from
+functions to prevent Ether from being deposited via them or adding
+withdrawal capabilities to the smart contract. The simple situations for
+this particular pitfall can be easily recognized and fixed. But also,
+there could be complex scenarios where the contract can be taken to a
+particular state (either accidentally or maliciously) where the Ether or
+the token balance of the contract gets locked and can't be withdrawn.

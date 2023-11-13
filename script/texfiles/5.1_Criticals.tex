@@ -1,0 +1,331 @@
+\section{Criticals}\label{criticals}
+
+\subsection{ConsenSys Diligence}\label{consensys-diligence}
+
+\subsubsection{1inch}\label{inch}
+
+This finding was a ConsenSys Diligence audit of 1inch where it was a
+critical severity finding related to access control and input data
+validation in which anyone could steal all the funds that belong to the
+referral fee receiver.
+
+For context, any token or ETH that belonged to the \texttt{feeReceiver}
+was at risk and could be drained by any user by providing a custom
+\texttt{UniswapPool} contract that referenced existing token holdings,
+because none of the functions in the \texttt{feeReciever} verified that
+the user provided \texttt{UniswapPool} address was actually deployed by
+the linked \texttt{UniswapFactory}.
+
+The recommendations were:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  To enforce that the user provided \texttt{Uniswap} contract was
+  actually deployed by the linked factory because other contracts can't
+  be trusted.
+\item
+  To consider implementing token sorting and deduplication in the pool
+  contract constructor as well.
+\item
+  To consider employing a re-entrancy guard to safeguard the contract
+  from reentrancy attacks.
+\item
+  To improve testing because the vulnerable functions were not covered
+  at all.
+\item
+  To improve documentation and provide a specification that outlined how
+  this contract was supposed to be used.
+\end{enumerate}
+
+This is related to system specification and documentation in 136, 137
+access control specification and implementation in 148, 149 and broader
+aspects of testing in 155 data validation issues in 169 and access
+control issues in 172 that we discussed in security pitfalls and best
+practices 201 model.
+
+\subsubsection{DeFi Saver}\label{defi-saver}
+
+This finding was a ConsenSys Diligence audit of the DeFi Saver protocol.
+It was a critical vulnerability of the reentrancy type which allowed for
+a random task execution in the context of the protocol. Specifically, in
+a scenario where a user took a flash loan, one of the functions gave the
+flash loan wrapper contract permission to execute functions on behalf of
+the users \texttt{DSProxy}.
+
+This permission was revoked only after the entire recipe execution
+finished, which meant that in a case that any of the external calls
+along the recipe execution was malicious, it could perform a reentrancy
+attack by injecting any task of choice leading to users funds being
+transferred out or draining approved tokens.
+
+This vulnerability was due to potential reentrancies from malicious
+external calls and therefore the recommendation was to add a reentrancy
+guard, such as the one from OpenZeppelin, where the
+\texttt{NonReentrant} modifiers are used on functions that may be
+vulnerable to reentrancies. We have discussed these aspects in
+\href{../2.Solidity/2.28_Open_Zeppelin_Libraries.md\#ReentrancyGuard}{OpenZeppelin
+Libraries for Security} and
+\href{../3.Security_Pitfalls_and_Best_Practices/3.6_Reentrancy.md}{the
+Reentrancy Security pitfall}.
+
+\subsubsection{DAOFI}\label{daofi}
+
+This finding was a ConsenSys Diligence audit of the DAOFI protocol where
+it was a critical severity finding in the input validation category. The
+finding here was that token approvals can be stolen in the
+\texttt{addLiquidity} function of the protocol where the function
+created the desired contract, if it did not already exist, then
+transferred tokens into the pair. However, there was no validation of
+the address to transfer tokens from and so, an attacker could have
+passed in any address with non-zero token approvals to the DAOFI V1
+route. This could have been used to add liquidity to a pair contract for
+which the attacker was the pair Owner allowing the stolen funds to be
+retrieved using the \texttt{withdrawal} function.
+
+The recommendation was to transfer tokens from \texttt{msg.sender}
+instead of \texttt{lp.sender}. We have discussed the importance of
+access control checks on correct addresses in number 148, 149, 160, 172,
+180, 181 and 183 of security pitfalls and best practices 201 module, and
+also the importance of input validation specifically on function
+parameters tokens and addresses in 138 and 159 of security pitfalls and
+best practices 201 module.
+
+\subsubsection{Fei}\label{fei}
+
+\begin{itemize}
+\item
+  This finding was a ConsenSys Diligence audit of the Fei protocol where
+  it was a critical severity finding in the application logic where the
+  \texttt{GenesisGroup.commit} function overrode previously committed
+  values. The amount stored in the recipient's \texttt{committedFGEN}
+  balance overrode any previously committed value, including allowing
+  anyone to commit an amount of zero to any account, deleting their
+  commitment entirely.\\
+
+  The recommendation was to ensure that the committed amount is added to
+  the existing commitment instead of overwriting it. This finding is
+  related to the numerical and accounting issues we discussed in number
+  170 and 171 or security pitfalls and best practices 201 module and
+  also the general challenges of detecting application specific business
+  logic issues in number 191 of that same module.
+\item
+  Another critical severity finding from ConsenSys Diligence audit of
+  the Fei protocol was related to the timing category. Here, purchasing
+  and committing was still possible after launch, which meant that even
+  after the \texttt{GenesisGroup.launch} had successfully been executed,
+  it was still possible to invoke \texttt{GenesisGroup.purchase} and
+  commit functions.\\
+
+  The recommendation was to consider adding validation by ensuring that
+  these functions could not be called after launch. This finding is
+  related to the ordering issues we discussed in number 145 and 178 and
+  also the timing issues discussed in 143 and 177 of the security
+  pitfalls and best practices 201 module.
+\end{itemize}
+
+\subsubsection{Bancor V2}\label{bancor-v2}
+
+This finding was a ConsenSys Diligence audit of Bancor V2 protocol where
+it was a critical severity finding related to the typing category. This
+issue was about Oracle updates that could be manipulated to arbitrage
+rate changes by sandwiching the Oracle update between two transactions.
+The attacker could send two transactions at the moment the Oracle update
+appeared in the mempool. The first transaction sent with a higher Gas
+Price than the Oracle update transaction, so as to front run it would
+convert a very small amount to lock in the conversion rate, so that the
+stale Oracle price would be used in the following transaction. The
+second transaction sent at a slightly lower Gas Price than the
+transactions that updated the Oracle, so as to back run it and
+effectively sandwich it would perform a large conversion at the old
+scale weight, add a small amount of liquidity to trigger rebalancing and
+then convert back at the new rate. The attacker could obtain liquidity
+for step two using a flash loan and use that to deplete the reserves.
+
+The recommendation was to not allow users to trade at a stale Oracle
+rate and trigger an Oracle update in the same transaction. This finding
+is related to the transaction order dependence aspect discussed in
+number 21 of security pitfalls and best practices 101 module, ordering
+aspect discussed in number 178 and freshness aspect discussed in number
+185 of the security pitfalls and best practices 201.
+
+\subsubsection{Lien}\label{lien}
+
+This finding was a ConsenSys Diligence audit of Lien protocol where it
+was a critical severity finding related to denial of service, where a
+reverting fallback function would lock up all payouts in the context of
+the \texttt{transferEth} function. If any of the Ether recipients of
+such batch transfers were to be a smart contract that reverted, then the
+entire payout would fail and be unrecoverable.
+
+The recommendation was to implement a pull-withdrawal pattern or ignore
+a failed transfer leaving the responsibility then up to the recipients.
+We have discussed denial of service in number 176 and concerns with
+Ether handling functions in number 158 of security pitfalls and best
+practices 201 module. We have discussed concerns with calls within loops
+leading to denial of service In number 43 oF security pitfalls and best
+practices 101 module. We've also reviewed OpenZeppelin's PullPayment
+library which specifically addresses this pull versus push aspect of
+Ether transfers in number 158 of \texttt{Solidity} 201 module.
+
+\subsubsection{LAO protocol}\label{lao-protocol}
+
+\begin{itemize}
+\item
+  This finding was a ConsenSys Diligence audit of LAO protocol where it
+  was a critical severity finding related to denial of service. The
+  issue was related to \texttt{safeRagequit()} and \texttt{ragequit()}
+  functions used for withdrawing funds from the LAO.\\
+
+  The difference between them was that while \texttt{ragequit()} tried
+  to withdraw all the allowed tokens, \texttt{safeRagequit()} only
+  withdrew some subset of those tokens as defined by the user. The
+  problem was that, even though one could quit, they would lose the
+  remaining tokens. The tokens were not completely lost, but they would
+  belong to the LAO and could potentially still be transferred to the
+  user who quit. However, that required a lot of trust, coordination and
+  time, and anyone could steal some of those tokens.\\
+
+  The recommendation was to implement a pull-pattern for token
+  withdrawals. We have discussed denial of service in numbers 176 of
+  security pitfalls and best practices 201 module.
+\item
+  Another critical severity finding from ConsenSys Diligence audit of
+  the LAO protocol was again related to denial of service. The issue was
+  that, if someone submitted a proposal and transferred some amount of
+  tribute tokens, these tokens were transferred back if the proposal was
+  rejected. But if the proposal was not processed before the emergency
+  processing, these tokens would not be transferred back.\\
+
+  The proposal tokens were not completely lost, but belong to the LAO
+  shareholders who may try to return that money back, but that required
+  a lot of coordination and time, and everyone who \texttt{ragequit}
+  during that time would take a part of those tokens.\\
+
+  The recommendation again was to use a pull pattern for token transfers
+  this is again related to the derivatives of this aspect we discussed
+  in number 176 of security pitfalls and best practices 201 module.
+\item
+  Yet another critical severity finding from ConsenSys Diligence audit
+  of the LAO protocol was again related to denial of service. The
+  specific issue here was that emergency processing could be blocked.\\
+
+  The rationale for emergency processing mechanism was that there was a
+  chance that some token transfers may be blocked, and in such a
+  scenario emergency processing would help by not transferring tribute
+  tokens back to the user and rejecting the proposal.\\
+
+  The problem was that there was still a deposit transferred back to the
+  sponsor that could potentially be blocked too. So if that were to
+  happen, the proposal couldn't be processed and the allowed will be
+  blocked.\\
+
+  The recommendation again was to use a pull-pattern for token
+  transfers, this is again related to the denial of service aspect we
+  discussed in number 176 of security pitfalls and best practices 201
+  module.
+\end{itemize}
+
+\subsection{Sigma Prime}\label{sigma-prime}
+
+\subsubsection{Infinigold}\label{infinigold}
+
+This finding was a Sigma Prime audit of Infinigold where it was a
+critical severity finding related to configuration, in which there was
+an incorrect Proxy implementation that prevented contract upgrades.
+
+The token implementation contract initialized order, name, symbol and
+decimal state variables in a constructor instead of an initialize
+function. Therefore, when token Proxy made a \texttt{delegateCall} to
+token implementation, it would not be able to access any of the state
+variables of the token implementation contract.
+
+Instead, the token Proxy would access its local storage which would not
+contain the variables set in the constructor of the token implementation
+contract and so, the Proxy call to the implementation was made.
+
+Variables such as order would be uninitialized and effectively sent to
+their default values without access to the implementation state
+variables. The Proxy contract was rendered unusable.
+
+The recommendation was:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  To set fixed constant parameters as constants because then, the Proxy
+  contract wouldn't need to initialize anything.
+\item
+  implement a standard Proxy implementation which uses an initialize
+  function instead of a constructor and a few other recommendations as
+  well.
+\end{enumerate}
+
+This is related to OpenZeppelin's OZ Initializable library in number 192
+and other Proxy related aspects we discussed in \texttt{Solidity} 201
+module, the aspect of initializing state variables in Proxy-based
+upgradable contracts in number 96 of security pitfalls and best
+practices 101 module along with the broader aspects of configuration in
+165 and initialization in 166 that we discussed in security pitfalls and
+best practices 201 module.
+
+\subsubsection{Synthetix's Unipool}\label{synthetixs-unipool}
+
+This finding was a Sigma Prime audit of Synthetix's Unipool where it was
+a critical severity finding related to ordering, in which the wrong
+order of operations led to exponentiation of reward per token stored
+value because reward per token stored was mistakenly used in the
+numerator of a fraction instead of being added to the function.
+
+This would allow users to withdraw more funds than allocated to them or
+being unable to withdraw their funds at all because of insufficient SNX
+balance.
+
+The recommendation was to fix the operand ordering in the expression. As
+expected, this is related to numerical issues of 170 and accounting
+issues of 171 that we discussed in the security pitfalls and best
+practices 201 modules.
+
+\subsection{OpenZeppelin}\label{openzeppelin}
+
+\subsubsection{MCDEX Mai Protocol}\label{mcdex-mai-protocol}
+
+\begin{itemize}
+\item
+  This finding was a OpenZeppelin audit of MCDEX Mai protocol where it
+  was a critical severity finding related to access control, in which
+  anyone could liquidate on behalf of another account. For context, the
+  perpetual contract had a public \texttt{liquidateFrom()} function that
+  bypassed the checks in the \texttt{liquidate()} function, which meant
+  that it could be called to liquidate a position and with any user
+  being able to set an arbitrary \texttt{from} address would cause a
+  third party to confiscate an undercollateralized trader's position. So
+  effectively, this meant that any trader could unilaterally rearrange
+  another account's position and also liquidate on behalf of the
+  perpetual Proxy which could break down the automated market maker
+  invariants.\\
+
+  The recommendation was to consider restricting \texttt{liquidateFrom}
+  to \texttt{internal} visibility from \texttt{public} visibility. This
+  is related to aspects of function visibility specifiers in number 23
+  of \texttt{Solidity} 101 in current access control and number four of
+  security pitfalls and best practices 101 module and aspects of
+  function visibility in 140 along with broader aspects of access
+  control in 148 149 and 172 and trust issues in 181 that we discussed
+  in security pitfalls and best practices 201 modules.
+\item
+  Another critical severity finding from OpenZeppelin audit of MCDEX Mai
+  protocol was again related to denial of service, in which orders could
+  not be cancelled. For context, when a user or broker called
+  \texttt{cancelOrder()}, the \texttt{cancel} mapping was updated but
+  that had no subsequent effects because \texttt{validateOrderParam} did
+  not check if the order had been cancelled.\\
+
+  The recommendation was to consider adding that check to order
+  validation to ensure that cancelled orders would not be filled. This
+  is related to broader aspects of data validation in 169 and denial of
+  service issues in 176 that we discussed in security pitfalls and test
+  practices 201 module.
+\end{itemize}

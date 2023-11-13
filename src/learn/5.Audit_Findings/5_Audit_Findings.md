@@ -1,0 +1,24 @@
+# ☝ 5. Audit Findings
+
+In this chapter, we will review findings from public audit reports of leading audit firms to get a sense for the kinds of issues reported during audits and their suggestive fixes or recommendations. The severity of these findings spans a wide spectrum (they may go from medium severity to high and critical, which are of the highest concern as they could have led to loss of funds or significantly affected execution, if they had not been detected and fixed during audits; or also be low severity, informational and best practice guidelines).
+
+We will only be able to touch upon key aspects of these findings. The reason is that these findings require a lot of context from the deepest details of the protocol implementations, which is certainly out of scope. This research will need to be done by interested bootcamp participants in their own time, by reviewing the audit reports and their corresponding protocol codebases to whatever depth possible.
+
+For each finding, we will review the vulnerability category, its finding summary and the proposed recommendation while relating some of these aspects to our learnings from the earlier chapters.
+
+It is based on the following content:
+
+* [**Secureum's Audit Findings 101 keypoints**](https://secureum.substack.com/p/audit-findings-101)
+* [**Secureum's Audit Findings 201 keypoints**](https://secureum.substack.com/p/audit-findings-201)
+* **Secureum's Audit Findings 101** YouTube videos:
+  * [Block 1](https://www.youtube.com/watch?v=SromSImIpHE)
+  * [Block 2](https://www.youtube.com/watch?v=KLBi3Uyg0dY)
+  * [Block 3](https://www.youtube.com/watch?v=RUyED\_6mkqg)
+  * [Block 4](https://www.youtube.com/watch?v=D1Uz0NvrqeU)
+  * [Block 5](https://www.youtube.com/watch?v=GX8Z0kRRi\_I)
+* **Secureum's Audit Findings 201** YouTube videos:
+  * [Block 1](https://www.youtube.com/watch?v=IXm6JAprhuw)
+  * [Block 2](https://www.youtube.com/watch?v=yphqu2N35X4)
+  * [Block 3](https://www.youtube.com/watch?v=zAzNDwu23UI)
+  * [Block 4](https://www.youtube.com/watch?v=poxzr4-srn0)
+  * [Block 5](https://www.youtube.com/watch?v=0J7KI4WGd0Q)

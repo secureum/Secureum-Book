@@ -1,0 +1,584 @@
+\section{Audit}\label{audit}
+
+An audit is an external security assessment of a project code base. In
+contrast to a review or assessment done internally by the project team
+itself.
+
+This external assessment performed by a third party external to the
+project is typically requested and paid for by the project team.
+
+It's meant to detect and report security issues with their underlying
+vulnerabilities severity difficulty potential exploit scenarios and
+recommended fixes this includes both common security pitfalls and best
+practices and also deeper application logic and economic vulnerabilities
+in the context of smart contracts.
+
+It may also provide subjective insights into code quality documentation
+and testing the scope depth format of audit reports varies across
+auditing teams, but they generally cover these similar aspects.
+
+\subsection{Scope}\label{scope}
+
+As for the ordered scope for Ethereum-based smart contract projects the
+scope is typically restricted to the on-chain smart contract code and
+sometimes includes the off-chain components that interact with the smart
+contracts as well
+
+This bootcamp as a whole is focusing only on smart contract security
+auditing.
+
+\subsection{Goal}\label{goal}
+
+The goal of audits is to assess project code along with any associated
+specification and documentation and alert the project team of potential
+security related issues that need to be addressed to improve the
+security posture, decrease the attack surface and mitigate risk.
+
+This typically happens before smart contracts are deployed on mainnet
+before launch, so that vulnerabilities can be fixed and verified to
+avoid exposure.
+
+Along with the goals we should also discuss what the non-goals of audits
+are. This is perhaps even more important to level set the expectations.
+
+Audit is not a security warranty of bug-free code by any stretch of
+imagination.
+
+It is a best effort endeavoured by trained security experts who are
+operating within reasonable constraints of time understanding expertise
+and of course decidability, so just because the project has been audited
+does not mean that it will not have any vulnerabilities.
+
+It should certainly have fewer vulnerabilities than before the audit
+assuming the reported vulnerabilities were fixed correctly.
+
+The constraints are also critical and real, especially that of time and
+understanding. For now we can assume that most auditors are
+self-trained, with some help from peers with their experience in smart
+contact development or security in the web2 space being applied to web3.
+
+The expertise of auditors also significantly affects the effectiveness
+of audits and we'll talk more about these.
+
+\subsection{Target}\label{target}
+
+\emph{Who is the target for audits?} Currently security firms or teams
+execute audits for their clients who pay for their services. Audit
+engagements are therefore geared or targeted towards the clients'
+priorities (the project owners) and not project users or investors.
+
+The goal of audits therefore is not to alert potential project users of
+any inherent risk that may be evaluated during the audit.
+
+This is often a point of discussion when it comes to audit firms: their
+incentives and what they should be doing or not doing, and also in the
+context of where potential project users should look for unbiased
+security risk posture of the projects that they're interested in.
+Nevertheless this is the current state of most audits today where their
+clients are projects and not users or investors of such projects.
+
+\subsection{Need}\label{need}
+
+Let's start with the fundamental question of why we even have audits in
+the web3 space. The reasons are simple, but multi-fold and mostly
+related to talent supply, market supply, demand and some unique
+characteristics of the web3 space.
+
+Smart contract based projects do not have sufficient \emph{in-house}
+Ethereum smart contract security expertise and presumably not even the
+time to perform internal security assessments given the base of
+innovation in the space therefore they rely on external experts who have
+the domain expertise in those areas.
+
+The reason most projects don't have that expertise is because the demand
+for it is orders of magnitude higher than the supply, which itself is
+because we are still very early in the web3 life cycle, this is also the
+biggest motivation for this bootcamp.
+
+If projects have some \emph{in-house} expertise, given the risk and
+value at stake, they would still benefit from an unbiased external team
+with superior and either supplementary or complementary security
+skillsets that can review the assumptions, design specification and
+implementation of the project codebase. So these aspects hopefully
+justify at a high level the need for security audits in the current
+landscape.
+
+\subsection{Types}\label{types}
+
+\emph{Now what are the types of audits?} There aren't any standard
+categories, but we can consider some broad classifications based on the
+nature of such audits. Audits depend on the scope, nature, status of
+projects and based on that, they generally fall into the following
+categories:
+
+\begin{itemize}
+\item
+  \textbf{New audits}. They are for new projects that are just being
+  launched for the first time.
+\item
+  \textbf{Repeat audits}. These on the other hand are for existing
+  projects that have had an audit or two before, but is being revised.\\
+
+  There's a new version of this project coming up with new features or
+  optimizations for which a repeat order is being performed.
+\item
+  \textbf{Fixed audits}. These are for reviewing the fixes made to the
+  findings from a current or prior audit.
+\item
+  \textbf{Retainer audits}. These are audits where the auditor(s) is/are
+  constantly reviewing project updates or providing guidance in a
+  continuous manner instead of discrete engagements.
+\item
+  \textbf{Incident audits}. These review and explore an incident: its
+  root cause, they identify the underlying vulnerabilities that led to
+  the incident and propose fixes.\\
+
+  This one is more of an instant response unlike the traditional audits
+  described.
+\end{itemize}
+
+There are also very likely other variants of these as well, but this
+should give a general idea of the types of audits which affect the scope
+and nature of engagements as well.
+
+\subsection{Timeline}\label{timeline}
+
+The timeline (or time spread) for audits depends on the scope, nature,
+status and more importantly, the complexity of the project to be
+assessed and the type of audit.
+
+This may vary from a few days for a fix or retainer audit, to several
+weeks for a new, repeat or instant audit that we discussed in the
+previous section. This may even require months for projects with complex
+smart contracts with lots of external dependencies.
+
+The timeline should certainly depend on the anticipated value at risk in
+those smart contracts and their criticality, but that is generally hard
+to guess ahead of time. The timeline aspect is therefore a subjective
+one and there aren't reasonable objective measures to make decisions.
+It's usually decided by simple metrics such as the number of files in
+that project, the lines of code, the external dependencies (Oracles or
+complex mathematical libraries\ldots), measures of complexity of code,
+the application functionality in general and even the familiarity of the
+auditing team with such contracts from earlier engagements.
+
+\subsection{Effort}\label{effort}
+
+The audit effort, from a resources perspective, typically involves more
+than one auditor simultaneously for getting independent, redundant or
+supplementary complementary assessments of the project. The ``\emph{more
+than one}'' approach is generally preferred to deal with any blind spots
+of individual auditors stemming from expertise their experience or even
+just luck.
+
+\subsection{Cost}\label{cost}
+
+The cost of an audit is an often discussed and debated topic. It depends
+on the type and scope of audits, and typically costs in the range of
+several thousands of dollars per week depending on the complexity of the
+project, the market demand and supply for audits at that point in time;
+and certainly the strength and reputation of the auditing firm.
+
+\subsection{Project Prerequisites}\label{project-prerequisites}
+
+The prerequisites for an audit are the things that should be factored in
+discussed agreed upon and made available before an audit begins.
+
+This should typically include the following points:
+
+\begin{itemize}
+\item
+  Clear definition of the scope of the project to be assessed, typically
+  in the form of a specific commit hash of the project files on a GitHub
+  repositor (which could be a public or a private repository, if the
+  project is still in stealth mode).
+\item
+  The team behind the project which could be public or anonymous and is
+  engaged throughout this process
+\item
+  The specification of the project's design and architecture, which is
+  critical to security as we have discussed in earlier chapters.
+\item
+  The documentation of the project's implementation and associated
+  business logic.\\
+
+  Specifically from a security perspective the trust and threat models
+  and specific areas of concern from the project team itself. It should
+  also include all prior testing done tools used and reports from any
+  other audits completed
+\item
+  The timeline effort and cost payments for the specific engagement must
+  also be agreed upon.
+\item
+  The engagement dynamics (or channels) for questions, clarifications,
+  findings, communication and reports should also be agreed upon to
+  prevent surprises. There should be single points of contact on both
+  sides to make all this possible and seamless.
+\end{itemize}
+
+\subsection{Limitations}\label{limitations}
+
+Audits are generally considered necessary for now, at least for the
+reasons we have touched upon earlier, but audits are certainly not
+sufficient: they can't guarantee zero vulnerabilities or exploits.
+
+This is because of three main reasons:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Residual risk}. There is risk reduction from an audit, but
+  residual risk exists because of several factors such as the limited
+  amount of audit time or effort, limited insights into project
+  implementation specification, where in many cases there doesn't even
+  exist a concrete written out specification, the documentation of the
+  implementation itself doubles the specification.\\
+
+  Residual risk could come from limited security expertise in the new
+  and fast evolving technologies or the limited audit scope where an
+  audit may not cover all the contracts, or all the latest versions or
+  their dependencies, making the deployed contracts different from the
+  ones audited.\\
+
+  Residual risk could arise from significant project complexity and
+  limitations of automated and manual analysis.\\
+
+  For all these reasons (and maybe more) audits can't and \textbf{should
+  not} guarantee fully secure code that is free from any vulnerabilities
+  or potential exploits. Such expectation is unreasonable and any such
+  positioning is misleading at best.
+\item
+  \textbf{Not all audits are equal}: the quality of audits greatly
+  depends on the expertise and experience of auditors, effort invested
+  given the project complexity, quality and tools and processes used.
+  Getting an order from a widely reputed security firm is not the same
+  as getting it from someone else. This affects residual risk to a great
+  degree
+\item
+  \textbf{Audits provide only a project security snapshot over a brief
+  period of time}. This is typically a few weeks or sometimes even less.
+  However, smart contracts need to evolve over time to add new features,
+  fix bugps or even optimize. This is sometimes done during or after an
+  audit in code that is eventually deployed, which reduces some of the
+  benefits of the prior audit done because the changes introduced could
+  have vulnerabilities themselves.\\
+
+  On the flip side, relying on audits after every change is also
+  impractical, so these tensions between security and shipping
+  unfortunately exist even in web3, similar to web 2, but arguably have
+  a more significant impact in web3 given the risk versus reward and
+  other unique aspects of web3 that we have discussed earlier.
+\end{enumerate}
+
+So for these three broad reasons audits are considered necessary, but
+not sufficient by any means.
+
+\subsection{Audit Firms}\label{audit-firms}
+
+There are several teams or firms that have security expertise with smart
+contracts and Ethereum, and provide auditing services. Some have a web2
+origin from the traditional audit space where they provide other
+security services besides smart contact auditing, while some others are
+specialized specifically in smart contract audits.
+
+There are a few others as well that are super specialized in certain
+formal verification privacy or cryptographic aspects within this space.
+There are at least 30+ audit firms that are widely cited in this space,
+this includes the bootcamp partners ConsenSys Diligence, Sigma Prime and
+Trail of Bits.
+
+\subsection{Reports}\label{reports}
+
+Audits typically end with a detailed audit report provided by the audit
+firm to the project team. Projects sometimes publish such reports on
+their websites or GitHub repositories. Audit firms may also publish some
+of these with approval from the projects.
+
+Such reports include details of the scope, goals, effort, timeline,
+approach used for the audit, tools and techniques used.
+
+The finding summarizes the vulnerability details (if any are found),
+vulnerability classification as per the audit firm's categorization
+(because there isn't yet a standardized categorization vulnerability),
+severity, difficulty, likelihood (as per OWASP or the firm's own rating
+and ranking), any potential exploit scenarios for the vulnerabilities
+(which demonstrate how easy or hard it is for attackers) and almost
+always the suggested fixes for the vulnerabilities.
+
+They also include less critical informational notes, recommendations,
+suggestions on programming or software engineering best practices which
+may lead to security issues in certain scenarios.
+
+Overall an audit report is a comprehensive structured document that
+captures a lot of these aspects in different levels of detail. Most
+audits provide a report at the end or there may even be interim reports
+shared as well, depending on the duration and complexity.
+
+While the format, scope and level of details of these reports differ
+across audit firms, they generally capture some or most of these
+categories of information.
+
+\subsection{Classification}\label{classification}
+
+The vulnerabilities found during the audit (if any) are typically
+classified into different categories which make it helpful for the
+project team, or even others, to understand the nature of the
+vulnerability: the potential impact, severity, impacted project
+components, functionality and exploit scenarios.
+
+Like we just discussed, there isn't yet a standardized categorization
+and each audit form uses its own, so for example let's take a look at
+the classification used by Trail of Bits:
+
+\begin{itemize}
+\tightlist
+\item
+  There's access control, which is related to authorization of users and
+  assessment of rights.
+\item
+  Auditing and logging related to auditing of actions and logging of
+  problems
+\item
+  Authentication related to the authentication of users in the context
+  of the application
+\item
+  Configuration of servers devices or software and in our case the smart
+  contracts or off-chain components
+\item
+  Cryptography related to protecting the privacy or integrity of data
+\item
+  Data exposure related to unintended exposure of sensitive information
+\item
+  Data validation related to improper reliance on the structure or
+  values of data
+\item
+  Denial of service (DoS) related to causing system failure or
+  inaccessibility
+\item
+  Error reporting related to reporting of error conditions
+\item
+  Patching related to keeping software up to date using patches, in our
+  case smart contracts that we have discussed earlier.
+\item
+  Session management related to identification of authenticated users.
+\item
+  Timing, which is related to race conditions locking your order of
+  operations
+\end{itemize}
+
+And, if none of these categories fit for the vulnerability, then it's
+typically categorized under undefined behavior that is figured by the
+program because of such a vulnerability.
+
+We have broadly discussed these categories in the earlier modules of
+security, and other audit forms may use a slightly different
+classification, but usually, there is a good overlap.
+
+\subsection{Difficulty}\label{difficulty}
+
+According to OWASP, likelihood or difficulty (which are semantically
+opposite terms by the way: that's low likelihood is the equivalent of
+high difficulty) is a rough measure of how likely or difficult this
+particular vulnerability is to be uncovered and exploited by the
+attacker.
+
+OWASP proposes three likelihood levels: low, medium and high. Some audit
+firms use OWASP, but others use their own terminology because it does
+not apply very well to web3 in general given the nature of risks
+vulnerabilities and even extent of impact from their exploits.
+
+So Trail of Bits for example classifies every finding into four
+difficulty levels:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Low}: the vulnerability may be easily exploited because public
+  knowledge exists about this vulnerability type, as it is related to a
+  common security pitfall or a missing best practice at
+  \texttt{Solidity} or EVM level which further implies that it may be
+  easily exploited.
+\item
+  \textbf{Medium}: attackers typically need an in-depth knowledge of the
+  complex system to exploit this vulnerability. This may be something
+  application specific that is related to its business logic and not a
+  commonly seen or known \texttt{Solidity} or EVM level vulnerability.
+\item
+  \textbf{High}: an attacker must have privileged insider access to the
+  system. The attacker may need to know extremely complex technical
+  details of that system or must discover some other weakness in order
+  to exploit this issue. This could imply that one of the trusted actors
+  in the context of the application, such as one of the privileged
+  roles, must be either malicious or compromised and potentially even
+  with some insider details about some design or implementation to
+  exploit this vulnerability.
+\item
+  \textbf{Indeterminate category}: the difficulty of exploit was not
+  determined during the engagement of the audit. This could happen given
+  the nature of the vulnerability, the context of the application or
+  even simply because the operational aspects of the audit engagement
+  did not allow this to be determined.
+\end{itemize}
+
+Irrespective of this subjective difficulty level determination, the
+relative classification across the three or four categories is what is
+more important. This aspect should also be consistently applied to all
+the findings within the scope of the audit.
+
+\subsection{Impact}\label{impact}
+
+The other aspect of vulnerabilities that is important to recognize is
+impact. As per OWASP, the impact of vulnerability estimates the
+magnitude of the technical and business impact on the system. If the
+vulnerability were to be exploited, OWASP again proposes three levels:
+low, medium and high
+
+This again needs to be revisited for web3 because the impact from smart
+contract vulnerabilities and their exploits is generally very high, and
+also the business or reputational aspects are very different in web3
+from a traditional web2 sense.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{High} impact is typically reserved for vulnerabilities causing
+  loss of funds or locking of funds that may be triggered by any
+  unauthorized user.
+\item
+  \textbf{Medium} impact is reserved for vulnerabilities that affect the
+  application in some significant way, but do not immediately lead to
+  loss of funds.
+\item
+  Anything else is considered a \textbf{low} impact.
+\end{itemize}
+
+These are again subjective in nature, but what matters more is that they
+make sense in a relative manner, so the high impact should be greater
+than a medium impact should be greater than a low impact in some
+reasonable justifiable way. This should be applied consistently across
+the audit.
+
+These difficulty and impact ratings again are different across different
+audit firms, with some of them being more stricter than others in
+classifying the vulnerabilities. This aspect of impact is perhaps the
+most noticed and discussed aspect as reported for vulnerabilities in the
+audit reports.
+
+This is discussed and debated even between the audit firm, the project
+team given the subjective nature of this classification and something
+that gets paid a lot of attention even by the community at large when
+they are looking at high impact vulnerabilities reported in audits of
+the projects that they are interested in.
+
+\subsection{Severity}\label{severity}
+
+According to OWASP, the likelihood and impact estimates are combined to
+calculate an overall severity for every risk. This is done by figuring
+out if the likelihood and impact are low medium or high, then combining
+them into a $3\times 3$ severity matrix.
+
+So with the notation of likelihood-impact is equal to severity, the
+matrix looks like this:
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+Likelihood/Impact & \textbf{Low} & \textbf{Medium} & \textbf{High} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Low} & Informational & Medium & High \\
+\textbf{Medium} & Low & Medium & High \\
+\textbf{High} & Medium & High & Critical \\
+\end{longtable}
+
+This is what is recommended by OWASP, but different firms end up using
+different severity levels. Trail of Bits for example does not use this
+OWASP recommendation and uses five severity levels instead:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  There's an informational severity where the issue does not pose an
+  immediate risk, but is relevant to security best practices or helps
+  with defensive depth.
+\item
+  There is a low severity where the risk is relatively small or is not a
+  risk that the customer has indicated as being important.
+\item
+  Medium risk where individual users information is addressed and
+  exploitation would be bad for client reputation and so on\ldots{}
+\item
+  There's a high severity where it affects a large number of users, it's
+  very bad for the client's reputation and so on\ldots{}
+\item
+  There's an undetermined severity where the extent of the risk was not
+  determined during the engagement.
+\end{enumerate}
+
+On the other hand, ConsenSys Diligence uses a different classification:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Minor indicates that the issues are subjective in nature, where there
+  are typically suggestions around best practices or readability.
+\item
+  Medium severity are for issues that are objective in nature, but are
+  not security vulnerabilities.
+\item
+  Major severity is for issues that are security vulnerabilities that
+  may not be directly exploitable, but they require certain conditions
+  in order to be exploited.
+\item
+  Critical severities occur where the issues are directly exploitable
+  security vulnerabilities that absolutely need to be fixed.
+\end{enumerate}
+
+As we can see, there are clearly different severity considerations
+across firms, but again what matters more is the relative categorization
+consistency justification, the clarity.
+
+\subsection{Checklist}\label{checklist}
+
+There is a checklist for projects to get ready for an audit is helpful,
+so that audit firms can assume some level of readiness from projects
+when audit starts. Trail of Bits for example recommends a checklist that
+has three broad categories test review and document:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  For tests, what is recommended is to enable an address every compiler
+  warning and to also increase the unit and feature test coverage.
+\item
+  For reviews, what is recommended is for the project teams to perform
+  an internal review to address common security pitfalls and best
+  practices.
+\item
+  For documentation, what is recommended is one to describe what your
+  product does, who uses it, why and how it delivers the functionality,
+  adding comments about intended behavior inline with the code label and
+  describe your tests and results (both positive and negative tests and
+  results).
+\item
+  Include past reviews and any bugs found.
+\item
+  Document steps to create a build environment.
+\item
+  Document external dependencies.
+\item
+  Document the build process, including the debugging and test
+  environment.
+\item
+  Document the deployment process and its environment.
+\end{enumerate}
+
+Finally, having included the test review and documented parts in a
+checklist, what is also more critical is to communicate all the
+information in suitable ways to the audit firm before an audit, so that
+they have all this information and do not waste their valuable time in
+discussing, requesting, duplicating or addressing these aspects.

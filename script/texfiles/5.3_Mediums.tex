@@ -1,0 +1,909 @@
+\section{Mediums}\label{mediums}
+
+\subsection{ConsenSys Diligence}\label{consensys-diligence}
+
+\subsubsection{Aave V2}\label{aave-v2}
+
+This finding was a ConsenSys Diligence audit of \texttt{Aave\ V2}
+protocol. It was a medium severity finding in the error handling
+category. Specifically this was about unhandled return values of
+\texttt{transfer} and \texttt{transferFrom} functions on \texttt{ERC20}
+tokens.
+
+Remember that these \texttt{ERC20} functions may \texttt{revert}, return
+a \texttt{bool} or not return any value at all, and therefore any code
+using such functions on external \texttt{ERC20} tokens should anticipate
+all such scenarios because \texttt{ERC20} implementations are not always
+consistent and adhere to the specification.
+
+As discussed in
+\href{../2.Solidity/2.28_Open_Zeppelin_Libraries.md\#ERC20}{OpenZeppelin
+Libraries for the ERC20 token standard}, it is safer to instead use
+OpenZeppelin's \texttt{safeERC20} wrapper functions in such cases.
+
+The specific recommendation made here by the audit team was to check the
+return value and revert on \texttt{0} or \texttt{false}, or using
+OpenZeppelin's \texttt{safeERC20} wrapper functions.
+
+\subsubsection{DeFi Saver}\label{defi-saver}
+
+This finding was a ConsenSys Diligence audit of DeFi Saver protocol.
+This was a medium severity in our ordering category. This vulnerability
+was due to the use of a reversed order of parameters in the
+\texttt{allowance} function call, where the parameters that were used
+for the allowance function call were not in the same order as what was
+later used in the call to \texttt{safetransferFrom}.
+
+The recommendation was to reverse the order of parameters in the
+\texttt{allowance} function call to fit the order in the
+\texttt{safetransferFrom} function call and was fixed by swapping the
+order of parameters. We have discussed the concepts of \texttt{ERC20}
+token allowance and \texttt{safeERC20} wrappers in number 148 and 149 of
+\texttt{Solidity} 201 module. This exact specific aspect of checking for
+ordering issues of function arguments in number 139 and other security
+impacts of broader ordering issues in number 145 and 178 of security
+pitfalls and best practices 201.
+
+\subsubsection{DAOFI}\label{daofi}
+
+This finding was a ConsenSys Diligence audit of the DAOFI protocol where
+it was a medium severity finding in the denial of service category. In
+this case the DAOFI pair \texttt{deposit} function accepted deposits of
+zero amounts blocking the pool thereafter. This was because the function
+allowed only a single deposit to be made and no liquidity could ever be
+added to a pool after the deposit variable was set to \texttt{true}.
+However, the \texttt{deposit} function did not check for a non-zero
+deposit amount and so, allowed a malicious user that did not hold any
+tokens to lock the pool by calling \texttt{deposit} without first
+transferring any funds to the pool.
+
+The recommendation was to require a minimum deposit amount with non-zero
+checks. We have discussed denial of service in number 136 of security
+pitfalls and best practices 201 module and also the importance of input
+validation, specifically on function parameters in 138 and number 146 of
+security pitfalls and best practices 201 module.
+
+\subsubsection{Fei}\label{fei}
+
+\begin{itemize}
+\item
+  This finding was a ConsenSys Diligence audit of Fei protocol where it
+  was a medium severity finding related to the timing category (similar
+  to \href{5.1_Criticals.md\#Fei}{one of the critical findings of the
+  Fei protocol}). Specifically, \texttt{BondingCurve} allowed users to
+  acquire FEI before launch, where its allocate function could be called
+  before genesis launch if the contract had a non-zero Ether balance. So
+  by sending Ether one way, anyone could bypass the checks and mint
+  FEI.\\
+
+  The recommendation was to prevent \texttt{allocate} from being allowed
+  to be called before genesis launch. This finding is related to the
+  ordering issues we discussed in number 145 and 178, the timing issues
+  discussed in 143 and 177 of security pitfalls and best practices 201
+  module and also misuse of a contracts in their balance as discussed in
+  number 26 of security pitfalls and best practices 101 module and
+  number 158 of security pitfalls and best practices 201 module.
+\item
+  Another medium severity finding from ConsenSys Diligence audit of Fei
+  protocol was related to the error handling category. The issue was
+  that \texttt{Timed.isTimeEnded} function returned \texttt{true} even,
+  if the timer had not been initialized. \texttt{Timed.startTime} was
+  set only when \texttt{\_initTimed} was called. But before that was
+  called, \texttt{Timed.isTimeEnded} function calculated remaining time
+  using a start time of 0 and returned \texttt{true} even though the
+  timer had not been started.\\
+
+  The recommendation was for \texttt{Timed.isTimeEnded} to return
+  \texttt{false} or revert, if time had not been initialized. This
+  finding is related to error handling in the context of the ordering
+  issues we discussed in number 145 and 178 and also the timing issues
+  discussed in 143 and 177 of security pitfalls and best practices 201
+  module.
+\item
+  Another medium severity finding from ConsenSys Diligence audit of Fei
+  protocol was a finding related to the data validation category. This
+  was specifically related to the code base using many arithmetic
+  operations without the safe versions from \texttt{safeMap}. The
+  reasoning was that all values and such operations were derived from
+  actual Eth values, so they couldn't overflow.\\
+
+  The recommendation was that it was still safer to have those
+  operations use safe mode arithmetic either by using \texttt{safeMap}
+  or \texttt{Solidity} version greater than or equal to \texttt{0.8.0}.
+  We have discussed this aspect of \texttt{Solidity} compiler
+  \texttt{0.8.0} and OpenZeppelin \texttt{safeMap} in number 142, 146,
+  and 175 for \texttt{Solidity} 201 module and number 19 of security
+  pitfalls and best practices 101 module.
+\item
+  Another medium severity finding from ConsenSys Diligence audit of Fei
+  protocol where was related to the error handling category. In this
+  case there was no checking for the return value of
+  \texttt{IWETH.transfer} call. It's usually good to add a
+  \texttt{require} statement that checks the return value or, as
+  discussed in number 149 of \texttt{Solidity} 201 module, it's safer to
+  use something like OpenZeppelin's \texttt{safeTransfer} mapper unless
+  one is absolutely sure that the given token reverts in case of a
+  failure.\\
+
+  The recommendation was to consider adding a \texttt{require} statement
+  or using \texttt{safeTransfer} which handles all possibilities of
+  reward boolean and non-boolean \texttt{return} values. We have
+  discussed this aspect of correctly checking for function
+  \texttt{return} values in number 142 and 175 of security pitfalls and
+  best practices 201 module.
+\item
+  Another medium severity finding from ConsenSys Diligence audit of Fei
+  protocol was related to the timing category similar to
+  \href{5.1_Criticals.md\#Fei}{one of the critical findings of the Fei
+  protocol} and one of the mediums mentioned earlier. In this case
+  \texttt{GenesisGroup.emergencyExit} function remained functional after
+  launch. \texttt{GenesisGroup.emergencyExit} was intended as an escape
+  mechanism for users in the event that the genesis \texttt{launch}
+  method failed or froze and so, \texttt{emergencyExit} and
+  \texttt{launch} functions were intended to be mutually exclusive, but
+  were not because either of them remained callable after a successful
+  call to the other. Thus may have resulted in edge cases in
+  accounting.\\
+
+  The recommendation was to ensure that \texttt{launch} can't be called,
+  if emergency exit has been called and vice versa this finding is
+  therefore related to the ordering issues we discussed in number 145
+  and 178, the timing issues discussed in 143 and 177 of security
+  pitfalls and best practices to one module.
+\end{itemize}
+
+\subsubsection{MetaSwap}\label{metaswap}
+
+\begin{itemize}
+\item
+  This finding was a ConsenSys Diligence audit of MetaSwap protocol
+  where it was a medium severity finding related to access control. A
+  new malicious adapter could access users' tokens. For context, the
+  purpose of the MetaSwap contract was to save users' Gas costs when
+  dealing with a number of different aggregators. They could approve
+  their tokens to be spent by MetaSwap and they could then perform
+  trades with all supported aggregators without having to reapprove
+  anything. The risk in this design was that an existing, or newly added
+  malicious or buggy adapter would have access to all users' tokens.\\
+
+  The recommendation was to redesign token approval architecture by
+  making MetaSwap contract the only contract that receives token
+  approval, where it moves tokens to another spender contract which in
+  turn \texttt{delegateCall}s to the appropriate adapter. In this
+  revised model, newly added adapters wouldn't be able to access users'
+  funds. We have discussed access control aspects in number 4 of
+  security pitfalls and best practices 101 module and in 148 and 149 of
+  security pitfalls and best practices 201 module. This is also related
+  to token handling aspect of number 159 and trust issues of 181 or
+  security pitfalls and best practices 201 module.
+\item
+  Another medium severity finding from the ConsenSys Diligence audit of
+  MetaSwap protocol was related to the timing category. In this case, a
+  malicious or compromised Owner could front-run traders by updating
+  adapters to steal from users. Due to the design of adapters, where
+  they \texttt{delegateCall}ed to each other, users had to fully trust
+  every adapter because just one malicious adapter could change the
+  logic of all other adapters.\\
+
+  The recommendation was to disallow modification of existing adapters,
+  but instead add new adapters and disable the old ones. This finding is
+  related to the transaction order dependence aspect discussion number
+  21 of security pitfalls and best practices 101 module time delay
+  change of critical contract aspects in number 163, trust aspects in
+  number 181 and constant aspects in number 184 of security pitfalls and
+  best practices 201 module.
+\end{itemize}
+
+\subsection{Trail of Bits}\label{trail-of-bits}
+
+\subsubsection{Yield Protocol}\label{yield-protocol}
+
+This finding was a Trail of Bits audit of Yield protocol where it was a
+medium severity finding leading to undefined behavior. The issue was
+that the flash minting feature from the fyDAI token could be used to
+redeem an arbitrary amount of funds from a mature token in the context
+of the product.
+
+The recommendation was effectively to disallow flash minting to prevent
+attackers from gaining leverage to manipulate the market and break
+internal invariants. This is related to aspect of flash minting in
+number 121 and Scarcity issues we discussed in number 186 of security
+pitfalls and best practices 201 module.
+
+\subsubsection{Hermez}\label{hermez}
+
+This finding was a Trail of Bits audit of Hermez where it was a medium
+severity finding related to timing, in which there was no incentive for
+bidders to vote earlier.
+
+Hermez relied on a voting system that allowed anyone to vote with any
+weight at the last minute and there was no incentive for users to bid
+tokens well before the voting ended.
+
+This allowed users to build a large amount of tokens just before voting
+ended and so, anyone with a large fund could decide the outcome of the
+voting. With all the votes being public, users bidding earlier would be
+penalized because their bids would be known by other participants, and
+an attacker could know exactly how many tokens would be necessary to
+change the outcome of the voting just before it ended.
+
+The recommendation was to explore ways to incentivize users to vote
+earlier by considering a weighted bid with weight decreasing over time
+and also to recognize the many challenges of blockchain based online
+voting. This is related to timing issues of number 177 and incentive
+issues of number 187 that we discussed in security pitfalls and best
+practices 201 module.
+
+\subsubsection{Uniswap V3}\label{uniswap-v3}
+
+\begin{itemize}
+\item
+  This finding was a Trail of Bits audit of Uniswap V3 where it was a
+  medium severity finding related to data validation, in which missing
+  validation of Owner argument in both the constructor and
+  \texttt{setOwner} functions could permanently lock the Owner role if a
+  zero-address or incorrect address were to be used.\\
+
+  That would have forced an expensive redeployment of the factory
+  contract followed by re-addition of pairs and liquidity which could
+  have led to reputational damage among its users and potentially
+  concurrent use of two versions of Uniswap.\\
+
+  The recommendations were:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Designate \texttt{msg.sender} as initial Owner and transfer
+    ownership to the chosen Owner after deployment.
+  \item
+    Implement a two-step ownership change process through which the new
+    Owner needs to accept ownership.
+  \item
+    If it was needed, to be possible to sent the Owner to Zero-address,
+    implement a separate \texttt{renounceOwnership} function.
+  \end{itemize}
+
+  This is related to the missing zero-address validation we discussed in
+  number 49 of security pitfalls and best practices 101 module and also
+  the two-step change of privilege roles we discussed in number 50 of
+  the same module along with number 162 of the security pitfalls and
+  best practices 201 module.
+\item
+  Another medium severity finding from the Trail of Bits audit of
+  Uniswap V3 protocol related to denial of service in the swap function,
+  which relied on an unbounded loop that an attacker could exploit to
+  disrupt swap operations by forcing the loop to go through too many
+  operations and potentially trapping the swap due to Out-of-Gas
+  exception.\\
+
+  The recommendation was to bound the loops and document the bounds. We
+  have discussed concerns with calls within loops leading to denial of
+  service in number 43 of security pitfalls and best practices 101
+  module and more broadly the deriver service issues in number 176 and
+  Gas issues in 182 or security pitfalls and best practices to a one
+  module.
+\item
+  Another medium severity finding from the Trail of Bits audit of
+  Uniswap V3 protocol related to timing and access control where a
+  frontrun on Uniswap V3 \texttt{poolInitialize()} function allowed an
+  attacker to set an unfair price and to drain assets from the first
+  deposits.\\
+
+  There were no access controls on the initialize function, so anyone
+  could call it on a deployed pool, initializing a pool with an
+  incorrect price allowed an attacker to generate profits from the
+  initial liquidity providers deposits.\\
+
+  The recommendation was to
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Move the price operations from initialize to the constructor or
+  \item
+    Adding access controls to initialize or
+  \item
+    Ensuring that the documentation clearly wanrs users about incorrect
+    initialization.
+  \end{itemize}
+
+  This is discussed in number 192 of \texttt{Solidity} 201, number 21
+  and number 95 of security pitfalls and best practices 101 module and
+  number 143 and 166 of the security pitfalls and best practices 201
+  module.
+\item
+  Yet another medium severity finding from the Trail of Bits audit of
+  Uniswap V3 protocol related to application logic, where swapping on a
+  tick with \texttt{zero} liquidity enabled a user to adjust the price
+  of one wei of tokens in any direction and as a result, an attacker
+  could set an arbitrary price at the pool's initialization or if when
+  the liquidity providers withdrew all of the liquidity for a short
+  time.\\
+
+  The recommendation was to ensure a design where pools don't end up in
+  unexpected states or warn users of potential risks. This is related to
+  business logic issues discussed in number 191 or security pitfalls and
+  best practices 201 module.
+\end{itemize}
+
+\subsubsection{DFX Protocol}\label{dfx-protocol}
+
+This finding was a Trail of Bits audit of DFX protocol where it was a
+medium severity finding related to data validation, in which the system
+incorrectly assumed that one USDC is always worth one USD without using
+the USDC \(\rightarrow\) USD Oracle provided by Chainlink, and therefore
+could result in exchange errors at times of deviation.
+
+The recommendation was to replace the hard coded integer literal with
+the \texttt{getRate} method with a call to the relevant Chainlink
+Oracle, so as to ensure that the system is robust against changes in the
+price of any stablecoin.
+
+This is related to the broad aspect of data validation issues we
+discussed in number 169 and specifically the constant issues in number
+184 of security pitfalls and best practices 201.
+
+\subsubsection{0x Protocol}\label{x-protocol}
+
+\begin{itemize}
+\item
+  This finding was a Trail of Bits audit of 0x protocol where it was a
+  medium severity finding related to data validation, in which the
+  \texttt{cancelOrdersUpTo()} function could cancel future orders, if it
+  were called with a very large value such as
+  \texttt{MAX\_UINT256\ -\ 1}.\\
+
+  The recommendation was to properly document this behavior, to warn
+  users about the permanent effects of \texttt{cancelOrdersUpTo()} on
+  future orders or, alternatively, disallow the cancellation of future
+  orders. This is related to the broad aspect of data validation issues
+  we discussed in number 169 of security pitfalls and best practices 201
+  module.
+\item
+  Another medium severity finding from the Trail of Bits audit of 0x
+  protocol related to timing, in which market makers had a reduced cost
+  for performing Front-running attacks.\\
+
+  For context, market makers received a portion of the protocol fee for
+  each order failed. The protocol fee was based on the transaction Gas
+  Price which meant that market makers could specify a higher Gas Price
+  for a reduced overall transaction rate, using the refund they would
+  receive upon disbursement of protocol fee ports.\\
+
+  The recommendation in the short term was to properly document that
+  issue to make sure users were aware of that risk and in the long term,
+  consider using an alternative fee that did not depend on the
+  transaction gas price to avoid reducing the cost of performing
+  Front-running attacks.\\
+
+  This is related to the transaction order dependence aspect discussed
+  in number 21 of security pitfalls and best practices 101 module and
+  broader aspects of timing in 177 Gas and 182 and incentives in 187
+  from security pitfalls and best practices 201 module.
+\item
+  Another medium severity finding from the Trail of Bits audit of 0x
+  protocol again related to timing in which, if a validator has
+  optimized a Race-condition in the signature, validator approval logic
+  became exploitable.\\
+
+  The \texttt{setSignatureValidatedApproval()} function allowed users to
+  delegate the signature validation to a contract but, if the validator
+  was compromised, a Race-condition in this function could allow an
+  attacker to validate any number of malicious transactions.\\
+
+  The recommendation was in the short term to document this behavior, to
+  make sure users were aware of the inherent risks of using validators
+  in the case of a compromise and in the long term to consider
+  monitoring the blockchain for signature validator approval events to
+  catch such Front-running attacks.\\
+
+  This is related to the transaction order dependence aspect discussed
+  in number 21 of security pitfalls and best practices 101 module and
+  broader aspects of timing in 177 external interactions in 180 and
+  trust issues in number 181 from security pitfalls and best practices
+  201 the principle of compromise recording from number 201 of security
+  pitfalls and best practices 201 module is also relevant here.
+\item
+  Another medium severity finding from the Trail of Bits audit of 0x
+  protocol related to denial of service, in which batch processing of
+  transaction execution and order matching may lead to exchange
+  griefing.\\
+
+  For context, batch processing of transaction execution and order
+  matching would iteratively process every transaction and order but, if
+  one transaction or order failed because of insufficient allowance, the
+  entire batch would revert and need to be resubmitted after removing
+  the reverting transaction.\\
+
+  The recommendation was to implement \texttt{NoThrow} variants that do
+  not revert for such bad processing and take into consideration the
+  effect of malicious inputs when implementing functions that perform a
+  batch of operations.\\
+
+  We have discussed concerns with calls within loops which is
+  representative of batch transactions leading to denial of service and
+  number 43 of security pitfalls and press practices 101 module and more
+  broadly the issues of error reporting in 175 and denial of service in
+  176 of security pitfalls and best practices 201 modules.
+\item
+  Another medium severity finding from the Trail of Bits audit of 0x
+  protocol related to data validation in which zero fee orders were
+  possible if a user performed transactions with a zero gas price.\\
+
+  The recommendation was to select a reasonable minimum value for the
+  protocol fee for each order or transaction, and also to consider not
+  depending on the gas price for the computation of protocol fees. We
+  should also avoid giving miners an economic advantage in this
+  protocol.\\
+
+  This is related to the broad aspects of data validation issues in 169
+  Gas and 182 and incentives in 187 of security pitfalls and best
+  practices 201 modules.
+\item
+  Yet another medium severity finding from the Trail of Bits audit of 0x
+  protocol related to data validation, in which calls to
+  \texttt{setParams()} may set invalid values and produce unexpected
+  behavior in the staking contracts.\\
+
+  \texttt{setParams} allows the Owner of the staking contracts to
+  re-parameterize critical parameters, however reparametrization, lag,
+  sanity, threshold or limit checks on all the parameters.\\
+
+  The recommendation was to add proper validation checks on all
+  parameters in \texttt{setParams} and where the validation procedure
+  was unclear or too complex to implement on-chain and document
+  potential issues that could produce invalid values.\\
+
+  This is related to system documentation in 137, function parameter
+  validation in 138, function invocation arguments in 146 and broader
+  aspect of data validation issues in 169 we discussed in security
+  pitfalls and best practices 201.
+\end{itemize}
+
+\subsection{Sigma Prime}\label{sigma-prime}
+
+\subsubsection{Synthetix's
+EtherCollateral}\label{synthetixs-ethercollateral}
+
+This finding was a Sigma Prime audit of Synthetix's EtherCollateral
+where it was a medium severity finding related to configuration, in
+which the contract Owner could arbitrarily change minting fees and
+interest rates. The issue free rate and interest rate variables could
+both be changed by the intercollateral contact Owner anytime after loans
+had been opened.
+
+The recommendation was to consider making the minting fee that's issue
+free rate to be a constant that can't be changed by the Owner. This is
+related to the time delayed change of critical parameters in number 163
+configuration issues in 165 and constant issues in 184 that we discussed
+in security pitfalls and best practices 201.
+
+\subsubsection{Synthetix's Unipool}\label{synthetixs-unipool}
+
+This finding was a Sigma Prime audit of Synthetix's Unipool where it was
+a medium severity finding related to timing and denial of service, in
+which gap between periods led to erroneous rewards.
+
+For context, the SNX rewards were earned each period based on reward and
+duration, as specified in the \texttt{notifyRewardAmount()} function
+and, if all stakers called \texttt{getReward()}, the contract would not
+have enough SNX balance to transfer out all the rewards and some stakers
+may not receive any rewards.
+
+The recommendation was to force each period to start at the end of the
+previous period without any cap. This is related to function invocation
+timeliness in 143 token handling in 159, the broader aspect of denial of
+service in 175 and timing in 176 that we discussed in security pitfalls
+and best practices 201 module.
+
+\subsection{OpenZeppelin}\label{openzeppelin}
+
+\subsubsection{UMA}\label{uma}
+
+\begin{itemize}
+\item
+  This finding was an OpenZeppelin audit of UMA where it was a medium
+  severity finding related to auditing and logging, in which event
+  emission was missing after sensitive actions.\\
+
+  The \texttt{getLatestFundingRate()} function of the
+  \texttt{fundingRateApplied()} contract did not emit relevant events
+  after executing the sensitive actions of setting the funding rate
+  update time and proposal time and transferring the reports.\\
+
+  The recommendation was to consider emitting events after sensitive
+  changes take place to facilitate tracking and notifying off-chain
+  clients following the contracts activity. This is related to the
+  missing events aspen discussed in 45 of security pitfalls and best
+  practices 101, the broader auditing logging issues of 173 along with
+  the principle of compromise recording of 201 we discussed in security
+  pitfalls and best practices 201 module.
+\item
+  Another medium severity finding from the OpenZeppelin audit of UMA
+  related to specification, in which functions had unexpected
+  side-effects.\\
+
+  For example, the \texttt{getLatestFundingRate()} function of the
+  \texttt{fundingRateApplied} contract might also update the funding
+  rate and send rewards. The \texttt{getPrice()} function of the
+  \texttt{optimisticOracle} contract might also settle a price
+  request.\\
+
+  These side-effect actions were not clear in the name of functions,
+  that is the names sounded like getter functions, but these were also
+  setters and therefore were not expected which could lead to mistakes
+  when the code is modified by new developers who weren't aware of all
+  such project implementation.\\
+
+  The recommendation was to consider splitting such functions into
+  separate getters and setters or alternatively, renaming those
+  functions to describe all the actions that they perform. This is
+  generally related to the programming style and naming conventions
+  discussed in 97 of \texttt{Solidity} 101 module and broader system
+  specification documentation and clarity issues of 136, 137 and 188
+  along with the principle of economy of mechanism of 197 we discussed
+  in security pitfalls and best practices 201 module.
+\end{itemize}
+
+\subsubsection{1inch}\label{inch}
+
+\begin{itemize}
+\item
+  This finding was an OpenZeppelin audit of 1inch where it was a medium
+  severity finding related to denial of service, in which mooniswap
+  pairs could not be unpaused.\\
+
+  For context, the \texttt{mooniswap} factory governance contract had a
+  shutdown function that would be used to pause the contract and prevent
+  any future swaps. However, there was no function to unpause the
+  contract.\\
+
+  There was also no way for the factory contract to redeploy a
+  \texttt{mooniswap} instance for a given pair of tokens. Therefore, if
+  a \texttt{mooniswap} contract were ever shut down or passed it would
+  not be possible for that pair of tokens to ever be traded on the
+  \texttt{mooniswap} platform again unless a new factory contract was
+  deployed.\\
+
+  The recommendation was to consider adding unpauseability for
+  \texttt{mooniswap} contracts. This is related to OpenZeppelin's
+  pausable library we discussed in 156 of \texttt{Solidity} 201 module
+  and guarded launch aspects of circuit breaker and emergency shutdown
+  in 134 and 135 along with the broader aspects of denial of service of
+  176 we discussed in security pitfalls and best practices 201 module.
+\item
+  Another medium severity finding from the OpenZeppelin audit of 1inch
+  related to timing, in which \texttt{safeApprove} was used
+  incorrectly.\\
+
+  The \texttt{safeApprove} function of OpenZeppelin \texttt{safeERC20}
+  library prevents changing an allowance between non-zero values to
+  mitigate a possible Front-running attack. Instead, the
+  \texttt{safeIncreaseAllowance} and \texttt{safeDecreaseAllowance}
+  functions should be used.\\
+
+  However, the \texttt{uniERC20} library simply bypassed this
+  restriction by first setting the allowance to zero that reintroduced
+  the Front-running attack and undermined the value of using the
+  \texttt{safeApprove} function.\\
+
+  The recommendation was to instead use \texttt{safeIncrease} allowance
+  and \texttt{safeDecreaseAllowance} functions. This is related to
+  OpenZeppelin \texttt{safeERC20} library we discussed in 149 of
+  \texttt{Solidity} 201 module transaction order dependence in 21 and
+  \texttt{ERC20} approved Race-condition in 22 of security pitfalls and
+  best practices 101 module along with the broader aspects of timing
+  issues in 177 that we discussed in security pitfalls and best
+  practices 201.
+\end{itemize}
+
+\subsubsection{Futureswap V2}\label{futureswap-v2}
+
+\begin{itemize}
+\item
+  This finding was an OpenZeppelin audit of Futureswap V2 where it was a
+  medium severity finding related to configuration, in which the code
+  was not using \texttt{upgradeSafeContract} in \texttt{fsToken}
+  inheritance.\\
+
+  For context, the \texttt{fsToken} contract was intended to be an
+  upgradable contract used behind a Proxy, however the contract's
+  \texttt{ERC20snapshot}, \texttt{ERC20mintable} and
+  \texttt{ERC20burnable} inherited from \texttt{fsToken} were not
+  imported from the \texttt{upgradeSafe} OpenZeppelin library, but
+  instead from their regular not upgrade safe counterparts that used
+  constructors instead of \texttt{initialize} functions.\\
+
+  The recommendation was to use the \texttt{upgradeSafe} libraries. This
+  is related to OpenZeppelin's OZ Initializable library in 192 and other
+  Proxy related aspects we discussed in \texttt{Solidity} 201 module,
+  the aspect of importing upgradable contracts in Proxy-based upgradable
+  contracts of 97 of security pitfalls and best practices 101 module
+  along with the broader aspects of configuration in 165 and
+  initialization in 166 that we discussed in security pitfalls and best
+  practices.
+\item
+  Another medium severity finding from the OpenZeppelin audit of
+  Futureswap V2 related to error handling, in which the output of the
+  \texttt{ECDSArecover} function was unchecked.\\
+
+  Remember that the ECDSArecover function from OpenZeppelin returns the
+  zero address if the signature provided is invalid. This function was
+  used twice in the Futureswap code: once to recover an Oracle address
+  from an Oracle signature and again to recover the user's address from
+  their signature.\\
+
+  If the Oracle signature were invalid, the Oracle address would be set
+  to the zero address and similarly, if the user signature were invalid,
+  then the user message signer or the withdrawer would be set to a zero
+  address. Either could result in unintended behavior.\\
+
+  The recommendation was to consider reverting if the output of
+  \texttt{ECDSArecover} was the zero address. This is related to
+  OpenZeppelin's ECDSA library we discussed in 166 of \texttt{Solidity}
+  201 module missing Zero-address validation in 49 of security pitfalls
+  and best practices 101 module along with the broader aspects of
+  cryptography issues in 174 and error reporting in 175 that we
+  discussed in security pitfalls and best practices 201.
+\end{itemize}
+
+\subsubsection{Notional}\label{notional}
+
+This finding was an OpenZeppelin audit of Notional where it was a medium
+severity finding related to configuration, in which adding new variables
+to multi-level inherited upgradable contracts would break the storage
+layout.
+
+The Notional protocol used the \texttt{openSeparate} contracts to manage
+upgradability with the unstructured storage pattern. When using that
+upgradability approach, and working with multi-level inheritance, if a
+new variable were to be introduced in a parent contract, it could
+potentially override the beginning of the storage layout of the child
+contract causing critical misbehavior in the system.
+
+The recommendation was to consider preventing such scenarios by defining
+a storage gap in each upgradable parent contract at the end of all the
+storage variable definitions for future variable additions.
+
+In such an implementation, the size of the gap would be intentionally
+decreased each time a new variable was introduced, thereby avoiding the
+overwriting of pre-existing storage values.
+
+This is related to the various OpenZeppelin Proxy aspects we discussed
+in 185 to 192 or \texttt{Solidity} 201 module state variables in
+Proxy-based upgradable contracts and 99 of security pitfalls and press
+practices 101 module and broader aspects of configuration issues and 165
+that we discussed in security pitfalls and best practices 201.
+
+\subsubsection{GEB}\label{geb}
+
+This finding was an OpenZeppelin audit of GEB where it was a medium
+severity finding related to data validation in which unsafe division was
+performed in \texttt{rdivide} and \texttt{wdivide} functions.
+
+For context, the functions \texttt{rdivide}, \texttt{wdivide} accepted
+the divisor \texttt{y} as an input parameter without checking if the
+value of \texttt{y} was zero. If that were to be the case, the call
+would revert due to division by 0.
+
+The recommendation was to consider adding a \texttt{require} statement
+in the functions to ensure that \texttt{y} is greater than 0 or
+considered using the \texttt{div} functions provided in OpenZeppelin's
+\texttt{safeMath} libraries. This is related to OpenZeppelin safeMath
+library we discussed in 175 accelerating 201 module and function
+parameters in 138 along with the broader aspects of data validation
+issues in 169 that we discussed in security pitfalls and best practices
+201 module.
+
+\subsubsection{OpynGamma}\label{opyngamma}
+
+This finding was an OpenZeppelin audit of Opyn Gamma where it was a
+medium severity finding related to denial of service, in which the use
+of \texttt{Solidity}'s \texttt{transfer} primitive might render
+impossible.
+
+For context, when withdrawing ETH deposits, the payable Proxy controller
+contract uses \texttt{Solidity}'s \texttt{transfer} function which could
+fail with a withdrawal smart contract, if you did not implement a
+payable fallback function or the payable fallback function uses more
+than 2300 Gas units for some reason.
+
+The recommendation was to instead use the \texttt{sendValue} function
+available in OpenZeppelin's address library, which can be used to
+transfer the Ether without being limited to 2300 Gas units and address
+any reentrancy risk from the use of this function by following the
+check, effects and interactions pattern and using OpenZeppelin's
+\texttt{reentrancyGuard} library. This is related to receive and
+fallback functions in 33 and 34 and transfer function in 47 absolutely
+101 module OpenZeppelin's address library in 159 absolutely 201 module
+avoid transfers sent as reiterancy mitigations in 15 and fallback versus
+received in 27 of security pitfalls and best practices 101 module along
+with the broader aspects of denial of service issues in 176 that we
+discussed in security pitfalls and best practices 201.
+
+\subsubsection{Audius}\label{audius}
+
+\begin{itemize}
+\item
+  This finding was an OpenZeppelin audit of Audius where it was a medium
+  severity finding related to timing from inconsistently checking
+  initialization. For context, when a contract was initialized, its
+  initialized state variable was set to \texttt{true} and because
+  interacting with uninitialized contracts would cause problems, the
+  \texttt{requireIsInitialized()} function was available to perform the
+  step.\\
+
+  However, this check was not used consistently. So for example, it was
+  used in the \texttt{getVotingCount()} function of the governance
+  contract, but not used in the \texttt{getRegistryAddress()} function
+  of the same contract. This could be misleading and cause uninitialized
+  contacts to be called.\\
+
+  The recommendation was to consider calling
+  \texttt{requireIsInitialized()} consistently in all the functions of
+  the contracts and, if there were a reason to not call it in some
+  functions, consider documenting that or alternatively consider
+  removing this check all together and preparing a deployment script
+  that would ensure that all contracts were initialized in the same
+  transaction that they were being deployed. This is related to the
+  broad aspects of initialization issues in 166 and also the timing and
+  ordering issues in 177 and 178 that we discussed in the security
+  pitfalls at best practices 201 module.
+\item
+  Another medium severity finding from the OpenZeppelin audit of Audius
+  related to data validation in which the voting period and quorum could
+  be set to zero. For context, when the governance contract was
+  initialized, the values of voting period and voting quorum were
+  checked to make sure that they were greater than zero.\\
+
+  However, the corresponding \texttt{sender} functions,
+  \texttt{setVotingPeriod()} and \texttt{setVotingForum()} allow these
+  variables to be reset to zero. Setting the voting period to zero would
+  allow spurious proposals that can't be voted upon and setting the
+  quorum to zero would allow proposals with zero votes to be executed,
+  which is very dangerous as you can imagine.\\
+
+  The recommendation was to consider adding validation to the setter
+  functions this is related to function parameter validation in 138
+  function invocation arguments in 146 along with the broader aspects of
+  data validation in 169 that we discussed in security pitfalls and best
+  practices 201 module.
+\item
+  Yet another medium severity finding from the OpenZeppelin audit of
+  Audius related to configuration in which some state variables were not
+  set during initialization. For context, the Audius contracts could be
+  upgraded using the unstructured storage Proxy pattern, which requires
+  the use of an initializer instead of the constructor to set the
+  initial values of the state variables. In some of the contracts the
+  initializer was not initializing all the state variables.\\
+
+  The recommendation therefore was to consider setting all the required
+  variables in the initializer and, if there were a reason for leaving
+  them uninitialized, consider documenting that and adding checks on the
+  functions that use those variables to ensure that they were not called
+  before initialization. This is related to the various OpenZeppelin
+  Proxy aspects we discussed in 185 to 192 of \texttt{Solidity} 201
+  module initializing state variables in Proxy-based upgradable
+  contracts in 96 for security pitfalls and best practices 101 module
+  and broader aspects of configuration issues in 165 that we discussed
+  in security pitfalls and best practices 201.
+\end{itemize}
+
+\subsubsection{Primitive}\label{primitive}
+
+This finding was an OpenZeppelin audit of Primitive where it was a
+medium severity finding related to timing, in which expired and/or
+paused options could still be traded. For context, option tokens could
+still be freely transferred when the option contract was either paused,
+expired or both. That would allow malicious option holders to sell
+paused or expired options that could not be exercised in the open market
+to exchanges, and users who did not take the necessary precautions
+before buying an option minted by the primitive protocol.
+
+The recommendation was to consider implementing the necessary logic in
+the auction contract to prevent such transfers of tokens during pause or
+after expiration or alternatively, if the described behavior was indeed
+intended to consider clearly documenting it to raise awareness among the
+option sellers and buyers. This is generally related to OpenZeppelins
+possible in 156 absolutely 201 and broad aspects of timing and ordering
+issues in 177 178 system documentation and clarity issues in 137 and 188
+and business logic issues in 191 that we discussed in security pitfalls
+and best practices 201 modules.
+
+\subsubsection{AC0}\label{ac0}
+
+This finding was an OpenZeppelin audit of AC0 where it was a medium
+severity finding related to data validation, in which ERC20 transfers
+could misbehave. For context, the \texttt{transferFromERC20()} function
+was used throughout the AC0 token contract to handle transferring funds
+into the contract from a user.
+
+It was called within \texttt{mint()}/\texttt{mintTo()},
+\texttt{validate()} and \texttt{burn()} functions where in each case the
+destination was the AC0 total contract. Such transfers may behave
+unexpectedly: if the external ERC20 token contract charged fees (as an
+example the popular USDT token does not presently charge any fees upon
+transfer, but it has a functionality to do so), then the amount received
+would be less than the amount sent. Such deflationary tokens have the
+potential to lead to protocol insolvency when they are used to mint new
+AC0 tokens. In the case of \texttt{transferERC20()} similar issues could
+occur and cause users to receive less than expected when the collateral
+was transferred or when exercise assets were transferred.
+
+The recommendation was to consider betting each token used within an AC0
+options pair ensuring that failing transfer from and transfer calls
+would cause rewards with an AC0 token contract and additionally consider
+implementing some sort of sanity check which enforced that the balance
+of the AC0 token contract increases by the desired amount when calling
+transfers from ERC20. This is related to token deflation vr fees in 107.
+guarded launch via asset types and 129 and broader aspects of token
+handling in 159 and data validation issues in 169 that we discussed in
+security pitfalls and best practices 201 module.
+
+\subsubsection{Compound}\label{compound}
+
+This finding was an OpenZeppelin audit of Compound where it was a medium
+severity finding related to auditing and logging, in which there was
+incorrect event emission. For context, the Uniswap window update event
+of the Uniswap \texttt{anchoredNew} contract was being emitted in the
+\texttt{pokeWindowValues()} function using incorrect values because it
+was being emitted before the relevant state changes were applied to the
+old observation and new observation variables, and therefore causing the
+data logged by the event to be outdated.
+
+The recommendation was to consider emitting the Uniswap window update
+event after changes were applied, so that all log data is up to date
+this is related to broader aspects of auditing logging issues at 173
+ordering in 178 and freshness in 185 that we discussed in security
+pitfalls and best practices 201.
+
+\subsubsection{MCDEX Mai Protocol}\label{mcdex-mai-protocol}
+
+\begin{itemize}
+\item
+  This finding was an OpenZeppelin audit of MCDEX Mai protocol where it
+  was a medium severity finding related to reentrancy. For context,
+  there were several examples of interactions preceding effects in the
+  context of the CEI pattern that we have discussed.\\
+
+  The first example was in the \texttt{deposit()} function of the
+  \texttt{collateral} contract. The collateral was retrieved before the
+  user balance was updated and an event was emitted. Also, in the
+  withdrawal function of the collateral contract, collateral was sent
+  before the event was emitted. Finally, the same pattern occurred in
+  \texttt{depositToInsuranceFund()},
+  \texttt{DepositEtherToInsuranceFund()} and
+  \texttt{withdrawFromInsuranceFund()} functions of the
+  \texttt{perpetual} contract. These reentrancy opportunities would
+  affect the order and contents of emitted events which could confuse
+  external clients about the state of the system.\\
+
+  The recommendation therefore was to consider always following the CEI
+  pattern or use reiteracy guard contract to protect those functions.
+  This is related to OpenZeppelin's reentrancy guard library we
+  discussed in 157 of \texttt{Solidity} 201 model reentrancy
+  vulnerabilities and number 13 of security pitfalls and best practices
+  one-on-one module along with broader aspects of auditing logging in
+  173 and timing issues in 177 that we discussed in security pitfalls
+  and best practices 201 module.
+\item
+  Another medium severity finding from the OpenZeppelin audit of MCDEX
+  Mai protocol related to timing, in which governance parameter changes
+  were enforced instantly. For context, many sensitive changes could be
+  made via the function \texttt{setGovernanceParameter()}, such as the
+  initial and maintenance margin rates or the lot size parameters. These
+  new parameters would instantly take effect in the protocol, with
+  important effects on protocol users, some of which could be perceived
+  as being as negative impacts.\\
+
+  The recommendation was to consider implementing a timelock mechanism
+  for such changes to take place because by enforcing a delay between
+  the signal of intent, the actual change users would have time to
+  decide to continue engagement with the protocol or exit their
+  positions as necessary. This is related to OpenZeppelin's
+  TimelockController library which is this in 182 of \texttt{Solidity}
+  201 module and tight delay change of critical parameters in 163 along
+  with broader aspects of timing in 177 and trust issues in 181 that we
+  discussed in security pitfalls and best practices 201.
+\end{itemize}

@@ -1,0 +1,19 @@
+\section{\texorpdfstring{\texttt{delete}
+Mappings}{delete Mappings}}\label{delete-mappings}
+
+The next security pitfall is related to the concept of the
+\texttt{delete} primitive and \texttt{Solidity} and how it applies to
+mappings. If there is a struct data structure in a smart contract that
+contains a mapping as one of its fields, then deleting that structure
+would \texttt{delete} all the fields of the struct, but the mapping
+field itself would remain intact, so this is one of the
+\texttt{Solidity}'s behaviors that needs to be kept in mind.
+
+That can have unintended consequences, if the developer assumes that the
+mapping field within the struct also got deleted and reinitialized to
+its default values.
+
+The best practice is to use an alternative approach such as considering
+the data structure that is meant to be deleted as being logged to
+prevent future logic from using the data structure or the mapping fields
+within that data structure.

@@ -1,0 +1,20 @@
+\section{Private Data}\label{private-data}
+
+This security pitfall is related to the notion of what is private data
+on a blockchain or the privacy of on-chain data.
+
+Remember that state variables and \texttt{Solidity} have a function
+visibility specifier. By making this specified a \texttt{private}, such
+private state variables can't be read only by other smart contracts on
+the blockchain, this does not mean that they can't be read at all.
+
+We don't have to believe that they are considered private in a
+confidentiality perspective because the state of such variables and
+contracts and transactions in general on the blockchain can be read by
+anyone on the chain itself or via off-chain interfaces by querying the
+mempools for transactions or by querying the contract state itself to
+look at what values such private variables contain.
+
+This effectively means that, \textbf{there is no notion of data being
+private on the blockchain} and any such data for confidentiality reasons
+that needs to be private should be encrypted and stored off-chain.

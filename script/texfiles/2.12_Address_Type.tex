@@ -1,0 +1,258 @@
+\section{Address Type}\label{address-type}
+
+It's a type that is specific to \texttt{Solidity} and Ethereum, and it
+is critical to security: the \texttt{address} type. To highlight its
+importance, we dedicate a section especially to \texttt{address}.
+
+\texttt{address} refers to the underlying Ethereum account address, the
+EOA or the contract account. This is different from the addresses that
+you might have encountered in other programming languages such as
+\texttt{C} and \texttt{C++}, where they refer to variables' memory
+address when you're dealing with pointers or references. Here address
+signifies something very different: an account address.
+
+The \texttt{address} types are 20 bytes in size, because remember that
+is the size of the Ethereum address. They come in two types they can be
+\textbf{plain} \texttt{address} types or they can have a
+\texttt{payable} \textbf{specifier, and referred to as an
+\texttt{address\ payable} type}, where it indicates that this
+\texttt{address} type can receive Ether. There are different operators
+that operate on address types, such as shown here
+
+\begin{itemize}
+\tightlist
+\item
+  Operators \texttt{==}, \texttt{!=}, \texttt{\textless{}},
+  \texttt{\textless{}=}, \texttt{\textgreater{}} and
+  \texttt{\textgreater{}=}
+\item
+  Implicit/Explicit Conversions
+\end{itemize}
+
+There are conversions that can be performed on \texttt{address} types.
+Some of them are implicit and others are explicit. For converting
+\texttt{address\ payable} types to \texttt{address} types, implicit
+conversions can be used because it is safe. Whereas the other way
+around, where an \texttt{address} type is converted to an
+\texttt{address\ payable} type, that should be an explicit conversion
+because now this address becomes capable of receiving Ether.
+
+From a security perspective, \texttt{address} types play a critical role
+in contracts. These addresses are used in different types of access
+control: some may be considered as more privileged than the others in
+the context of the contract logic.
+
+Addresses can also hold Ether balances and token balances, so using the
+right addresses in the right places and making sure that the correct
+access control logic or the balances accounting logic is applied on
+them, becomes very critical from a security perspective to make sure
+there are no undefined behavior or unintended side effects leading to
+security vulnerabilities.
+
+\subsection{Address Members}\label{address-members}
+
+Address types have different members that can give different aspects of
+the underlying \texttt{address} types:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\texttt{balance}}: gives (as the name may suggest) the balance
+  of that address in wei.
+\item
+  \textbf{\texttt{code}}: gives (surprise\ldots) the code of that
+  address.
+\item
+  \textbf{\texttt{code\ hash}}: gives the hash of the code.
+\end{itemize}
+
+There are also the \texttt{transfer} and \texttt{send} members that
+\textbf{are applicable to the} \texttt{address\ payable} \textbf{types}.
+In addition, the \texttt{call}, \texttt{delegate\ call} and
+\texttt{static\ call} members can be applied on plain \texttt{address}
+types. We are going to elaborate on all of these shortly\ldots{}
+
+So as you can imagine, these \texttt{address} members play a huge role
+when it comes to the security aspects, because they deal with the
+balances, look at the code, the code hash, the reentrancy aspects of
+\texttt{send} and \texttt{transfer}, making external calls using
+\texttt{call}, \texttt{delegatecall}, and \texttt{staticcall}, which are
+critical when it comes to the trustworthiness of the contracts that are
+being called at these addresses.
+
+\subsubsection{Transfer \& Send}\label{transfer-send}
+
+They make calls to the addresses that are specified by supplying a
+limited gas stipend of only 2300 gas units. This is not adjustable: it
+is something hard coded in \texttt{Solidity} to address the category of
+reentrancy attacks on addresses. We'll take a look at the reentrancy
+aspect later on in the security modules, but it's something to keep in
+mind for now.
+
+The \texttt{transfer} member is used for transferring Ether to the
+destination address. This transfer triggers the \texttt{receive}
+function, or the \texttt{fallback} function of the target contract. From
+a security perspective this primitive affects reentrancy attacks: where
+the target contract, if it is untrusted, could potentially call back
+into the caller contract and lead to undesired behavior that could
+affect token balances or other contract logic in in a very critical way.
+The 2300 gas assumption is critical when you look at how contracts use
+transfer and whether that transaction could fail and revert and lead to
+undefined behavior.
+
+Similar to \texttt{transfer}, there is \texttt{send} member
+\texttt{Solidity}'s \texttt{address} type, which is somewhat a lower
+level counterpart for \texttt{transfer}. It is used for Ether transfers:
+it triggers the same receiver \texttt{fallback} functions like
+\texttt{transfer}, but \textbf{it does not result in a failure if the
+target contract uses more than 2300 gas unlike transfer}. In the case of
+\texttt{send}, it does not revert but it just sends back a boolean
+return value that indicates a either success (\texttt{true}) or failure
+(\texttt{false}).
+
+So if the \texttt{send} primitive is used to transfer value, then from a
+security perspective it means that the return value of that
+\texttt{send} primitive must be checked by the caller to make sure that
+the transfer happened successfully or not, depending on what was
+returned. Again, the \texttt{send} primitive affects reentrancy, which
+is again why the \texttt{send} primitive was introduced as a mitigation
+in \texttt{Solidity}. The return value check that is critical and and
+different from its \texttt{transfer} counterpart.
+
+\subsection{External Calls}\label{external-calls}
+
+These are used to make low level calls to their specific address that is
+specified. We talked about some of these calls in the context of the
+underlying instructions, \texttt{call}, \texttt{delegatecall}, and
+\texttt{staticcall} instructions, where we talked about how the callee
+account in the case of \texttt{delegatecall} executes with its logic but
+with the state of the caller account. Similarly in the case of
+\texttt{staticcall} we talked about how the callee contract address can
+access the state but cannot modify the state.
+
+These instructions are used to interface with contracts that do not
+adhere to the ABI or where the developer wants more direct control over
+such calls. They all take single bytes memory parameter, return the
+success condition as a boolean and return data in a bytes memory. They
+can also use \texttt{abi.*} functions, such as \texttt{encode},
+\texttt{codepath}, encode with selector, encoded signature\ldots{} to
+encode structured data as part of the arguments.
+
+They can also use gas and value modifiers to specify the amount of gas
+and Ether for these calls. The latter is applicable for the
+\texttt{call} primitive but not \texttt{delegatecall} or
+\texttt{staticcall}.
+
+To summarize: the \texttt{delegatecall} is used where the caller
+contract wants to use the logic specified by the callee contract but
+with the state and other aspects of the caller contract itself. So while
+the code of the given address is used, all other aspects such as
+\texttt{storage}, \texttt{balance}, \texttt{message}, \texttt{sender}
+are taken from the current caller contract. The purpose of
+\texttt{delegatecall} is to enable use cases such as libraries or proxy
+upgradability, where the logic code is stored in the callee contract but
+that operates on the state of the caller contract.
+
+\texttt{staticcall} is used where we want the called function in the
+callee contract to look at or to read the state of the caller contract,
+but not modify it in any way.
+
+The use of external calls have different types of security implications,
+these are low level calls that should be avoided in most cases unless
+absolutely required and there are no alternatives available, because
+these are calling out to external contracts that may be untrusted, in
+the context of the current applications threat model or trust model.
+
+These external contracts could result in undefined behavior, use more
+gas than expected, cause re-entrances to the caller contract and might
+also return failures where if the return value is not checked, could
+result in undefined behavior as well.
+
+A counter-intuitive aspect of these low-level calls is that \textbf{if
+these calls are made to contract accounts that do not exist for some
+reason they still return \texttt{true} based on the design of the EVM}.
+
+This can have some serious side effects if the contract logic assumes
+that the external call was successful and executed the logic that it
+expected it to execute because it got a value of \texttt{true} from
+these primitives. The mitigation for this aspect of low level calls is
+to check for contract existence before these calls are made, and have
+the logic handle it appropriately if they do not exist.
+
+This has resulted in some serious security vulnerabilities being
+reported in various high-profile smart contract projects, so something
+to be kept in mind when analyzing the security of smart contracts that
+use these low level calls.
+
+\subsection{Contract Type}\label{contract-type}
+
+Every contract that's declared is its own type and these contract types
+\textbf{can be explicitly converted to and from address types}. That is
+what they represent underneath. These contract types do not have any
+operators supported, and the only members of these types are external
+functions declared in the contract along with any state variables.
+
+Solidity supports some contract related primitives that need to be
+understood:
+
+\begin{itemize}
+\item
+  The keyword \texttt{this} refers to the current contract. Remember:
+  \textbf{it can be converted to an} \texttt{address} \textbf{type
+  explicitly}.
+\item
+  The \texttt{selfdestruct()} primitive in \texttt{Solidity}, related to
+  the \texttt{SELFDESTRUCT} instruction in the EVM. This primitive is a
+  high level wrapper on top of that instruction, it takes in a single
+  argument: an \texttt{address} type specifying the recipient.\\
+
+  This recipient will receive all the funds in the contract when it is
+  destroyed (the Ether balance in that destroyed contract, when the
+  execution ends). There are some specifics of \texttt{selfdestruct}
+  that need to be kept in mind from a security perspective for several
+  reasons.\\
+
+  One of them is that the recipient \texttt{address} specified in this
+  primitive does not execute the \texttt{receive()} function when it is
+  triggered.\\
+
+  \emph{Recall that contracts can specify a receive function that gets
+  triggered on Ether transfers or under other conditions}.\\
+
+  In the context of the \texttt{selfdestruct()} primitive, the recipient
+  \texttt{address} happens to be a contract and it specifies a
+  \texttt{receive()} function that does not get triggered when
+  \texttt{selfdestruct()} happens.\\
+
+  This is critical because any logic that might be within that
+  \texttt{receive()} function might have been anticipated by the
+  developer to be triggered anytime ether is received by the contract,
+  but \texttt{selfdestruct()} is an exception to that logic.\\
+
+  Also the contract gets destroyed by \texttt{selfdestruct()} only at
+  the end of the transaction that has triggered this flow. What this
+  means is that if there is any other logic after
+  \texttt{selfdestruct()} that may revert for various reasons, then that
+  revert undoes the destruction of the contract itself. So just because
+  we see a \texttt{selfdestruct()} in the control flow does not mean
+  that the contract gets destroyed, because logic after that might
+  revert and really not result in the destruction of this contract.
+\end{itemize}
+
+Other primitives specific to the contract type supported by
+\texttt{Solidity} are beased on the \texttt{type(x)} instruction (where
+\texttt{x} is a contract type).
+
+The primitives supported are \texttt{type(C).name} that returns a name
+of the contract, \texttt{type(C).creationCode} and
+\texttt{type(C).runtimeCode} primitives return the creation and runtime
+byte codes of that contract.
+
+These are interesting details that are best examined by writing a simple
+contract and looking at what these primitives return.
+
+There's also the interface id primitive (\texttt{type(I).interfaceId})
+that returns the identifier for the interface specified. We'll take a
+look at the differences between interfaces and contracts later on, but
+these are primitives that are supported by \texttt{Solidity} specific to
+the contract or interface type.

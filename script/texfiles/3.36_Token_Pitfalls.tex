@@ -1,0 +1,405 @@
+\section{Token Pitfalls}\label{token-pitfalls}
+
+Contracts that accept manage or transfer ERC tokens should ensure
+several things:
+
+\begin{itemize}
+\tightlist
+\item
+  They should ensure that functions handling tokens, account for
+  different types of ERC tokens such as ERC20, ERC777, ERC721, ERC1155,
+  \ldots{}
+\item
+  They should account for any deflationary or inflationary aspects of
+  such tokens.
+\item
+  Whether they are rebasing or not.
+\item
+  Differentiate between trusted internal tokens and untrusted external
+  tokens.
+\end{itemize}
+
+Different tokens could come with different peculiarities in terms of
+their decimals of precision, their return values, reverting behavior,
+support for hooks, fungibility, supporting multiple token types or
+deviations from specifications. All of which could again result in
+susceptibility to reentrances, locking or even loss of funds.
+
+Therefore, functions handling tokens should be checked extra carefully
+for access control input validation and error handling to ensure that
+these aspects are handled correctly.
+
+Next, we are going to go through several common token related pitfalls.
+
+\subsection{ERC20 Transfer}\label{erc20-transfer}
+
+This pitfall is specifically related to the \texttt{transfer()} and
+\texttt{transferFrom()} functions that allow transferring of ERC20
+tokens between addresses. According to the specification, these should
+return \texttt{bool} values, however not all token contracts adhere to
+the specification, so they may not return \texttt{bool} values: they may
+not return any value at all or they may return a different value of a
+different type.
+
+In such cases, callers that assume the \texttt{bool} values to be
+returned may fail, so the best practice here is for ERC20 token
+contracts to make sure that they are returning \texttt{bool} values, and
+for call sites to not make such assumptions: preferably using
+\texttt{safeERC20} wrappers from \texttt{OpenZeppelin} that handle all
+the possible scenarios where \texttt{bool}s, non-booleans or no values
+are being returned (and the contract simply revoked).
+
+\subsection{ERC20 Optional}\label{erc20-optional}
+
+The ERC20 specification makes it optional for token contracts to
+implement \texttt{name}, \texttt{symbol} and \texttt{decimals}
+primitives. As a result, any contract that is interacting with ERC20
+contracts should make sure that these primitives are indeed present and
+implemented by those contracts. If they want to use them, the best
+practice is not to make an assumption that these perimeters will always
+be implemented by the ERC20 contract because they are optional.
+
+\subsection{ERC20 Decimals}\label{erc20-decimals}
+
+ERC20 contracts have a notion of decimals which typically are 18 digits
+in precision, and therefore the token standard specifies using an
+\texttt{uint8} type to represent decimals, because that is sufficient to
+represent a value of 18. However, token contracts that do not adhere to
+the standard sometimes incorrectly use a \texttt{uint256} type for
+decimals.
+
+The best practice here is to check which type is being used by the ERC20
+contract and, if it is a \texttt{uint256} type, then have a further
+check to make sure that the decimal value is less than or equal to 255,
+because that is the maximum value that can fit within a \texttt{uint256}
+as required by the token standard.
+
+\subsection{\texorpdfstring{ERC20
+\texttt{approve()}}{ERC20 approve()}}\label{erc20-approve}
+
+We have talked about the race-condition risk from the \texttt{approve()}
+function of ERC20. To summarize it again let's take a look at the same
+example that we discussed: we have a token owner who has given an
+allowance of 100 tokens (\texttt{approve(100)}) to a spender, then wants
+to later decrease that allowance to 50 tokens (\texttt{approve(50)}).
+The spender may be able to observe this decrease operation and before
+that happens, it can frontrun in order to first spend the 100 tokens for
+which they already had the allowance from earlier. Then once
+\texttt{approve(50)} operation succeeds, they further spend those 50
+tokens as well.
+
+So effectively they have ended up spending 150 tokens while the owner
+intended for them to only be able to spend 50 tokens. This is possible
+because of frontrunning (because of the Race-condition opportunity). The
+best practice here is to not use the \texttt{approve()} function, but
+instead use the \texttt{increaseAllowance()} or
+\texttt{decreaseAllowance()} functions that do not have this risk.
+
+\subsection{ERC777 Hooks}\label{erc777-hooks}
+
+We have discussed the ERC777 token standard which aims to improve some
+of what are considered as shortcomings of the ERC20 standard, and one of
+these improvements is the concept of hooks. These hooks get called
+before \texttt{send()}, \texttt{transfer()}, \texttt{mint()},
+\texttt{burn()} and some other operations in these tokens. While they
+may enable a lot of interesting use cases, special care should be taken
+to make sure that these hooks do not make any external calls because
+such calls can result in reentrancy vulnerabilities. The best practice
+with ERC777 tokens is to check for their hooks and make sure that
+external calls are not being made.
+
+\subsection{Token Deflation}\label{token-deflation}
+
+There's a concept of token deflation that may happen in ERC20 Token
+contracts. Some of these token contracts may take a fee when tokens are
+being transferred from one address to another. Because of this fee, the
+number of tokens across all the user addresses will reduce over time
+when they are transferred between those, so the number of tokens
+received by the target address may not be the same as the number of
+tokens sent by the sender. This depends on the amount of fee and if the
+fee is being charged at all.
+
+The best practices here with respect to token deflation is for token
+contracts to generally avoid the notion of a fee that causes deflation
+because that could break assumptions with the contracts that interact
+with this token contract. For smart contract applications that work with
+ERC20 contracts, they should be aware if those ERC20 contracts have this
+notion of deflation or not, and if so, make sure that their accounting
+logic takes care of this deflation. This is more of a concern in smart
+contact applications that allow their users to interact with them using
+arbitrary ERC20 token contracts, and in such cases consider a guarded
+launch approach where the initial set of ERC20 tokens that can be used
+with this contract does not have this notion of deflation.
+
+\subsection{Token Inflation}\label{token-inflation}
+
+ERC20 contracts could also have the opposite effect: token inflation. In
+this case, contracts generate interest for their token holders. This
+interest is distributed to holders while they make transfers. This
+effectively increases the number of tokens that are held by the user
+addresses over time, effectively meaning that when a token transfer
+happens, the recipient may receive more tokens than the amount
+originally sent that (reflecting the interest being distributed).
+
+If the smart contract application is not aware of the ERC20 contract
+generating interest, then those interest tokens may end up getting
+trapped in the ERC20 contract without being realized. The best practice
+is again to avoid this notion of interest that causes inflation because
+their interacting contracts may make an assumption that no such thing is
+happening that could break a lot of the critical assumptions leading to
+vulnerabilities, or again such smart contact applications could consider
+a guarded launch approach where the ERC20 tokens that they work with are
+known not to have this notion of interest and inflation.
+
+\subsection{Token Complexity}\label{token-complexity}
+
+High token complexity is considered as a security risk. We have long
+known that complexity in general is very detrimental to security. The
+same aspect holds good for ERC20 token contracts. These contracts should
+have a well-defined specification, they should be implementing a very
+simple contract because any unnecessary complexity could result in bugs:
+developers could make errors while developing these complex features. It
+is also much harder to reason about these complex features and
+definitely harder to find and fix bugs in such features, so the best
+practice is at a high level to avoid any unnecessary complexity when it
+comes to implementing token contracts.
+
+\subsection{Token Functions}\label{token-functions}
+
+In computer science, there is a notion of ``\emph{separation of
+concerns}'' which says that in a computer application there should be
+different sections, each of which addresses a very specific concern.
+This applies to smart contact applications that work with ERC20 token
+contracts as well. In this case what we mean is that a ERC20 contract
+should only or mostly have functions that are relevant to ERC20 tokens.
+They should not include any non-token related functions in them because
+that could introduce additional complexity, and like we just discussed
+complexity is detrimental to security because it could introduce bugs.
+At a high level one should avoid unnecessary complexity by bundling
+non-token related functions within a ERC20 token contract because that
+increases likelihood of issues in general or in the worst case security
+vulnerabilities.
+
+\subsection{Token Address}\label{token-address}
+
+ERC20 contracts should be working with a single token address. What this
+means is that there should be a single address that maintains the
+balances of different users interacting with that contract, thus there
+is a single entry point for checking the balances of users. This is
+because multiple addresses within a contract can result in multiple
+entry points for the different balances that are held or maintained by
+those addresses, and not being aware of these multiple addresses and
+their balances can result in accounting bugs. The best practice is to
+make sure that an ERC20 contract works with a single address.
+
+\subsection{Token Upgradeable}\label{token-upgradeable}
+
+We have talked about upgradability in the context of the Proxy contact
+pattern. This upgradability is interesting in smart contract
+applications where the implementation part of the Proxy can be changed
+to a newer version to introduce new features or to fix any bugs in the
+previous versions. When it comes to ERC20 token contracts, upgradability
+is a concern. The reason is because any change in functionality that is
+introduced by this upgreadeability is detrimental to the trust that the
+users place in these contracts. The rationale is that token functions in
+the contract are meant to be very simple: the \texttt{mint()},
+\texttt{burn()} and \texttt{transfer()} functions are required to adhere
+to the specifications so that all the contracts or all the users
+interacting with this token contract are assured of the functionality
+implemented by these functions. The best practice here is to make sure
+that these token contracts are not upgradable and, if an application is
+interacting with token contracts to check and verify that it is not
+upgradable.
+
+\subsection{Token Mint}\label{token-mint}
+
+Remember that in the context of token contracts, minting refers to the
+act of incrementing the account balances of addresses to which those new
+tokens are credited, and in this context of token minting one should be
+aware of the contract owner having any extra capabilities over this
+functionality. If this is the case, then a malicious owner could
+effectively mint an arbitrary number of tokens to any address of their
+choice, which as you can imagine is very detrimental to the security of
+the token contract because all the other users using this contract and
+maintaining balances of these tokens in that contract will be affected
+because their relative share of tokens will be much smaller. The best
+practice here is to be aware of any such extra capabilities over this
+printing functionality by the contact owner because that could be
+abused.
+
+\subsection{Token Pause}\label{token-pause}
+
+Remember from the previous module that the ability to pause certain
+contract functionality is part of what is known as a guarded launch.
+However, when this guarded launch approach is applied to ERC20 tokens,
+pausing some of their functionalities (like minting, burning or
+transferring) could be a concern because the authorized owners (who are
+allowed to pause and unpause such functionalities) or their
+addresses/accounts could be compromised (or they may even be malicious),
+resulting in pausing the contract functionality and trapping the funds
+of all the users interacting with that contract. The best practice here
+is to be aware of this risk and when interacting with token contracts to
+check and verify if those contracts are possible or not by certain
+authorized owners.
+
+\subsection{Token Blacklist}\label{token-blacklist}
+
+While the concept of blacklisting is commonly used in security for a
+long time to prevent malicious actors or actions from abusing the system
+this notion when applied to ERC20 contracts is of concern the reason
+again is because authorized users who are allowed to create and maintain
+this blacklist by adding actors or actions into that list or by taking
+them out of that list. Those owners could be malicious or they could be
+compromised and in such scenarios where a token contract has this notion
+of a blacklist, then because of such malicious or compromised owners the
+users funds could get trapped, if their addresses are blacklisted, so
+the best practice is again to be aware of this risk and check and verify
+contracts to make sure that they do not have this notion of a blacklist
+and, if they do be aware of what can go wrong.
+
+\subsection{Token Team}\label{token-team}
+
+Let's now talk about the deal behind the ERC20 project and its
+implications on any security aspects. The team behind the ERC20 project
+may be publicly known (we know who the project members are, what their
+past projects have been and how they are connected within the community)
+or this team could be anonymous (the project members are only known by
+their handles on github, twitter, telegram or discord\ldots{} and we
+have very little information about what they have done in the past or
+about their real world identities and how they are connected within the
+social circles of the community).
+
+In the latter context, there are two schools of thought:
+
+\begin{itemize}
+\item
+  One school of thought thinks that an anonymous team is riskier from a
+  security perspective of the project because we do not have a good ways
+  to evaluate what their reputation is within the social circles, with
+  the community based on their past projects and so on\ldots{}
+
+  \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+  In this case the assumption is that there's a greater risk a security
+  risk to the project because these anonymous teams could not be as
+  concerned about security, because any security implications or
+  exploits might not hurt the reputation from this project, or the team
+  members could also be imagined to have left behind bugs or back doors
+  within the project so that later they themselves could exploit the
+  project (what is known as ``\emph{rugging}'' the project).
+
+  \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+  This school of thought believes that such anonymous teams should meet
+  a higher bar when it comes to security (or security reviews on the
+  flip side).
+
+  \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+\item
+  The other school of thought believes that anonymity (or
+  pseudo-anonymity) should not matter to the security of the project.
+  Any of your past projects based on who you are, what you have done and
+  what your connections are within the community should not impact the
+  security of a project. The project should be evaluated independently
+  of who the project team members are.
+
+  \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+  Irrespective of which school of thought you may subscribe to, this is
+  something to be kept in mind because privacy and anonymity are strong
+  aspirational goals of web3 and any such team risk could potentially
+  translate into a legal risk for someone who may review such projects
+  or interact with it (as users).
+\end{itemize}
+
+\subsection{Token ownership}\label{token-ownership}
+
+Token ownership refers to who owns the tokens and how many tokens they
+own. In scenarios where there are very few users who own a lot of those
+tokens, then such ownership situation will allow those owners to
+influence the price of those tokens, the liquidity of those tokens and
+any potential governance actions around those tokens, because those
+actions will be controlled by the token ownership. This is an aspect of
+risk from centralization because there are very few owners holding a lot
+of tokens. This risk could manifest itself into a security risk as well.
+
+\subsection{Token Supply}\label{token-supply}
+
+It refers to the number of ERC20 tokens that is supported by the token
+contract. This supply depends on what has been implemented for that
+particular contract and application. It could be either low or high. The
+concerning situation is when a particular ERC20 contract has a very low
+supply of its tokens as this by implication means that the ownership may
+end up being concentrated within a few owners who own a significant part
+of the supply, in which case they have a significant influence over the
+price of those tokens their liquidity and therefore their volatility, so
+this scenario brings in an increased manipulation risk for such tokens
+with limited supply.
+
+\subsection{Token Listing}\label{token-listing}
+
+ERC20 tokens get listed in various places to allow trading between
+users. These tokens may get listed on centralized exchanges or
+decentralized exchanges.
+
+\begin{itemize}
+\item
+  Decentralized exchanges are expected to be more resilient to failures
+  and therefore are expected to be up and accessible all the time.
+\item
+  However, if token is listed on very few centralized exchanges and
+  those exchanges happen to be inaccessible because they are down for
+  maintenance or maybe in extreme situations where they are hacked, then
+  a concern arises because majority of the tokens will now be
+  inaccessible.
+
+  \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+  This new low liquidity increase the price volatility of such tokens.
+\end{itemize}
+
+This is another aspect of centralization risk that one should be aware
+of when looking at tokens that are listed in very few exchanges.
+
+\subsection{Token Balance}\label{token-balance}
+
+Assumptions on token balances pose a security risk smart contract
+applications where the logic assumes that the balance of tokens that it
+is working with is always below a certain threshold. These applications
+stand the risk of those assumptions breaking if the balance exceeds
+those thresholds. This may be triggered by users who own a large number
+of tokens (typically known as whales), or it may also be triggered by
+what are known as flash loans.
+
+A \textbf{flash loan} is a capability where a user is allowed to borrow
+a significant number of tokens without providing any collateral, but
+this loan has to be repaid or is forced to be repaid within the
+transaction itself. So by the end of the transaction, the flash loan
+capability makes sure that the tokens that were lent to the user are
+paid back to that contract, but within that context of the transaction
+the user has access to a significant number of tokens as provided by
+that flash loan contract.
+
+Such a use of large funds or flash loans may be used by users or
+attackers to amplify arbitrage opportunities or exploit vulnerabilities
+where the logic incorrectly depends on load token balances. This risk
+from large funds or flash loans needs to be kept in mind because it
+could be manipulated.
+
+\subsection{Token Flash Minting}\label{token-flash-minting}
+
+Similar to flash loans, there is the concept of flash minting that has
+similar concerns. Unlike flash loans, where the total amount of tokens
+that can be borrowed by a user is limited by the liquidity of tokens in
+that particular protocol, flash minting simply mints the new tokens that
+are handed to the user. These again are only available within the
+context of a transaction because at the end of the transaction, the
+flash minting mechanism will destroy all the tokens that were just
+minted and handed to the user.
+
+Similar to flash loans, if smart contracts that are working with such
+ERC20 tokens make assumptions about the balances of those tokens that
+are available for a user, then they could lead to overflows or other
+serious security vulnerabilities, these again can be manipulated and
+there's a risk that needs to be kept aware of when dealing with external
+ERC20 tokens.

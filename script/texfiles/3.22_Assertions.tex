@@ -1,0 +1,63 @@
+\section{Assertions}\label{assertions}
+
+\subsection{\texorpdfstring{\texttt{assert()}}{assert()}}\label{assert}
+
+This security best practice is related to the use of \texttt{assert}s
+within smart contracts. \texttt{assert()} should be used only to check
+or verify program invariants within the smart contracts. They should not
+be used to make any state changes within their predicates and they
+should also not be used to validate any user inputs.
+
+The reason for this is because, if any state changes are made as the
+side-effects of the predicates within asserts, then those could be
+missed both by developers during maintenance or when they are trying to
+do any testing.
+
+They could also be missed by auditors because these state changes are
+not expected to happen within a search and similarly, asserts should not
+be used to validate user inputs because that should be done using
+\texttt{require()} statements.
+
+As a general rule we do not expect to see any failures from asserts
+during normal contract functioning and therefore these best practices
+become very relevant.
+
+\subsection{\texorpdfstring{\texttt{assert()}
+vs.~\texttt{require()}}{assert() vs.~require()}}\label{assert-vs.-require}
+
+This best practice is related to the use of \texttt{assert()} versus
+\texttt{require()} and the specific conditions in which they should be
+used.
+
+These two aspects are related, but they have different usages.
+
+\texttt{assert}s should be used to check or verify invariants where
+these invariants are expected to be held during normal contract
+functioning, so we do not expect any of these asserts to fail during the
+contract execution and any failures are critical \texttt{panic} errors
+that need to be caught and dealt with in a very serious manner.
+
+On the other hand \texttt{require()} is meant to be used for input
+validation of arguments that are supplied by users to various public or
+external functions where we do expect failures to happen because the
+user provided values may be the zero address in some cases or maybe
+values that are out-of-range or do not make sense from the smart
+contracts perspective.
+
+So this difference is something to be kept in mind, the best practice is
+to use \texttt{assert()} or \texttt{require()} appropriately as the
+situation demands. This had a more significant impact until
+\texttt{Solidity} compiler version \texttt{0.8.0}. Until then,
+\texttt{require()} used the \texttt{REVERT} opcode which refunded the
+remaining Gas and failure, whereas \texttt{assert} used the
+\texttt{INVALID} opcode which consumed all the supplied Gas.
+
+So until that version the usage of \texttt{assert()} or
+\texttt{require()} incorrectly, would result in different Gas semantics.
+This is because in one situation the remaining Gas would be refunded,
+whereas in the other case all of it would be consumed.
+
+So this affected user experience as well, but this has changed since
+version \texttt{0.8.0} where both \texttt{require()} and
+\texttt{assert()} use the \texttt{REVERT} opcode and refund all the
+remaining Gas on failures.

@@ -1,0 +1,28 @@
+\section{\texorpdfstring{\texttt{ecrecover}}{ecrecover}}\label{ecrecover}
+
+This security pitfall is related to the use of the \texttt{ecrecover}
+primitive in EVM and supported by \texttt{Solidity}.
+
+The specific pitfall is that it is susceptible to what is known as
+signature malleability or non-unique signatures. Remember that elliptic
+curve signatures in Ethereum have three components \texttt{v},
+\texttt{r} and \texttt{s}. The \texttt{ecrecover} function takes in a
+message hash the signature associated with that message hash and returns
+the Ethereum address that corresponds to the private key that was used
+to create that signature.
+
+In the context of this pitfall, if an attacker has access to one of
+these signatures, then they can create a second valid signature without
+having access to the private key to generate that signature.
+
+This is because of the specific range that the \texttt{s} value or the
+\texttt{s} component of that signature can be in it can be in an upper
+range or a lower range and both ranges are allowed by this primitive
+which results in the malleability.
+
+This depending on the logic of the smart contract, the context in which
+it is using these signatures can result in replay attacks, so the
+mitigation is to check that the \texttt{s} component is only in the
+lower range and not in the higher range, this mitigation is enforced in
+OpenZeppelin's \texttt{ECDSA} library which is the recommended best
+practice.

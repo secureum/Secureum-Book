@@ -1,0 +1,282 @@
+\section{Compiler Bugs}\label{compiler-bugs}
+
+Let's now discuss a set of security risks that manifested themselves
+because of compiler bugs: these were bugs in older versions of the
+\texttt{Solidity} compiler that have been since fixed.
+
+They are very specific to certain complex data structures or very
+specific conditions that one may not often encounter in typical smart
+contracts. Because of that, we will not be able to get into the details
+of these compiler bugs and their security risks.
+
+Nevertheless, taking a look at the higher level aspects of these
+compiler bugs would hopefully let us appreciate the complexity of some
+of them and the security risks that they may pose.
+
+\subsection{\texorpdfstring{Storage Array with \texttt{int} under
+\texttt{ABIEncoderV2}}{Storage Array with int under ABIEncoderV2}}\label{storage-array-with-int-under-abiencoderv2}
+
+This specific compiler bug was related to storage arrays and signed
+integers, and their usage was enabled by the \texttt{ABIEncoderV2},
+which was a \texttt{pragma} directive, that needed to be explicitly
+specified until the latest versions (as it is now used by default).
+
+This specific bug arose when assigning an array of signed integers to a
+storage array of a different type \texttt{Type{[}{]}\ =\ int{[}{]}}.
+Under such assignments, it led to data corruption in that array.
+
+This bug was present in \texttt{Solidity} versions \texttt{0.4.7} until
+\texttt{0.5.10} (which are much older versions than the latest one that
+we often encounter), so it's very unlikely that we'll look at smart
+contracts using these much older versions, but it is something to be
+kept in mind.
+
+\subsection{\texorpdfstring{Dynamic Constructor Arguments Clipped under
+\texttt{ABIEncoderV2}}{Dynamic Constructor Arguments Clipped under ABIEncoderV2}}\label{dynamic-constructor-arguments-clipped-under-abiencoderv2}
+
+A contract's constructor that takes structs or arrays that contain
+dynamically sized arrays (made possible because of
+\texttt{ABIEncoderV2}) reverted or decoded to invalid data.
+
+This compiler bug was present in \texttt{Solidity} versions
+\texttt{0.4.16} to \texttt{0.5.9}.
+
+\subsection{\texorpdfstring{Storage Array with Multi-slot Element under
+\texttt{ABIEncoderV2}}{Storage Array with Multi-slot Element under ABIEncoderV2}}\label{storage-array-with-multi-slot-element-under-abiencoderv2}
+
+There was a compiler bug related to storage arrays in \texttt{Solidity},
+specifically those with multi-slot elements, again made possible because
+of \texttt{ABIEncoderV2}.
+
+Such storage arrays containing structs or other statically sized arrays
+were not read properly when they were directly encoded in external
+function calls or using the \texttt{abi.encode()} primitive.
+
+This bug was present in \texttt{Solidity} versions \texttt{0.4.16} to
+\texttt{0.5.10}.
+
+\subsection{\texorpdfstring{Calldata Structs with Statically Sized and
+Dynamically Encoded Members under
+\texttt{ABIEncoderV2}}{Calldata Structs with Statically Sized and Dynamically Encoded Members under ABIEncoderV2}}\label{calldata-structs-with-statically-sized-and-dynamically-encoded-members-under-abiencoderv2}
+
+Another compiler bug was related to the \texttt{struct} type
+(specifically calldata structs) which consisted in reading from calldata
+structs that contained dynamically encoded, but statically sized
+members, could result in incorrect values being read.
+
+This again was limited to the \texttt{Solidity} compiler versions
+\texttt{0.5.6} to \texttt{0.5.11}.
+
+\subsection{\texorpdfstring{Packed Storage under
+\texttt{ABIEncoderV2}}{Packed Storage under ABIEncoderV2}}\label{packed-storage-under-abiencoderv2}
+
+There was a compiler bug related to packed storage. Storage structs and
+arrays with types smaller than 32 bytes when encoded directly from
+storage using \texttt{ABIEncoderV2} could cause data corruption.
+
+This occurred with \texttt{Solidity} compiler versions \texttt{0.5.0} to
+\texttt{0.5.7}.
+
+\subsection{\texorpdfstring{Incorrect Loads with \texttt{Yul} Optimizer
+and
+\texttt{ABIEncoderV2}}{Incorrect Loads with Yul Optimizer and ABIEncoderV2}}\label{incorrect-loads-with-yul-optimizer-and-abiencoderv2}
+
+This is another compiler bug specifically coming from the \texttt{Yul}
+optimizer, part of it resulted in incorrect loads being done.
+
+When the experimental \texttt{Yul} optimizer was activated manually in
+addition to \texttt{ABIEncoderV2}, it resulted in memory loads and
+storage loads via \texttt{MLOAD} and \texttt{SLOAD} instructions to be
+replaced by values that were already written.
+
+So effectively, the \texttt{Yul} optimizer replaced the \texttt{MLOAD}
+and \texttt{SLOAD} calls with stale values which is a serious bug. This
+occurred with \texttt{Solidity} compiler versions \texttt{0.5.14} to
+\texttt{0.5.15}.
+
+\subsection{\texorpdfstring{Array Slice Dynamically Encoded Base Type
+under
+\texttt{ABIEncoderV2}}{Array Slice Dynamically Encoded Base Type under ABIEncoderV2}}\label{array-slice-dynamically-encoded-base-type-under-abiencoderv2}
+
+There was a compiler bug specifically related to array slices, which
+there are views of the arrays that lets us access specific ranges of
+those arrays in a very efficient manner.
+
+Accessing such array slices for arrays that had dynamically encoded base
+types resulted in invalid data being read for the \texttt{Solidity}
+compiler versions \texttt{0.6.0} to \texttt{0.6.8}.
+
+\subsection{\texorpdfstring{Missing Escaping in Formatting under
+\texttt{ABIEncoderV2}}{Missing Escaping in Formatting under ABIEncoderV2}}\label{missing-escaping-in-formatting-under-abiencoderv2}
+
+This compiler bug was related to missed escaping. Escaping is relevant
+to string literals where certain characters can be escaped using the
+double backslash.
+
+String literals that contained double backslash characters for escaping,
+that were passed directly to \texttt{external}, or encoding function
+calls, could result in a different string being used when
+\texttt{ABIEncoderV2} was enabled.
+
+Notice that this compiler bug was present across many \texttt{Solidity}
+compiler versions all the way from \texttt{0.5.14} to \texttt{0.6.8}.
+
+\subsection{Double Shift Size
+Overflow}\label{double-shift-size-overflow}
+
+If multiple conditions were true, then the shifting operations resulted
+in overflows resulting in unexpected values being output.
+
+Some of those conditions were that the optimizer needed to be enabled.
+These had to be double bitwise shifts where large constants were being
+used whose sum overflowed 256 bits.
+
+Under such conditions the shifting operations overflowed for the
+\texttt{Solidity} compiler versions \texttt{0.5.5} to \texttt{0.5.6}.
+
+\subsection{Incorrect Byte Instruction
+Optimization}\label{incorrect-byte-instruction-optimization}
+
+This was a compiler bug originating from incorrect optimization of byte
+instructions.
+
+The optimizer, when dealing with byte codes whose second argument was
+\texttt{31} or a constant expression that evaluated to \texttt{31},
+incorrectly optimized it which resulted in unexpected values being
+produced.
+
+This was possible when doing an index access on the \texttt{bytesNN}
+types (so all the types like \texttt{bytes1}, \texttt{bytes2} to
+\texttt{bytes32}) or when using the \texttt{BYTES} opcode in assembly.
+
+Unexpected values were produced when these conditions were met, from
+\texttt{Solidity} versions \texttt{0.5.5} to \texttt{0.5.7}.
+
+\subsection{\texorpdfstring{Essential Assignments Removed with
+\texttt{Yul}
+Optimizer}{Essential Assignments Removed with Yul Optimizer}}\label{essential-assignments-removed-with-yul-optimizer}
+
+There was another compiler bug coming from the \texttt{Yul} optimizer.
+In this case, the \texttt{Yul} optimizer removed essential assignments
+for variables that were specifically declared inside \texttt{for} loops.
+
+This would happen while using \texttt{Yul}'s \texttt{continue} or
+\texttt{break} statements, and again limited to the \texttt{Solidity}
+compiler versions \texttt{0.5.8}/\texttt{0.6.0} to
+\texttt{0.5.16}/\texttt{0.6.1}.
+
+\subsection{Privat Methods Overriden}\label{privat-methods-overriden}
+
+Remember that function visibilities in \texttt{Solidity} can be
+\texttt{private}, \texttt{internal}, \texttt{public} or
+\texttt{external}.
+
+\texttt{private} functions are specific to the contract in which they
+are defined: they can't be called from any other contract, even those
+deriving from it.
+
+While this is true, it was still possible for a derived contract to
+declare a function of the same name and type as a \texttt{private}
+function in one of the base contracts. And by doing so, change the
+behavior of the base contracts function.
+
+What is interesting to note here, from a security perspective, is that
+this compiler bug was present across multiple \texttt{Solidity} versions
+all the way from \texttt{0.3.0} to \texttt{0.5.17}.
+
+\subsection{Tuple Assignment Multi-stack Slot
+Components}\label{tuple-assignment-multi-stack-slot-components}
+
+Tuple assignments where the components occupied several stack slots, for
+example in the case of nested tuples, resulted in invalid values because
+of a compiler bug.
+
+Notice again that this compiler bug lasted across 5 breaking
+\texttt{Solidity} versions: all the way from \texttt{0.1.6} to
+\texttt{0.6.6}.
+
+\subsection{Dynamic Array Cleanup}\label{dynamic-array-cleanup}
+
+When dynamically sized arrays were being assigned with types whose size
+was at most 16 bytes in storage, it would cause the assigned array to
+shrink to reduce their slots.
+
+However, some parts of the deleted slots were not being zeroed out by
+the compiler. This would lead to stale or dirty data being used. This
+bug was fixed in \texttt{Solidity} version \texttt{0.7.3}.
+
+\subsection{Empty Byte Array Copy}\label{empty-byte-array-copy}
+
+This bug is related to byte arrays, from \texttt{memory} or
+\texttt{calldata}, that were empty were copied to \texttt{storage} and
+they could result in data corruption.
+
+This only occurred if the target array's length was subsequently
+increased, but without storing new data in it. Notice how specific the
+conditions are for this bug to be triggered. Nevertheless, this bug was
+discovered and fixed in \texttt{Solidity} version \texttt{0.7.4}.
+
+\subsection{Memory Array Creation
+Overflow}\label{memory-array-creation-overflow}
+
+When memory arrays were being created, if they were very large in size,
+then they would result in overlapping memory regions, which would lead
+to corruption.
+
+In this case, this compiler bug was introduced in \texttt{Solidity}
+version \texttt{0.2.0} and fixed in version \texttt{0.6.5}.
+
+\subsection{\texorpdfstring{Calldata \texttt{using\ for} compiler
+bug}{Calldata using for compiler bug}}\label{calldata-using-for-compiler-bug}
+
+Remember, \texttt{using\ for} primitive is used for calling library
+functions on specific types used within the smart contract.
+
+In this case the bug was specific to when the parameters used in such
+function calls were in the calldata portion of the EVM. In such cases,
+the reading of such parameters would result in invalid data being read.
+This bug existed accross \texttt{Solidity} versions \texttt{0.6.9} to
+\texttt{0.6.10}.
+
+\subsection{Free Function
+Redefinition}\label{free-function-redefinition}
+
+Remember, free functions in \texttt{Solidity} are functions that are
+declared outside contracts (i.e.~at file level).
+
+This compiler bug allowed free functions to be declared with the same
+name and parameter types. This redefinition or collision was not
+detected by the compiler as an error. This bug was present in one of the
+recent \texttt{Solidity} versions: \texttt{0.7.1}, and fixed in
+\texttt{0.7.2}.
+
+Compiler bugs should be taken very seriously because, unlike smart
+contracts that may differ from each other in the logic implemented, in
+the data structures or other aspects used, the compiler is a common
+dependency or perhaps a single point of failure for all the smart
+contracts compiled with that version.
+
+Having said that, let's also recognize that a compiler is another
+software, so just like any software it is bound to have bugs and perhaps
+even more, because the compiler is significantly more complex than a
+smart contract or any other general software application.
+
+From a security perspective, the things to be kept in mind when looking
+at a compiler version that's being used in smart contracts is to know
+which features of that compiler version are considered as being
+extensively used, and which are considered as experimental and perhaps
+staying away from them, so that one is not susceptible or vulnerable to
+any bugs in them.
+
+It is also important to recognize the bugs that have been fixed in the
+compiler version, the bugs that have been reported and perhaps fixed in
+later versions (if those are available). These aspects should dictate
+the choice of the compiler version for the smart contracts and the
+specific features that are available within those compiler versions.
+
+So the takeaway is that some of these compiler bugs may be so deep down
+in the compiler code and may be triggered only under specific
+conditions, that they might not be discovered very soon after the
+compiler is released. So while the test of time is true, there are no
+guarantees that a much older compiler version has most of its bugs
+discovered, reported and fixed.

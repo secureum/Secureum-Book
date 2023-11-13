@@ -1,0 +1,35 @@
+\section{PRNG and Time}\label{prng-and-time}
+
+\subsection{PRNG}\label{prng}
+
+This security pitfall is related to pseudo-random number generation on
+the blockchain within smart contracts applications that require such
+random numbers.
+
+Remember that these values could be influenced to a certain extent by
+miners who are mining the blocks that contain these values. So if the
+stakes in those applications using these as sources of randomness is
+high, then such actors could use their influence to a certain extent to
+gain advantage.
+
+So this is a risk from randomness that needs to be paid attention to
+something to be aware of and, if the stakes are high for the
+applications where you desire a much better source of randomness then,
+there are some alternatives such as the verifiable random function
+provided by Chainlink.
+
+\subsection{Time}\label{time}
+
+Similar to randomness, the notion of getting the time on-chain is also
+tricky. Often smart contracts resort to using \texttt{block.timestamp}
+or \texttt{block.number} as sources for inferring the time within the
+application's logic.
+
+Again, what needs to be paid attention to is that this notion of time
+can be influenced to a certain extent by the miners. There are issues
+with synchronization across the different blockchain nodes and there are
+also aspects of the block times that change by a certain degree over
+time.
+
+This is again a risk that needs to be paid attention to and, there are
+some alternatives to this using the concept of Oracles.

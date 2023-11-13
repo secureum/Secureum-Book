@@ -1,0 +1,17 @@
+\section{ABI Encoding/Decoding}\label{abi-encodingdecoding}
+
+\texttt{Solidity} supports multiple functions in these categories. The
+obvious ones are the \texttt{abi.encode()} and \texttt{abi.decode()}
+functions that take arguments and encode them or decode them,
+specifically with respect to the ABI.
+
+There are also functions that encode with the function selector
+(\texttt{abi.encodeWithSelector()}) or with the signature
+(\texttt{abi.encodeWithSignature()}), and finally there is
+\texttt{abi.encodePacked()} which takes the arguments and performs the
+encoding in a packed fashion ( there's no padding applied between the
+arguments supplied).
+
+For this reason the packed encoding can be ambiguous. This is something
+that affects security when you're considering these functions,
+specifically this \texttt{abi.encodePacked()} function.

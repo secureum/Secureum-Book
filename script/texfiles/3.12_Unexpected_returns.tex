@@ -1,0 +1,98 @@
+\section{Unexpected Returns}\label{unexpected-returns}
+
+\subsection{\texorpdfstring{\texttt{transfer()}}{transfer()}}\label{transfer}
+
+This security pitfall is related to the \texttt{transfer} function of
+\texttt{ERC20} tokens. The \texttt{ERC20} specification says that a
+\texttt{transfer} function should return a boolean value, however a
+token contract might not adhere to the specification completely and may
+not return a boolean value may not return any value.
+
+This was okay until the service compiler version \texttt{0.4.22}, but
+any contract compiled with a more recent \texttt{Solidity} compiler
+version will \texttt{revert} in such scenarios. So the recommended best
+practice for dealing with this scenario is to use the OpenZeppelin's
+\texttt{SafeERC20} wrappers for such interactions.
+
+\subsection{\texorpdfstring{\texttt{ownerOf()}}{ownerOf()}}\label{ownerof}
+
+This pitfall is similar to the previous one and applies to the
+\texttt{ownerOf()} function of the \texttt{ERC721} token standard.
+
+The specification says that this function should return an address value
+however contracts that did not adhere to this specific aspect would
+return a boolean value.
+
+It used to be okay until the \texttt{Solidity} version \texttt{0.4.22},
+but with any newer compiler version returning a boolean value would
+cause a revert. So the best practice again is to use the \texttt{ERC721}
+contract from \texttt{OpenZeppelin}.
+
+\subsection{Low-level Calls \& Account
+Existence}\label{low-level-calls-account-existence}
+
+Checking the return values of functions at \texttt{call} sites is a
+classic software engineering best practice that's been recommended over
+several decades, and in the case of \texttt{Solidity} this specifically
+applies to return values of function calls made using the low level
+\texttt{call} primitives.
+
+These are the \texttt{call}, \texttt{delegateCall} and \texttt{send}
+parameters that do not revert under exceptional behavior, but instead
+return a \texttt{bool} indicating either success or failure.
+
+So because of this particular characteristic it becomes critical for the
+call sites in contracts that use these primitives to check the return
+values and act accordingly, if not it could lead to unexpected failure.
+
+Another related security concern is checking for the existence of a
+smart contract account at a particular address before making a call.
+
+The reason for that is because when such calls are made using low level
+call primitives \texttt{call}, \texttt{delegatecall} or
+\texttt{staticcall} these functions return \texttt{true} even if the
+account does not exist at that address.
+
+So if the contract making such a call looked at the return value, saw it
+was \texttt{true} and assumed that the target contract existed at the
+address that it called and also assumed that the contract executed
+successfully, then that would be a faulty assumption.
+
+This as you can imagine could have some serious implications to
+security, so the best practice here is before making low-level calls to
+external contract addresses one should check that those accounts do
+indeed exist at those addresses.
+
+\subsection{Unused Return Value}\label{unused-return-value}
+
+There are security risks associated with function return values in
+\texttt{Solidity}. Remember that in \texttt{Solidity}, functions may
+take arguments, implement logic that uses those arguments along with
+some local and global state, create some side effects due to all of that
+logic and then may return values that reflect the impact of that logic.
+For functions that return such values, the call sites are expected to
+look at those values and use them in some fashion.
+
+The reason for this is because those return values could reflect some
+error codes that are indicative of some issues that happen during the
+processing within that function, or they could reflect the data that is
+produced as a side effect of that execution of the logic within the
+function.
+
+If these return values are not used at the call sites, then that could
+be indicative of some missed error checking that needs to happen at the
+call sites. Or in cases where there was data that was being returned
+without any errors, not using that data at the call sites could result
+in unexpected behavior.
+
+In both these scenarios, these could affect the security of the contract
+if that error checking or the missing logic (due to not using the data
+returned) affected the security aspects of the smart contract logic.
+
+The best practice here is to see if a function needs to return values
+and if functions are returning values, then all their call sites should
+be checking those return values and using them in appropriate ways. If
+any of those call sites are not using the return values, and it does not
+affect the security, then the developers (or the auditors) need to
+evaluate if the functions need to return any value at all and remove the
+values from being returned from those functions.

@@ -1,0 +1,671 @@
+\section{EVM (Ethereum Virtual Machine) in
+Depth}\label{evm-ethereum-virtual-machine-in-depth}
+
+The EVM is the execution component of the Ethereum blockchain: it is the
+runtime environment where all the smart contracts run. Recall that EVM
+is a quasi-Turing complete machine: it's turing complete because the
+underlying programming language supports arbitrary logic unbounded
+complexity, but it's also bounded by the amount of Gas provided as part
+of every transaction.
+
+The Ethereum code runs within the EVM and it is written in a low level
+stack based language referred to as the EVM Machine Code. This code
+consists of a series of bytes (therefore referred to as a bytecode)
+where every byte represents a single operation. So the opcodes are very
+simple and each of them is a single byte.
+
+\subsection{EVM Arquitecture}\label{evm-arquitecture}
+
+Computer architectures are typically classified into either \textbf{von
+Neumann architecture} or \textbf{Harvard architecture}. This depends on
+how code and data are handled within the architecture: Are they stored
+together? Are they transported over the buses together? How are they
+cached? And so on\ldots{}
+
+In the case of the EVM, the code is stored separately in a virtual ROM
+and there is a special instruction to access the EVM code.
+
+EVM is a very simple stack based architecture: the operands for EVM
+instructions are placed on the stack and the output of those
+instructions is also returned on the stack. There's no concept of
+registers, virtual registers or anything like that.
+
+Every architecture has a concept of a word and in the case of the EVM,
+the word size is \textbf{256 bits}. It's believed that this was chosen
+to facilitate some of the fundamental operations around the 256 hash
+scheme and the elliptic curve computations.
+
+The architecture is made up of four fundamental components:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{The stack} The EVM has 1024 elements in the stack and each of
+  those elements is 256 bits in length (equal to the word size). EVM
+  instructions are allowed to operate with the top 16 stack elements.
+  Most EVM instructions operate with the stack (because it's a stack
+  based architecture) and there are also stack specific operations.
+\item
+  \textbf{The volatile memory}: in EVM, data placed in memory is not
+  persistent across transactions on the blockchain. It is also linear
+  (it's a byte array and therefore addressable at byte level) and zero
+  initialized.\\
+
+  There are three specific instructions that operate with memory, such
+  as \texttt{MLOAD} which loads a word from memory and puts it onto the
+  stack; \texttt{MSTORE} which stores a word in memory from the stack;
+  and \texttt{MSTORE8} which stores a single byte in memory from the
+  stack. These instructions (and more) will be reviewed in more detail
+  in the following sections.
+\item
+  \textbf{The non-volatile storage}. Unlike memory, storage in EVM is
+  non-volatile: data put in storage is persistent across transactions on
+  the blockchain. It is implemented as a \texttt{(key,\ value)} store
+  between 256 bit keys and 256 bit values, and it is also zero
+  initialized.\\
+
+  To understand how storage fits in within the concept of accounts and
+  the blocks on the blockchain, recall that every account has a
+  \texttt{storageRoot} field. This \texttt{storageRoot} field,
+  implemented as a modified Merkle-Patricia tree, captures all the
+  storage associated with that account. This is relevant for contract
+  accounts that have associated storage. These \texttt{storageRoots}
+  within the account are further captured as part of
+  \texttt{the\ stateRoot}, which is one of the fields in the block
+  header.\\
+
+  There are two instructions that operate specifically on storage:
+  \texttt{SLOAD} which loads a word from the storage and puts it onto
+  the stack; and \texttt{SSTORE} which takes a word from the stack and
+  puts it into storage.
+\item
+  \textbf{\texttt{Calldata}}: it is used specifically for data
+  parameters of transactions and message calls. It is read only (it
+  cannot be written to) and it's also bite addressable.\\
+
+  There are three specific instructions that operate with call data:
+  \texttt{CALLDATASIZE} which gives the size of the supplied call data
+  and puts it onto the stack; \texttt{CALLDATALOAD} which loads the call
+  data supplied onto the stack; and \texttt{CALLDATACOPY} that copies
+  the supply call data to specific region of memory.
+\end{enumerate}
+
+\subsection{EVM Ordering}\label{evm-ordering}
+
+Another concept typically associated with architectures is the concept
+of ordering: \textbf{big-endian} ordering versus \textbf{little-endian
+ordering}. In the case of the EVM, \textbf{it uses the big-endian
+ordering}: the most significant byte of a word is stored at the smallest
+memory address while the least significant byte is stored at the largest
+address.
+
+\subsection{Instruction Set}\label{instruction-set}
+
+\emph{(A more complete and detailed description of the EVM opcodes can
+be found in}
+\href{https://www.evm.codes/?utm_source=tldrnewsletter}{\emph{evm.codes}}\emph{.
+If there is any discrepancy/ambiguity of the contents found here, refer
+to}
+\href{https://www.evm.codes/?utm_source=tldrnewsletter}{\emph{evm.codes}}\emph{)}
+
+Summarized walkthrough of the EVM opcodes
+
+All the instructions supported by the EVM can be classified into 11
+categories. Instructions that are found in categories \textbf{a} to
+\textbf{i} operate on the stack.
+
+The format for each of these instructions will be as follows:
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+OPCODE MNEMONIC INPUTS OUTPUTS
+\end{lstlisting}
+
+\hfill\break
+Let's see an example:\\
+
+The opcode is the hex representation of the instruction. You will see
+that the \texttt{0x00} opcode is used for the stop instruction. In
+addition, the word \texttt{STOP} is the mnemonic of the instruction. and
+then the two numbers that you see after the mnemonic refer to the number
+of stack items placed for this instruction (inputs) and the number of
+stack items removed (outputs).
+
+So the stop opcode is \texttt{0x00}, thus it's the first instruction in
+the instruction set mapping. The mnemonic is \texttt{STOP} (makes
+sense), 0 items are placed and 0 items are removed from the stack.
+
+In the case of \texttt{ADD}, you will see that it has 2 items placed
+onto the stack (the 2 operands) and the computed result (the addition)
+is placed back onto the stack.
+
+That's why you see that there is one item placed onto the stack, which
+is the result the addition of the two inputs. The same thing holds good
+for multiplication, and so on\ldots{}
+
+\hfill\break
+\textbf{a. Stop \& Arithmetic}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x00 STOP 0 0
+0x01 ADD 2 1
+0x02 MUL 2 1
+0x03 SUB 2 1
+0x04 DIV 2 1
+0x05 SDIV 2 1
+0x06 MOD 2 1
+0x07 SMOD 2 1
+0x08 ADDMOD 3 1
+0x06 MOD 2 1
+0x07 SMOD 2 1
+0x08 ADDMOD 3 1
+0x09 MULMOD 3 1
+0x0a EXP 2 1
+0x0b SIGNEXTEND 2 1
+\end{lstlisting}
+
+\hfill\break
+\textbf{b. Comparison \& Bitwise Logic}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x10 LT 2 1
+0x12 SLT 2 1
+0x20 GT 2 1
+0x13 SGT 2 1
+0x14 EQ 2 1
+0x15 ISZERO 1 1
+0x16 AND 2 1
+0x17 OR 2 1
+0x18 XOR 2 1
+0x19 NOT 1 1
+0x1a BYTE 2 1   
+0x1b SHL 2 1
+0x1c SHR 2 1
+0x1d SAR 2 1
+\end{lstlisting}
+
+\hfill\break
+\textbf{c.~SHA3 Instruction}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x20 SHA3 2 1
+\end{lstlisting}
+
+\emph{This single instruction is critical to Ethereum because it
+computes the Keccak-256 Hash. The formal notation for how the Keccak-256
+hash is calculated is:}
+
+\begin{align*}
+\mu_s'[0]&=\text{KEC}\left(\mu_m\left[\mu_s[0]\left(\mu_s[0]+\mu_s[1]-1\right)\right]\right)\\
+\mu_i'&=\text{M}\left(\mu_i,\mu_s[0],\mu_s[1]\right)
+\end{align*}
+
+\emph{This is explained with more detail in the Ethereum Yellowpaper.}
+
+\hfill\break
+\textbf{d.~Environmental Information Instructions}
+
+\emph{These set of instructions give information about the environment
+or the execution context of the smart contract executing them.}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x30 ADDRESS 0 1
+0x31 BALANCE 1 1
+0x32 ORIGIN 0 1
+0x33 CALLER 0 1
+\end{lstlisting}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{The \texttt{ADDRESS} instruction gives the address of the
+  currently executing account.}
+\item
+  \emph{\texttt{BALANCE} gives the ether balance of the currently
+  executing account.}
+\item
+  \emph{\texttt{ORIGIN} gives the address of the originator of the
+  transaction that actually led to the execution of the code within the
+  EVM.}
+\item
+  \emph{\texttt{CALLER} gives the caller's address in the context of
+  \texttt{Solidity}, these would be transaction origin
+  (\texttt{tx.origin}) and message sender (\texttt{msg.sender})
+  respectively.}
+\end{itemize}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x34 CALLVALUE 0 1
+0x35 CALLDATALOAD 1 1
+0x36 CALLDATASIZE 0 1
+0x37 CALLDATACOPY 3 0
+\end{lstlisting}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{\texttt{CALLVALUE} in the context of \texttt{Solidity} would be
+  the message value (\texttt{msg.vale}) that you would see in the smart
+  contracts.}
+\end{itemize}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x38 CODESIZE 0 1
+0x39 CODECOPY 3 0
+0x3a GASPRIZE 0 1
+0x3b EXTCODESIZE 1 1
+\end{lstlisting}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{\texttt{CODESIZE} gives the size of the code running in the
+  current environment.}
+\item
+  \emph{\texttt{CODECOPY} lets you copy the code running in the current
+  environment to memory.}
+\item
+  \emph{\texttt{GASPRICE} in the context of \texttt{Solidity}; you would
+  see this as \texttt{transaction.gasPrice}, which gives you the price
+  of the Gas in the current environment.}
+\end{itemize}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x3b EXTCODESIZE 1 1
+0x3c EXTCODECOPY 4 0
+0x3d RETURNDATASIZE 0 1
+0x3e RETURNDATACOPY 3 0
+0x3f EXTCODEHASH 1 1
+\end{lstlisting}
+
+\emph{This set of instructions lets you query an external contract
+account.}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{\texttt{EXTCODESIZE} gives you the size of the specified
+  account's code.}
+\item
+  \emph{\texttt{EXTCODECOPY} copies the specified accounts code to
+  memory.}
+\item
+  \emph{\texttt{RETURNDATASIZE} gives the size of the output data from
+  the previous call in this current environment.}
+\item
+  \emph{\texttt{RETURNDATACOPY} copies that return data.}
+\item
+  \emph{\texttt{EXTCODEHASH} gives the hash of the external account's
+  code.}
+\end{itemize}
+
+\hfill\break
+\textbf{e. Block Information Instructions}
+
+\emph{Similar to environment key information, EVM also has a set of
+instructions that gives information about transactions block.}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x40 BLOCKHASH 1 1
+0x41 COINBASE 0 1
+0x42 TIMESTAMP 0 1
+0x43 NUMBER 0 1
+0x44 DIFFICULTY 0 1
+0x45 GASLIMIT 0 1
+\end{lstlisting}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{\texttt{BLOCKHASH} gives the hash of one of the specified 256
+  most recent complete blocks. If the specified block is not one of the
+  most recent 256 ones, then this instruction returns zero,
+  \textbf{which is something that has a security implication}.}
+\item
+  \emph{\texttt{COINBASE} gives the block's beneficiary address (the
+  address to which the block reward and transaction fees are credited
+  to).}
+\item
+  \emph{\texttt{TIMESTAMP} gets the block's timestamp.}
+\item
+  \emph{\texttt{NUMBER} gets the block's number.}
+\item
+  \emph{\texttt{DIFFICULTY} gets the block's diffiulty.}
+\item
+  \emph{\texttt{GASLIMIT} gets the block's gas limit.}
+\end{itemize}
+
+\hfill\break
+\textbf{f.~Stack, Memory, Storage and Flow Instructions}
+
+\emph{The next category of instructions are related to the stack memory
+and storage; load and store operations and also those that affect the
+control flow.}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x50 POP 1 0
+0x51 MLOAD 1 1
+0x52 MSTORE 2 0
+0x53 MSTORE8 2 0
+0x54 SLOAD 1 1
+0x55 SSTORE 2 0
+\end{lstlisting}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{\texttt{POP} pops an element of the stack.}
+\item
+  \emph{\texttt{MLOAD} and \texttt{MSTORE} load and store from memory.}
+\item
+  \emph{\texttt{MSTORE8} stores a single byte to memory instead of the
+  whole word.}
+\item
+  \emph{\texttt{SLOAD} and \texttt{SSTORE} load and store words from and
+  to the storage.}
+\end{itemize}
+
+\emph{The next set of instructions affect the control flow.}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x56 JUMP 1 0
+0x57 JUMPI 2 0
+0x58 PC 0 1
+0x59 MSIZE 0 1
+0x5a GAS 0 1
+0x5b JUMPDEST 0 0
+\end{lstlisting}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{\texttt{JUMP} jumps to the specific location.}
+\item
+  \emph{\texttt{JUMPI} is a conditional jump that jumps depending on the
+  value specified.}
+\item
+  \emph{\texttt{PC} gives you the value of the program counter.}
+\item
+  \emph{\texttt{MSIZE} gives the size of active memory in bytes as of
+  this instruction.}
+\item
+  \emph{\texttt{GAS} gives the amount of available Gas as of this
+  instruction. This is in the context of the Gas that is supplied with
+  the transaction: how much gets consumed and how much is left.}
+\item
+  \emph{\texttt{JUMPDEST} has no effect on the machine state: it does
+  not affect the control flow but it marks a particular destination as
+  being a valid destination for the jump instructions that we talked
+  about.}
+\end{itemize}
+
+\hfill\break
+\textbf{g. Push Operations}
+
+\emph{The next set of instructions are specific to the stack. These
+instructions push operands or place items onto the stack. Depending on
+the number of items placed, there are 32 such instructions.}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x60 PUSH1 0 1
+0x61 PUSH2 0 1
+ .     .
+ .     .
+ .     .
+0x7f PUSH32 0 1
+\end{lstlisting}
+
+\emph{\texttt{PUSH1} pushes a single byte onto the stack, \texttt{PUSH2}
+pushes 2 bytes and it goes all the way up to \texttt{PUSH31}. The
+\texttt{PUSH32} instruction pushes a full word (32 bytes or 256 bits)
+onto the stack.}
+
+\hfill\break
+\textbf{h. Duplication Operations}
+
+\emph{The next category of instructions that operate on the stack are
+the duplication operations, which duplicate items that are already on
+the stack.}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x80 DUP1 1 2
+0x81 DUP2 1 2
+ .     .
+ .     .
+ .     .
+0x8f DUP16 1 2
+\end{lstlisting}
+
+\emph{\texttt{DUP1} for example duplicates the first stack item,
+\texttt{DUP2} duplicates the first two items on the stack, and it goes
+all the way up to \texttt{DUP16}.}
+
+\textbf{i. Exchange Operations}
+
+\emph{The final set of instructions that operate on stack items are the
+exchange operations}. These exchange or swap items that are already on
+the stack.
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0x90 SWAP1 2 2
+0x91 SWAP2 3 3
+ .     .
+ .     .
+ .     .
+0x9f SWAP16 17 17
+\end{lstlisting}
+
+\emph{\texttt{SWAP1} exchanges the first and second stack items,
+\texttt{SWAP2} exchanges the first and third and so on all the way up to
+\texttt{SWAP16} which exchanges the first and 17 \(^\text{th}\) stack
+items.}\\
+
+\textbf{j. Logging Operations}
+
+\emph{These operations append log records from within the execution
+context of the contract onto the blockchain. We talked about this a bit
+in the context of the bloom filter in the block header.}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0xa0 LOG0 2 0
+0xa1 LOG1 3 0
+0xa2 LOG2 4 0
+0xa3 LOG3 5 0
+0xa4 LOG4 6 0
+\end{lstlisting}
+
+\emph{These instructions differ in the number of topics that are
+specified as being part of the log. So the log itself refers to the
+event that is fired from within the context of the contract and in the
+event. The different parameters can be specified as either being indexed
+or non-indexed.}
+
+\textbf{Indexed} parameters go into the \textbf{topics} part of the log
+and the \textbf{non-indexed} parameters go into the \textbf{data} part
+of the log.
+
+\emph{This differentiates how fast the the parameters or the records can
+be queried, searched and looked. These instructions are critical to how
+the contracts actually communicate some of their state to the off-chain
+interfaces or the off-chain monitoring tools.}
+
+\hfill\break
+\textbf{k. System Operations}
+
+\emph{The next set of instructions include instructions that are
+critical to how the system functions. They allow one to create new
+contract accounts, call from one account to another in different ways,
+revert from the current executing context, invalidate some of the things
+that have happened and so on.}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0xf0 CREATE 3 1
+0xf1 CALL 7 1
+0xf2 CALLCODE 7 1
+\end{lstlisting}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{\texttt{CREATE} is used to create a new contract account that
+  has associated code and storage with it. Recall that contract accounts
+  can be created from an EOA by sending a special transaction to the
+  zero address (\texttt{0x0}) or they can also be created from other
+  contracts when they're executed. The address of the newly created
+  account depends on the sender's address and the \texttt{nonce} of that
+  account. So this makes the newly created contracts address dependent
+  on the previous transactions that have executed from the sender's
+  account. This becomes interesting when we talk about the related
+  instruction called \texttt{CREATE2}.}
+\item
+  \emph{\texttt{CALL} allows the current executing context to do a
+  message call into another account. So now there is a caller account
+  that is doing a message call into a callee account. This is
+  interesting because it lets contracts call each other in the executing
+  context.}
+\item
+  \emph{\texttt{CALLCODE} is another call related instruction which lets
+  the caller account call a callee account and lets the callee account
+  execute its code in the context of the state of the caller's account.
+  This distinction is really critical and it has big security
+  implications in some of the future instructions we'll talk about.}
+\end{itemize}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0xf3 RETURN 2 0
+0xf4 DELEGATECALL 6 1
+0xf5 CREATE2 4 1
+\end{lstlisting}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{\texttt{RETURN} holds execution and returns the output data.}
+\item
+  \emph{\texttt{DELEGATECALL} is a very interesting instruction part of
+  the call family of instructions which acts very similar to
+  \texttt{CALLCODE}. There is a caller account that calls into the
+  callee account, and the callee account executes its code in the
+  context of the caller's state. The difference here between
+  \texttt{CALLCODE} is that in the case of \texttt{DELEGATECALL}, in the
+  context of \texttt{Solidity}, \texttt{msg.sender} and
+  \texttt{msg.value} of the caller's account is used in the execution
+  context of the callee account.}
+\item
+  \emph{\texttt{CREATE2} is similar to \texttt{CREATE} and is used to
+  create new contract accounts with associated code and storage. The
+  difference here is that \texttt{CREATE2} allows you to create accounts
+  with a predictable addresses, unlike \texttt{CREATE} where the address
+  of the newly created contact account dependeds on the \texttt{nonce}.
+  So \texttt{CREATE2} removes all the transactions that happened from
+  the sender's account so that the address of contracts being generated
+  are predictable. Again, this has big implications in security.}
+\end{itemize}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0xfa STATICCALL 6 1
+0xfd REVERT 2 0
+0xfe INVALID NaN NaN
+\end{lstlisting}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{\texttt{STATICCALL} is another instruction in the call family
+  which allows the callee account (that is being called into) to only
+  read the state of the caller account without letting it modify it.
+  This has security implications as well.}
+\item
+  \emph{\texttt{REVERT} holds execution of the current executing
+  context, it returns the data and it returns the remaining Gas that's
+  left behind after consuming all the Gas that was supplied as part of
+  the triggering transaction so far.}
+\item
+  \emph{\texttt{INVALID} (\texttt{0xfe}) is again a special instruction
+  in EVM. It consumes all the Gas that's been supplied as part of the
+  triggering transaction and it is used in the context of some of the
+  static analysis tools that we'll touch upon in later chapters.}
+\end{itemize}
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+0xff SELFDESTRUCT 1 0
+\end{lstlisting}
+
+\emph{The final instruction (\texttt{0xff}) in the EVM instruction set
+is a special instruction called \texttt{SELFDESTRUCT}. As you can
+imagine, this holds execution but it also destroys the account of the
+executing context: the account is registered for later deletion.}
+
+\emph{This has huge security implications because the contract account
+that is executing will not exist after the transaction finishes. This is
+something we will touch upon and some of the security aspects as when we
+talk about some of the findings and security pitfalls in later
+chapters.}
+
+\subsection{Gas Costs}\label{gas-costs}
+
+We have talked about Gas in the context of transaction, in the context
+of the block Gas limit and so on\ldots{} But where it really matters is
+in the context of Turing complexity and quasi-Turing completeness. The
+boundedness imposed on the EVM programming language is stemming from the
+Gas costs that are associated with each of the different EVM
+instructions
+
+All these instructions have different Gas costs and the reason for that
+is because each of them has a different requirements when it comes to
+the computation processing power of the executing Ethereum node, and
+also the storage requirements, memory accesses and the disk accesses on
+the real physical hardware that's running the Ethereum node in the
+context of a miner or anyone else.
+
+When we look at the Gas costs, the simplest instructions like
+\texttt{STOP}, \texttt{INVALID} and \texttt{REVERT} (that only affect
+the executing context in a very special way, without having a very high
+demand or no demand on the processing or the storage of that executing
+physical hardware), the Gas cost is zero.
+
+For most of the arithmetic, logic and stack instructions, the Gas costs
+vary between 3 to 5 Gas units. Let's contrast this with some of the more
+demanding instructions like the call family of instructions, the
+\texttt{BALANCE}, the \texttt{EXTCODEHASH}, \texttt{EXPORT},
+\texttt{COPY}\ldots, those kinds of instructions have a much greater
+processing requirement from the Ethereum node: these now cost 2600 Gas
+units.
+
+This again contrast with the memory instructions like \texttt{MLOAD} and
+\texttt{MSTORE}, which within the context of the EVM are very simple
+instructions that operate on EVM's internal data structures. These
+memory instructions cost only 3 Gas units.
+
+However the storage instructions like \texttt{SLOAD} and
+\texttt{SSTORE}, because they deal with persistent state and have to
+access the disk or the persistent state within the physical machine of
+that Ethereum node, cost much more than the memory instructions:
+\texttt{SLOAD} costs 2100 Gas and \texttt{SSTORE} costs 20000 Gas units.
+
+To set a storage slot costs 20000 Gas. To change that storage value from
+zero to a non-zero value (and there are optimizations here) costs only
+5000 Gas in some of the other situations.
+
+These Gas costs have changed over the duration of the last 5 to 6 years
+as Ethereum has evolved. These changes happen to prevent some denial of
+service attacks that have also happened in the past.
+
+This can be researched in the documentation by looking at some of the
+EIPs that have been created specifically to address the Gas cost of
+these instructions in some of the most recent upgrades (like the Berlin
+upgrade) to see why these costs Gas costs were changed for some of these
+more demanding instructions and the rationale behind it.
+
+These become important because not only they address the optimization
+aspect when somebody is deploying a contract (Gas usage becomes
+important because it affects the user experience of the user working or
+interfacing with these contracts) but from a security perspective (these
+Gas costs become important from the denial of service context as well).
+
+The final set of instructions where the Gas costs are really high are
+the \texttt{CREATE} instruction (which is probably the most expensive
+instruction with a cost of 32000 Gas units; and as you can imagine this
+is because create results in a new contract account being created, so a
+lot of the data structures within the EVM context are created,
+registered, have to be made persistent and so on\ldots) and
+\texttt{SELFDESTRUCT} (it costs 5000 Gas units).

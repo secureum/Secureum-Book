@@ -1,0 +1,34 @@
+\section{Inheritance}\label{inheritance}
+
+Contracts that inherit from multiple contracts should be careful about
+the inheritance order because, if more than one such base contract
+defines an identical function, then the particular function
+implementation that gets included in the derived contract depends on
+this inheritance order.
+
+The best practice is for this inheritance order to be from the more
+general implementation to the more specific implementation.
+
+Another security pitfall related to inheritance is that of missing
+inheritance where a particular contract within an application might
+appear to inherit from another interface in that project or another
+abstract contract without actually doing so.
+
+And it might appear, because of the contract name that is similar to the
+abstract contract or the interface name or also because of the functions
+that are defined within this contract their names the parameter types
+and, so on.
+
+This appearance might give the notion that it is inheriting without
+actually inheriting. This affects not only the readability and
+maintainability aspects for the project team, but it also affects the
+auditability because the security reviewer might look at this contract
+and assume certain aspects, thinking that it's inheriting from the
+similarly named interface or abstract contract whereas in fact it does
+not do so.
+
+So the best practice here, is to make sure that the inheritance is done
+appropriately and, if there are similarly named contracts where they do
+not actually inherit from each other, then the name should be changed.
+But if they are in fact meant to be inherited, then specifying that
+inheritance will help.

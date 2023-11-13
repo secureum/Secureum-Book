@@ -1,0 +1,31 @@
+\documentclass[a4paper,12pt]{book}
+
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+
+% \usepackage{listings} % Already included in solidity-highlighting.tex
+\input{solidity-latex-highlighting/solidity-highlighting.tex}
+
+\providecommand{\tightlist}{\relax}
+\newcommand{\stkout}[1]{\ifmmode\text{\sout{\ensuremath{#1}}}\else\sout{#1}\fi}
+\setlength{\parskip}{8pt plus 1pt minus 1pt}
+\setlength{\parindent}{0pt}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=blue,
+    pdftitle={The Secureum Bootcamp Book}
+}
+
+\setcounter{tocdepth}{1}
+\begin{document}
+\title{The Secureum Bootcamp Book}
+\tableofcontents
+%%%ELLIPSIS%%%
+\end{document}

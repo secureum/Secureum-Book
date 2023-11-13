@@ -1,0 +1,164 @@
+\section{Saltzer \& Schroeder's Design
+Principles}\label{saltzer-schroeders-design-principles}
+
+We will now discuss the 10 principles from Saltzer and Schroeder's
+secure design principles, which were proposed by them in 1975 and have
+been widely cited and used in various aspects of information security
+ever since.
+
+\subsection{Principle 1}\label{principle-1}
+
+The first one is that of \textbf{least privilege} which states that
+every program and every user of the system should operate using the
+least set of privileges necessary to complete the job which means that
+we should ensure that various system actors have the least amount of
+privilege granted as required by their roles to execute their specific
+tasks. Because granting excess privilege that what is absolutely
+required is prone to misuse or abuse when trusted actors misbehave or
+their access is hijacked by malicious entities privileges. Therefore
+should be need-based.
+
+\subsection{Principle 2}\label{principle-2}
+
+The second principle is about \textbf{separation of privileges} which
+states that where feasible a protection mechanism that requires two keys
+to unlock it is more robust and flexible than one that allows access to
+the presenter of only a single key.
+
+This means that we should ensure critical privileges are separated
+across multiple actors, so that, there are no single points of failure
+or abuse. A good example of this is the use of a multisigs address
+versus an EOA for privileged actors such as contract Owner, admin or
+governance who control key contract functionalities such as pause and
+pause shutdown, emergency fund, drain, upgradability of contracts,
+allow, deny lists and critical parameters.
+
+The multisig address should be composed of entities that are different
+and mutually distrusting or verifying because such a privilege
+separation prevents single points of failure.
+
+\subsection{Principle 3}\label{principle-3}
+
+The third principle is that of \textbf{least common mechanism}. Which
+states that we should minimize the amount of mechanism common to more
+than one user and depended on by all users.
+
+This means that we should ensure that only the least number of security
+critical modules or paths as required, are shared amongst the different
+actors of code, so that impact from any vulnerability or compromise and
+shared components is limited and contained to the smallest possible
+subset.
+
+In other words common points or parts of failure are minimized, there
+are pros and cons of this approach that need to be made in depending on
+the context.
+
+\subsection{Principle 4}\label{principle-4}
+
+The fourth principle is that of \textbf{fail-safe defaults} which states
+that we need to base access decisions on permission rather than
+exclusion, so we need to ensure that variables or permissions are
+initialized to fail-safe default values which deny access by default,
+but can later be made more inclusive or permissive, if and when
+necessary.
+
+Instead of opening up the system to everyone by default which may
+include untrusted actors. We have discussed this in the context of
+guarded launch for assets actors and actions. Such fail-safe initial
+defaults could apply to function visibility critical parameter,
+initializations and permissions of assets actors and actions, there are
+again pros and cons of this approach that need to be considered as it
+applies to open or closed systems given the emphasis of web3 on aspects
+of openness permissionless participation and composability among other
+things.
+
+\subsection{Principle 5}\label{principle-5}
+
+The fifth principle is that of \textbf{complete mediation} which states
+that every access to every object must be checked for authority. Which
+means that we should ensure that any required access control is enforced
+along all access paths to the object or function being protected.
+Examples are missing modifiers, permissive visibility or missing
+authorization flows. Complete mediation, therefore requires access
+control enforcement on every asset after action along all paths and at
+all times.
+
+\subsection{Principle 6}\label{principle-6}
+
+The sixth principle is that of \textbf{economy of mechanism}, which says
+keep the design as simple and small as possible. Which in this context
+can be applied to ensure that contracts and functions are not overly
+complex or large, so as to reduce readability maintainability or even
+auditability. This embodies the keep it simple and stupid or KISS
+Principle in some ways because complexity typically leads to insecurity
+and hence should be kept as low as possible.
+
+\subsection{Principle 7}\label{principle-7}
+
+The seventh principle is that of \textbf{open design} which states that
+the design should not be secret. This is especially relevant to the web3
+space as we have discussed earlier because smart contracts are expected
+to be open-sourced, verified and accessible to everyone for
+permissionless participation and composability. Security by obscurity of
+code or underlying algorithms is not an option. Security should be
+derived from the strength of the design and implementation under the
+assumption that Byzantine attackers will study their details and try to
+exploit them in arbitrary ways.
+
+\subsection{Principle 8}\label{principle-8}
+
+The eighth principle is that of \textbf{psychological acceptability}
+which states that it is essential that the human interface be designed
+for ease of use, so that users routinely and automatically apply the
+protection mechanisms correctly. Which in our context means that we need
+to ensure that security aspects of smart contract interfaces and system
+designs flows are human friendly and in queue them, so that we can
+program them or use them with ease and with minimal risk. This is a
+significant challenge in the web3 space today where, there is a lot of
+early and experimental software undergoing rapid changes, but something
+to be kept in mind from a security perspective as things evolve and
+systems get more mass adoption.
+
+\subsection{Principle 9}\label{principle-9}
+
+The ninth principle is \textbf{work factor}, which recommends to
+\textbf{compare the cost of circumventing the mechanism with the
+resources of a potential attacker}. Which is very relevant and perhaps
+at an extreme in the case of smart contracts in web3 because given the
+magnitude of value managed by smart contracts it is safe to assume that
+Byzantine attackers will risk the greatest amounts of the resources
+possible across intellectual social and financial capital to support
+such systems. And given the general state of current smart contracts the
+cost of circumventing is not very high, relative to hardened software or
+systems in the Web2 space for various reasons that we have discussed
+earlier.
+
+The rewards from exploiting them are in tens or even hundreds of
+millions of dollars in some cases, so the risk versus reward is
+extremely skewed here. Therefore the mitigation mechanisms must
+appropriately factor in the highest levels of threat and risk.
+
+\subsection{Principle 10}\label{principle-10}
+
+The final tenth principle is about \textbf{compromise recording} which
+states that mechanisms that reliably record that a compromise of
+information has occurred can be used in place of more elaborate
+mechanisms that completely prevent loss.
+
+One way to interpret this is to say that achieving improving bug-free
+code is theoretically and practically impossible for real world smart
+contracts. Therefore one should strive for the best in performing all
+security due diligence and reduce the attack surface as much as
+possible. While in the same time, anticipate residual risk to exist in
+the deployed system. Anticipate that there will be potential incidents
+that exploit them and therefore have an instant response plan ready for
+that.
+
+For doing that we can ensure that smart contracts and their accompanying
+operational infrastructure can be monitored and analyzed at all times
+for minimizing loss from any compromise due to vulnerabilities and
+exploits. As a concrete example critical operations in contracts should
+emit events to facilitate off-chain monitoring at runtime, where the
+available monitoring tools are used on smart contracts of interest to
+analyze not only such events, but also transactions interacting with
+them their Side-effects and potential security impacts.

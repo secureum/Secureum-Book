@@ -1,0 +1,47 @@
+\section{Visibility}\label{visibility}
+
+Remember that functions in \texttt{Solidity} have the notion of
+visibility where they could be either \texttt{public},
+\texttt{external}, \texttt{internal} or \texttt{private}, this affects
+which users can call these functions.
+
+So \texttt{public} and \texttt{external} functions are callable by
+anyone depending on the access control that is enforced on top of that,
+whereas \texttt{internal} and \texttt{private} can be called only from
+within the contracts or the derived contracts.
+
+Until \texttt{Solidity} version \texttt{0.5.0} this visibility specifier
+was optional and they defaulted to \texttt{public}. This aspect led to
+vulnerabilities where the developer forgot to mention or specify the
+visibility in which case it became public by default and resulted in
+malicious users being able to call these functions and make unauthorized
+state changes completely unexpected by the developer or the smart
+partner.
+
+So this optional specification of function visibility defaulting to
+\texttt{public} visibility was removed as of \texttt{Solidity} version
+\texttt{0.5.2}, so this was a big change when it came to increasing the
+security of smart contracts and since that version function visibility
+is required to be specified explicitly for every function.
+
+\subsection{Public Functions}\label{public-functions}
+
+Remember that \texttt{Solidity} has the notion of visibility for
+functions, there are four visibility specifiers: \texttt{internal},
+\texttt{private}, \texttt{public} and \texttt{external}. \texttt{public}
+functions consume more Gas than \texttt{external} functions.
+
+The reason for this is because the arguments of \texttt{public}
+functions need to be copied from thecall data component of the EVM to
+the memory component. This copying produces more bytecode for such
+\texttt{public} functions which therefore consumes more Gas.
+
+This copying is not required for \texttt{external} functions where their
+arguments can be left behind in the calldata component of the EVM. This
+key difference leads to \texttt{public} functions consuming more Gas
+than \texttt{external} functions in \texttt{Solidity}.
+
+So if there are functions in the contract that are never called from
+within the contracts themselves, then such functions should be declared
+with \texttt{external} visibility and not \texttt{public} visibility,
+which leads to better Gas efficiency.

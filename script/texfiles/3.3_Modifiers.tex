@@ -1,0 +1,42 @@
+\section{Modifiers}\label{modifiers}
+
+\subsection{Side-effects in Modifiers}\label{side-effects-in-modifiers}
+
+Modifiers in \texttt{Solidity} smart contracts are typically used to
+implement different kinds of security checks (for example access control
+checks), or accounting checks on fund balances and so on. Such modifiers
+should not have any side-effects, they should not be making any state
+changes to the contract or external calls to other contracts.
+
+The reason for that is any such side-effects made by the modifiers, may
+go unnoticed both by the developers as well as the smart contract
+security auditors evaluating the security of these contracts.
+
+They go unnoticed not only because developers and auditors assume that
+modifiers don't make side-effects, but also because the modified code is
+typically declared in a different location from the function
+implementation itself. Remember that the best practice is for the
+modifiers to be declared in the beginning of the contract and function
+implementations in the later part of the contract.
+
+So as a security check, one should make sure that modifiers declared in
+contract should not have any side-effects and they should be only
+enforcing checks on different aspects of the contract.
+
+\subsection{Incorrect Modifiers}\label{incorrect-modifiers}
+
+Incorrect modifiers are a security risk. Modifiers should not only
+implement the correct access control or accounting checks as relevant to
+the smart contract logic, but they should also execute the code in
+``\texttt{\_}'' or revert along all the control flow paths within that
+modifier. Remember that in the context of \texttt{Solidity},
+``\texttt{\_}'' inlines the function code on which the modifier is
+applied.
+
+So, if this does not happen along any particular control flow path
+within the modifier, then the default value for that function is return.
+
+This may be unexpected from the context of the caller who called this
+function on which this modifier is applied, so the security check is to
+make sure that all the control flow paths within the modifier either
+execute ``\texttt{\_}'' or revert.

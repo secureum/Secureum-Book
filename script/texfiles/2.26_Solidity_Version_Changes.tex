@@ -1,0 +1,310 @@
+\section{Solidity Version Changes}\label{solidity-version-changes}
+
+Every new \texttt{Solidity} version introduces bug fixes and sometimes
+breaking changes. Remember that breaking versions are versions that are
+not backwards compatible, or in other words they've introduced
+significant changes to the syntax, to the underlying semantics, that are
+not compatible with the previous changes.
+
+These breaking versions increment the number that you see in the middle
+of the version, so for a \texttt{Solidity} version \texttt{x.y.z}, the
+next breaking version would be \texttt{x.(y\ +\ 1).z}.
+
+In this section we are going to revise recent \texttt{Solidity} versions
+and their most impactful changes.
+
+\subsection{\texorpdfstring{\texttt{solc\ 0.6.0}}{solc 0.6.0}}\label{solc-0.6.0}
+
+\subsubsection{Breaking Changes}\label{breaking-changes}
+
+In \texttt{Solidity\ 0.6.0} a breaking semantic feature that was
+introduced changed the behavior of the existing code without changing
+the syntax itself. It was specifically related to the exponentiation.
+The type of the result until this version was the smallest type that
+could hold both the type of the base and the type of the exponent. With
+this change the resulting type was always the type of the base.
+
+\subsubsection{Explicitness}\label{explicitness}
+
+\texttt{Solidity\ 0.6.0} also introduced a set of explicitness
+requirements. Explicitness, as you can imagine, is good for security
+because it reduces ambiguity and any vulnerabilities that result because
+of that ambiguity.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  In this case, keywords \texttt{virtual} and \texttt{override} were
+  introduced for functions in base and derived classes. Functions and
+  base classes can now only be overridden when they are marked with the
+  \texttt{virtual} keyword, and their corresponding overriding functions
+  need to use the \texttt{override} keyword.
+\item
+  Array length is read-only: it's no longer possible with version
+  \texttt{0.6.0} to resize storage arrays by assigning a new value to
+  their length.
+\item
+  An \texttt{abstract} keyword was introduced for what became abstract
+  contracts or contracts where at least one function is not defined.
+\item
+  Libraries have to implement all their functions, not only the internal
+  ones, as of this version and there are various restrictions
+  (explicitness restrictions) brought forward for the assembly
+  variables.
+\item
+  State variable shadowing being removed as this led to confusing
+  results in ambiguity and has impacted the security of smart contracts.
+\end{enumerate}
+
+\subsubsection{Changes}\label{changes}
+
+There were many other syntactic and semantic changes brought forward by
+\texttt{Solidity\ 0.6.0}.
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{external} function type conversions to \texttt{address} types
+  are not allowed. Instead they have an address member that allows
+  similar functionality.
+\item
+  Dynamic storage arrays have now their \texttt{push(x)} return nothing,
+  while until then it returned the length of the array.
+\item
+  Until \texttt{0.6.0} there was a concept of \texttt{unnamed}
+  functions. This version split the functionality implemented by such a
+  functions into a \texttt{fallback} function and a separate
+  \texttt{receive} function. As you know, there are differences between
+  these two functions and specific use cases where one of them is
+  applicable versus the other.
+\end{itemize}
+
+\subsubsection{New Features}\label{new-features}
+
+\texttt{0.6.0} also introduced several new features:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{try}/\texttt{catch} blocks for exception handling.
+\item
+  \texttt{struct} and \texttt{enum} types can be declared at a file
+  level with this version. Until then, it was only possible at contract
+  level.
+\item
+  Array slices can be used for all data arrays.
+\item
+  \texttt{NatSpec}, as of this version supports multiple return
+  parameters for developer documentation; it enforces the same naming
+  checks as the param tag.
+\item
+  The inline assembly language \texttt{YUL} introduced a new statement
+  called \texttt{leave} to help exit the current function.
+\item
+  Conversions from \texttt{address} type to \texttt{address\ payable}
+  type are now possible via the \texttt{payable(x)} primitive, where
+  \texttt{x} is of type \texttt{address}.
+\end{itemize}
+
+\subsection{\texorpdfstring{\texttt{solc\ 0.7.0}}{solc 0.7.0}}\label{solc-0.7.0}
+
+\subsubsection{Breaking Changes}\label{breaking-changes-1}
+
+The next breaking release was \texttt{Solidity\ 0.7.0}. With this
+version, exponentiation and shift of literals by non-literals will
+always use \texttt{uint256} or \texttt{int256} to perform the operation.
+Until this version the operation was performed using the type of the
+shift amount or the type of the exponent, which can be misleading, so
+this became very explicit.
+
+This again is a breaking semantic change because the behavior of
+exponentiation and shifts changed underneath without any changes to the
+syntactic aspect.
+
+\subsubsection{Changes}\label{changes-1}
+
+This version also introduced several syntactic changes that could cause
+existing contracts to not compile anymore and therefore considered a
+breaking change. Examples of such changes are:
+
+\begin{itemize}
+\tightlist
+\item
+  The syntax for specifying the Gas and Ether values applied during
+  external calls.
+\item
+  The \texttt{now} keyword for time management within contracts was
+  deprecated in favor of \texttt{block.timestamp} because \texttt{now}
+  gave the perception that time could change within the context of a
+  transaction whereas it is a property of the block, correctly indicated
+  by \texttt{block.timestamp}.
+\item
+  The \texttt{NatSpec} aspect for variables was also changed to allow
+  that for only \texttt{public} state variables and not for
+  \texttt{local} or \texttt{internal} variables.
+\item
+  \texttt{gwei} was declared as a keyword and therefore can't be used
+  for identifiers.
+\item
+  string literals can contain only printable \texttt{ASCII} characters.
+  As of this version \texttt{unicode} string literals were also
+  supported with the use of the \texttt{unicode} prefix.
+\item
+  The state mutability of functions during inheritance was also allowed
+  to be restricted with this version, so functions with the default
+  state mutability can be overridden by \texttt{pure} and \texttt{view}
+  functions while the \texttt{view} functions can be overridden by
+  \texttt{pure} functions.
+\end{itemize}
+
+There are also multiple changes introduced to the assembly support
+within \texttt{Solidity}.
+
+\subsubsection{Removed}\label{removed}
+
+This version also removed some features that were considered as unused
+or unsafe and therefore beneficial for security.
+
+\begin{itemize}
+\tightlist
+\item
+  Struct or arrays that contained mappings were allowed to be used only
+  in storage and not in memory, the reason for this was that mapping
+  members within such structural arrays in memory were silently skipped.
+  This as you can imagine would be error prone.
+\item
+  The visibility of constructors, either \texttt{public} or
+  \texttt{external} is not needed anymore.
+\item
+  The \texttt{virtual} keyword is disallowed for library functions,
+  because libraries can never be inherited from and therefore the
+  library functions should not need to be \texttt{virtual}.
+\item
+  Multiple events with the same name and parameter types in an
+  inheritance hierarchy are disallowed, again to reduce confusion.
+\item
+  The directive \texttt{using\ A\ for\ B} with respect to library
+  functions and types affects only the contract it is specified in as of
+  this version. Previously this was inherited, now it has to be repeated
+  in all the derived contracts that require this feature.
+\item
+  Shifts by sign types are disallowed as of this version. Until now
+  shift by negative amounts were allowed, but they caused a
+  \texttt{revert} runtime.
+\item
+  The Ether denominations of \texttt{fini} and \texttt{szabo} were
+  considered as rarely used and therefore were removed as of this
+  version.
+\item
+  The keyword \texttt{var} was also removed because this would until now
+  pass, but result in a type error as of this version.
+\end{itemize}
+
+\subsection{\texorpdfstring{\texttt{solc\ 0.8.0}}{solc 0.8.0}}\label{solc-0.8.0}
+
+\subsubsection{Breaking Changes}\label{breaking-changes-2}
+
+\texttt{Solidity\ 0.8.0} is the latest of the breaking versions of
+\texttt{Solidity}. This version introduced several breaking changes:
+
+\begin{itemize}
+\item
+  The biggest perhaps is the introduction of default checked arithmetic.
+  This is the overflow and underflow arithmetic checks that are so
+  commonly used in \texttt{Solidity} contracts to prevent the wrapping
+  behavior that results in overflows and has resulted in several
+  security vulnerabilities.\\
+
+  Until this version, the best practice was to rely on the
+  \texttt{OpenZeppelin} \texttt{SafeMath} libraries or their equivalents
+  to make sure that there are runtime checks for overflows and
+  underflows. These never result in vulnerabilities. This is so commonly
+  used that \texttt{Solidity\ 0.8.0} introduced the concept of checked
+  arithmetic by default, so all the arithmetic that happens with
+  increment, decrements, multiplication and division is all checked by
+  default.\\
+
+  This might come at a slight increase of Gas Cost, but it also
+  increases the default security level significantly and it also
+  improves the readability of code because now one doesn't have to use
+  or see the use of calls to the \texttt{SafeMath} libraries in the form
+  of \texttt{.add()}, \texttt{.sub()} and, so on\ldots{}\\
+
+  And as an escape hatch where the developer knows for sure that certain
+  arithmetic is safe from such underflows and overflows,
+  \texttt{Solidity} provides the \texttt{unchecked} primitive that is
+  allowed to be used on blocks of arithmetic expressions where this
+  default underflow and overflow checks are not done by the
+  \texttt{Solidity} compiler.\\
+\item
+  ABI coder version \texttt{v2} is activated by default. As of this
+  version, it doesn't have to be explicitly specified but if the
+  developer wants to fall back on the older \texttt{v1} version that has
+  to be specified.
+\item
+  Exponentiation is right associative as opposed to being left
+  associative that was the case. This is the common way to parse
+  exponentiation operator in other languages, so this was fixed.
+\item
+  As of this version the use of the \texttt{REVERT} opcode versus the
+  use of the \texttt{INVALID} opcode for failing asserts and internal
+  checks was removed. Now both use the \texttt{REVERT} opcode and static
+  analysis tools are allowed to distinguish these two differing
+  situations by noticing the use of the panic error in the case of
+  failing asserts and internal checks.\\
+
+  When storage byte arrays are accessed where the length is encoded
+  incorrectly a panic is raised that's another change introduced.
+\item
+  The \texttt{byte} type which used to be an alias of \texttt{bytes1}
+  has been removed as of this version.
+\end{itemize}
+
+\subsubsection{Restrictions}\label{restrictions}
+
+\texttt{Solidity\ 0.8.0} also introduced several restrictions:
+
+\begin{itemize}
+\tightlist
+\item
+  Explicit conversions of multiple types are disallowed. Remember that
+  explicit conversions are where the user forces conversions between
+  certain types without the compiler necessarily thinking those are safe
+  from a type safety perspective, so these explicit conversions being
+  disallowed may be considered as a good thing from a security
+  perspective.
+\item
+  Address literals now have the type \texttt{address} instead of
+  \texttt{address} \texttt{payable}, these have to be explicitly
+  converted to \texttt{address\ payable}.
+\item
+  If required, the function call options for specifying the Gas and
+  Ether value passed can only be provided once and not multiple times.
+\item
+  The global functions \texttt{log0}, \texttt{log1} all the way to
+  \texttt{log4} that may be used for specifying events or logs have been
+  removed because they were low level functions that were considered as
+  largely unused by \texttt{Solidity} contracts and, if a developer
+  wants to use them, they need to resort to inline assembly.
+\item
+  \texttt{enum} definitions now can't contain more than 256 members.
+  This makes it safer because the underlying type is always
+  \texttt{uint8}, so 8 bits that allows only 256 members to be
+  represented by that type.
+\item
+  Declarations with name \texttt{this}, \texttt{super} and \texttt{\_}
+  are disallowed.
+\item
+  Transaction origin (\texttt{tx.origin}) and message sender
+  (\texttt{msg.sender}) global variables now have the type
+  \texttt{address} instead of \texttt{address\ payable}, and again
+  require an explicit conversion where \texttt{address} \texttt{payable}
+  is needed.
+\item
+  The mutability of \texttt{chainId} is now considered \texttt{view}
+  instead of \texttt{pure}.
+\end{itemize}
+
+All these different types of restrictions were introduced in this
+version that have an impact on security.

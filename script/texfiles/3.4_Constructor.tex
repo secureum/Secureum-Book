@@ -1,0 +1,53 @@
+\section{Constructor}\label{constructor}
+
+\subsection{Constructor Names}\label{constructor-names}
+
+Constructor names in \texttt{Solidity} have had security implications
+historically. If you go back all the way to \texttt{Solidity} compiler
+version \texttt{0.4.22}, the versions prior to that one required the use
+of the contract name as the name of the constructor. And between that
+version and \texttt{0.5.0} one could either use the contract name as a
+constructor or use the \texttt{constructor} keyword itself. It was only
+after \texttt{0.5.0} that \texttt{Solidity} forced the use of the
+\texttt{constructor} keyword for constructors.
+
+So this flexibility, the use of the contract name as the constructor
+name, has historically caused bugs, where the contact name was
+misspelled which led to that function not being the constructor, but a
+regular function.
+
+Also the flexibility between allowing both the old style and the new
+style constructor names caused security issues, because there was a
+precedence that was followed, if both of them existed. So this
+constructor naming confusion has been a historical source of bugs and
+\texttt{Solidity} smart contracts, although \textbf{it is not a concern
+anymore}.
+
+\subsection{Void Constructor}\label{void-constructor}
+
+There's a security concern related to ``\emph{void constructors}''. What
+this means is that if a contract derives from other contracts, then it
+makes calls to the constructors of base contracts assuming they're
+implemented, but if in fact they are not, then this assumption leads to
+security implications.
+
+So the best practice for derived contracts is to check if the base
+constructor is actually implemented and remove the call to that
+constructor, if it is not implemented at all.
+
+\subsection{Constructor Call Value}\label{constructor-call-value}
+
+This security pitfall is related to the checks for any value sent in
+contact creation transactions triggering the constructor.
+
+Typically, if a constructor is not explicitly payable and there is an
+Ether value that is sent in a contract creation transaction that
+triggers such a constructor, then the constructor reverts that
+transaction.
+
+However, because of a compiler bug, if contract did not have an explicit
+constructor but had a base contract that did define a constructor, then
+in those cases, it was possible to send Ether value in a contract
+creation transaction, that would not cause that revert to happen. This
+compiler bug was present all the way from version \texttt{0.4.5} to
+version \texttt{0.6.8}, and thus \textbf{is not an issue anymore}.

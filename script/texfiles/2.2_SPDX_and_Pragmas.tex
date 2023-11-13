@@ -1,0 +1,195 @@
+\section{SPDX \& Pragmas}\label{spdx-pragmas}
+
+\subsection{SPDX}\label{spdx}
+
+One of the things that you will often see specified at the top of every
+\texttt{Solidity} file is what is known as the SPDX license identifier.
+\textbf{SPDX} stands for \textbf{Software Package Data Exchange}. In the
+case of \texttt{Solidity} it's a comment that indicates its license and
+it is specified as a best practice to be at the top of every file. An
+example looks like this
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+// SPDX-License-Identifier: AGPLv3
+\end{lstlisting}
+
+The specific license obviously depends on what the developer intends for
+the particular smart contract. This identifier (i.e.~the license) is
+included by the compiler in the byte code metadata that is generated, so
+it becomes machine readable.
+
+\subsection{Pragma}\label{pragma}
+
+The \texttt{pragma} keyword in \texttt{Solidity} is used to enable
+certain compiler features or compiler checks. An example looks something
+like this
+
+\begin{lstlisting}[language=Solidity,numbers=none]
+pragma solidity ^0.8.0;
+\end{lstlisting}
+
+At a high level, there are two types of pragmas:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  The first kind specifies the version. There are, again, two types of
+  versions that can be specified:\\
+
+  \begin{enumerate}
+  \def\labelenumii{\alph{enumii}.}
+  \tightlist
+  \item
+    \textbf{The version \texttt{pragma}}, which indicates the specific
+    \texttt{Solidity} compiler version that the developer expects to be
+    used for that source file, and it looks like\\
+  \end{enumerate}
+
+  \begin{lstlisting}[language=Solidity,numbers=none]
+  pragma solidity x.y.z;
+  \end{lstlisting}
+
+  where \texttt{x}, \texttt{y} and \texttt{z} are numerals that specify
+  that compiler version.\\
+
+  This does not change the version of the compiler used nor enables or
+  disables any features of the compiler. All it does is instructing the
+  compiler at compilation time to check whether its version matches the
+  one specified by the developer. This could be of several formats: it
+  could be a very \textbf{simple} format, a \textbf{complex} one or even
+  a \textbf{floating} one (which has some security implications).\\
+
+  The latest \texttt{Solidity} compiler versions as of now are in the
+  \texttt{0.8} range with a different \texttt{z} in the \texttt{pragma}
+  directive. If you look at \texttt{x.y.z}; a different \texttt{z}
+  indicates bug fixes and a different \texttt{y} indicates breaking
+  changes between the compiler versions.\\
+
+  So if we have compiler versions in the \texttt{0.5} range, then by
+  looking at the \texttt{0.6} range it means that the \texttt{0.6.z}
+  range has at least one or more breaking changes compared to the
+  previous versions.\\
+
+  A floating \texttt{pragma} is a \texttt{pragma} that has a caret
+  symbol (\texttt{\^{}}) prefixed to \texttt{x.y.z} in the directive.
+  This indicates that the contract can be compiled with versions
+  starting with \texttt{x.y.z} all the way until \texttt{x.(y\ +\ 1).z}.
+  So, as an example, consider\\
+
+  \begin{lstlisting}[language=Solidity,numbers=none]
+  pragma solidity ^0.8.3;
+  \end{lstlisting}
+
+  \hfill\break
+  It indicates that the source file can be compiled with any compiler
+  version starting from \texttt{0.8.3} going to \texttt{0.8.4},
+  \texttt{0.8.5} and whatever else has been released; but not
+  \texttt{0.9.z}, so the transition from \texttt{0.8} to \texttt{0.9} is
+  what is prevented by this floating platform.\\
+
+  This allows the developer to specify a range of compiler versions that
+  can be used with a particular contract, and that has some security
+  implications similar to the floating \texttt{pragma}.\\
+
+  A range of compiler versions can be indicated with a complex practice,
+  where you have \texttt{\textgreater{}}, \texttt{\textgreater{}=},
+  \texttt{\textless{}}, \texttt{\textless{}=} symbols that are used to
+  combine multiple versions of the \texttt{Solidity} compiler.\\
+
+  This affects the compiler version, which in turn brings in different
+  features that are implemented by said version. Some of those could be
+  security features, others could be security bug fixes or
+  optimizations.\\
+
+  All these aspects affect the security posture of the bytecode that is
+  generated from a particular smart contract.\\
+
+  \begin{enumerate}
+  \def\labelenumii{\alph{enumii}.}
+  \setcounter{enumii}{1}
+  \tightlist
+  \item
+    \textbf{The ABI coder \texttt{pragma}}. This directive allows a
+    developer to specify the choice between \textbf{Version 1} or
+    \textbf{Version 2} ABI coder.\\
+  \end{enumerate}
+
+  The newer Version 2 was considered experimental for a while, but is
+  now activated by default and allows the encoding/decoding of nested
+  arrays and structs.\\
+
+  You might encounter old \texttt{Solidity} source code using the old
+  directive, such as shown below\\
+
+  \begin{lstlisting}[language=Solidity,numbers=none]
+  pragma experimental ABIEncoderV2;
+  \end{lstlisting}
+
+  \hfill\break
+  Version 2 is a strict superset of Version 1: contracts that use
+  Version 2 can interact with other contracts that do not use it without
+  any concern or limitations.\\
+
+  This \texttt{pragma} also applies to the code defined in the file
+  where it is activated, regardless of where that code ends up
+  eventually; what this means is that a contract whose file is using
+  Version 1 can still contain code that uses Version 2 by inheriting it
+  from another contract. An example of ABI Coder \texttt{pragma}
+  statement is\\
+
+  \begin{lstlisting}[language=Solidity,numbers=none]
+  pragma abicoder v1; // or v2, which is the default from version 0.8.z onwards
+  \end{lstlisting}
+
+  \hfill\break
+  The ABI coder affects encoding and decoding. The optimizations it does
+  have certain security implications.
+\item
+  The second \texttt{pragma} directive helps the developer to specify
+  features that are considered experimental as of that point in time.\\
+
+  These features are not enabled by default and have to be explicitly
+  specified as part of this \texttt{pragma} directive and within every
+  file where it is required. As of now there is only one experimental
+  feature, which is known as \texttt{SMTChecker}.\\
+
+  \begin{lstlisting}[language=Solidity,numbers=none]
+  pragma experimental SMTChecker;
+  \end{lstlisting}
+
+  \hfill\break
+  \textbf{SMT} stands for \textbf{Satisfiability Modulo Theory} which is
+  an approach to formal verification, and in the case of
+  \texttt{Solidity} it is used to implement safety checks by what is
+  known as querying an SMT solver.\\
+
+  There are various security checks performed by the SMT checker. The
+  first one is where it uses the \texttt{require} and \texttt{assert}
+  statements that are included as part of the smart contract.\\
+
+  The checker considers all the required statements specified as
+  assumptions by the developer and it tries to prove that the conditions
+  inside the \texttt{assert} statements are \texttt{true}.\\
+
+  If a failure can be established, then the checker provides what is
+  known as a counter example that shows the user how this assertion can
+  fail.\\
+
+  There are various other checks that have been added to this empty
+  checker over time. These include the arithmetic overflow, underflow,
+  division by zero, unreachable code and so on.\\
+
+  So SMT checker is a critical security feature that comes packaged as
+  part of \texttt{Solidity}. It's implemented in the compiler itself.\\
+
+  Formal verification is considered as a fundamental part of programming
+  languages' security, so we can imagine that this particular
+  \texttt{pragma} directive affects the security and optimizations of
+  the smart contracts that use them.
+\end{enumerate}
+
+What needs to be kept in mind with the \texttt{pragma} directives is
+that they are local to the files where they are specified. So if you
+have a \texttt{Solidity} file that imports other files, the pragmas from
+the imported files do not automatically carry over to the file that is
+of concern.

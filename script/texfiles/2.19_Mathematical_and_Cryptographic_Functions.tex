@@ -1,0 +1,51 @@
+\section{Mathematical \& Cryptographic
+Functions}\label{mathematical-cryptographic-functions}
+
+Solidity supports the addition and multiplication operations with
+modulus: \texttt{addmod()} and \texttt{mulmod()}.
+
+It obviously supports the Keccak-256 hashing function that is
+fundamental to Ethereum and used extensively within Ethereum and smart
+contracts themselves.
+
+It also supports the standardized SHA-256 algorithm (related to
+Keccak-256), but the standardized version, it further supports one of
+the older hashing function, the ripe message digest
+\texttt{ripemd160(bytes\ memory)} for historical reasons.
+
+Finally it supports what is known as the \texttt{ecrecover} primitive.
+This is the elliptic curve recover function that takes in the hash of a
+message as an argument along with the signature components, the ECDSA
+signature components of \texttt{v}, \texttt{r} and \texttt{s}.
+\texttt{ecrecover} takes in these arguments and returns the address (or
+recovers the address) associated with the public key from the elliptic
+curve signature that is specified in the parameters. This is used in
+various smart contracts and it is used for different types of logic
+within them.
+
+\subsection{\texorpdfstring{\texttt{ecrecover}
+Malleability}{ecrecover Malleability}}\label{ecrecover-malleability}
+
+\texttt{ecrecover} is susceptible to malleability, or in other words
+\textbf{non-uniqueness}. In the context of signatures this means that a
+valid signature, can be converted into \textbf{a second valid signature
+without requiring knowledge of the private key} to generate those
+signatures.
+
+This, depending on how signatures are used within the contract logic,
+can result in replay attacks, where the second valid signature can be
+used by the user or even by the attacker to bypass the contract logic
+that is using these signatures.
+
+The reason for this malleability is the math behind how elliptic curve
+cryptography works, so the signature components of \texttt{v},
+\texttt{r} and \texttt{s}. The \texttt{s} value can either be in the
+lower order range or in the higher order range, and \texttt{ecrecover}
+does not prevent the \texttt{s} value from being in one of these two
+ranges. This is what allows the malleability.
+
+If the smart contract logic using \texttt{ecrecover} requires the
+signatures to be unique, then currently the best practice is to use the
+ECDSA wrapper from OpenZeppelin, that enforces the \texttt{s} value to
+be in the lower range (it forces there to be a single valid signature
+for these signature components).

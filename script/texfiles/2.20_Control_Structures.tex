@@ -1,0 +1,27 @@
+\section{Control Structures}\label{control-structures}
+
+These are fundamental to any programming language because there is a
+control flow to the sequence of instructions specified in the high-level
+language that get translated into machine code by the compiler.
+
+In the case of \texttt{Solidity}, the control structures supported are
+\texttt{if}, \texttt{else}, \texttt{while}, \texttt{do}, \texttt{for},
+\texttt{break}, \texttt{continue} and \texttt{return}. These are very
+similar to the ones found in any programming language. Although are some
+differences in \texttt{Solidity}: paranthesis for example cannot be
+omitted for conditionals that some of the other languages support,
+however curly braces can be omitted around single statement bodies for
+such conditionals.
+
+Also note that there is no type conversion from a non-boolean to a
+boolean type. As an example, \texttt{if(1)} is not allowed in
+\texttt{Solidity} because 1 is not convertible to the boolean
+\texttt{true}, which is supported by some of the other languages.
+
+So control structures play a critical role in the security analysis of
+smart contracts whether you're doing a manual review or whether you're
+writing a tool to pass the \texttt{Solidity} smart contract. These are
+some things to be understood really well because that's how control
+flows, and any analysis depends critically on making sure that the
+control flow is accurately followed and representative of what really
+happens at runtime.

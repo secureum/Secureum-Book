@@ -1,0 +1,121 @@
+\section{Style and Conventions}\label{style-and-conventions}
+
+\subsection{Programming Style}\label{programming-style}
+
+So far, we have reviewed all the aspects of the various basics of
+\texttt{Solidity}: syntax, semantics, \ldots{} are rules that are
+enforced in the \texttt{Solidity} grammar.
+
+Programming style on the other hand is coding convention, and these are
+different across different developers. Different styles are adopted
+based on what the developer is comfortable with based on what they
+believe is an optimal way of programming, \textbf{but fundamentally the
+programming style is about consistency}.
+
+\textbf{The reason is that programming style affects the readability and
+maintainability of the code}. So when anyone other than the developer
+looks at the code to evaluate the security, to audit it or to make fixes
+or extend those smart contracts, the consistency of the programming
+style becomes important.
+
+If different styles are used within the same function, within the same
+module or within the same project, because of the same developer not
+being consistent or because multiple developers are involved in that
+project having different styles, then this significantly affects the
+readability and maintainability of the code, impacting both
+significantly on the security life cycle of the code.
+
+Programming style is subjective in nature: different developers,
+different teams might have different philosophies as to what works best
+for them. The key is consistency within the function modules, contracts
+or projects, as it affects readability and maintainability, which are
+critical for security, specifically with respect to smart contract
+audits.
+
+There are two main categories of programming style, that of code
+\textbf{layout} and that of \textbf{naming}.
+
+\subsubsection{Code Layout}\label{code-layout}
+
+\textbf{Code layout refers to the physical layout of the various
+programming elements within a source code file}. There are many
+programming style aspects related to code layout: those related to
+indentation, where the best practice and \texttt{Solidity} is to
+recommend 4 spaces per indentation level and to prefer spaces over tabs
+and to definitely not mix them.
+
+There are also style guidelines with respect to blank lines used to
+surround declarations, with the max line length that's recommended to be
+79 or 99 characters for best readability. There are also recommendations
+for wrapping lines, for the encoding used in the source files
+(\texttt{ASCII} or \texttt{UTF-8}), and for keeping the import
+statements at the top of the file and not anywhere else.
+
+Finally, the ordering of the functions within the contract, where the
+recommendation is to have the constructor as the first in that order
+followed by functions of different visibilities. Grouping all the
+external functions first, followed by public functions and then internal
+and then private functions.
+
+Strings are recommended to be used with double quotes instead of single
+quotes operators, spaces have some guidelines as well. Finally the
+ordering of different program elements within a \texttt{Solidity} file
+also have a guideline, which is to have the \texttt{pragma} declaratives
+all the way at the top, followed by the \texttt{import} directives and
+then the contract library or interface definition itself.
+
+Within each of the contracts libraries and interfaces, the guideline
+suggests using the types first, followed by declarations of state
+variables, then events and finally all the various functions.
+
+\subsection{Naming Conventions}\label{naming-conventions}
+
+The next aspect of programming style is naming convention. This refers
+to the names that are given to various variables, events, contracts,
+libraries and all the different program elements used within smart
+contracts.
+
+There are different types of names: lower case names, lower case with
+underscores, all upper case, upper case with underscores, capitalized
+words, mixed case, capitalized words with underscores and so on. All
+these different types are recommended to be used for different program
+elements, and as a general rule the guideline is to avoid letters that
+can be confused with the different numerals, like the lowercase
+letter\texttt{"l"}, or the uppercase letter \texttt{"O"} and uppercase
+letter \texttt{"I"} that could be confused with \texttt{0} and
+\texttt{1} numerals.
+
+Contract and libraries should be named with cap word style, they should
+also match their file names and if a contact file includes multiple
+contracts and libraries then the file name should match the core
+contract (or what is considered as a core contract for that file by the
+developer).
+
+Structs should be named using the cab word style. Event should be named
+using cap word style again. Functions should be named using mixed case.
+
+This is something that you'll encounter often within contracts
+developers are sometimes consistent with these naming, sometimes they're
+mixed up because of multiple developers or the style just not being
+consistent or being confused with that of some external libraries.
+
+Again all these aspects affect the readability and maintainability, they
+do not have any impact on the syntax or the semantics of the contract
+itself.
+
+The bytecode is just the same but it has an effect to a certain extent,
+on the security audit aspect when you look at this code, and when the
+naming convention is different or not consistent then it could lead to
+some assumptions being made on these variables being the same ones or
+different ones.
+
+Some more naming conventions are: function arguments should be in mixed
+case, local state variables again in mixed case, constants however
+should be with all capital letters and underscores separating the
+multiple words if they are present.
+
+Modifiers in mixed case, enums in cap word style and finally one should
+avoid naming collisions where the desired names, variables or functions
+collides with that of a built-in within \texttt{Solidity} or any other
+reserve name. So those should be resolved using single trailing
+underscores in those names.
