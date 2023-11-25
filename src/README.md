@@ -4,7 +4,7 @@
 
 ## Mission
 
-Secureum's mission is scaling security on the Ethereum ecosystem by acting on Ethereum's" _Layer zero_": the community, by providing education on smart contract security and best practices.
+Secureum's mission is scaling security on the Ethereum ecosystem by acting on Ethereum's "_Layer zero_": the community, by providing education on smart contract security and best practices.
 
 
 
