@@ -1,4 +1,4 @@
-## 📖 Secureum Book
+## [📖 Secureum Book](https://secureum.gitbook.io/secureum-book)
 
 The idea is to imitate the fantastic work of the **[Foundry Book](https://github.com/foundry-rs/book)**.
 
@@ -16,7 +16,7 @@ To contribute, please to so with issues and pull requests. There is tons of cont
 
 - [Secureum](https://twitter.com/TheSecureum) *(original content on substack)*
 - [Rajeev](https://twitter.com/0xRajeev) *(Secureum founder)*
-- [Luksgrin](https://twitter.com/Cryptonicle1) *(Secureum book editor, Activate x Wormhole a-MAZE-X designer & DeFi Security 101 Stanford a-MAZE-X designer)*
+- [Luksgrin](https://twitter.com/luksgrin) *(Secureum book editor, Activate x Wormhole a-MAZE-X designer & DeFi Security 101 Stanford a-MAZE-X designer)*
 - [Deivitto](https://twitter.com/deivitto) *(Secureum book editor & Activate x Wormhole a-MAZE-X designer)*
 - [0x4non](https://twitter.com/eugenioclrc) *(Activate x Wormhole a-MAZE-X designer & DeFi Security 101 Stanford a-MAZE-X designer)*
 - [PPrieditis](https://twitter.com/pprieditis) *(Activate x Wormhole a-MAZE-X designer)*
